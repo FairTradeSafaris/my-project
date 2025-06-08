@@ -18,8 +18,8 @@ type ConnectLink = {
 
 export default function SafariFactFooter() {
   const [fact, setFact] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [logoUrl, setLogoUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>(""); // Rhino
+  const [logoUrl, setLogoUrl] = useState<string>(""); // Main Logo
   const [exploreLinks, setExploreLinks] = useState<
     { label: string; href: string }[]
   >([]);
@@ -35,20 +35,14 @@ export default function SafariFactFooter() {
           logo { asset->{url} },
           contactEmail,
           exploreLinks,
-          socialLinks[]{
+          socialLinks[] {
             platform,
-            icon {
-              asset->{
-                url
-              }
-            },
+            icon { asset->{url} },
             url
           },
           connectLinks
         }`
       );
-
-      console.log("Fetched Footer Data:", result);
 
       if (result) {
         const facts = result.facts || [];
@@ -68,21 +62,79 @@ export default function SafariFactFooter() {
   }, []);
 
   return (
-    <div className="bg-[#f9f1e5] text-black py-12 px-6 font-poppins">
-      {/* Align logo + center links + rhino to the same horizontal baseline */}
-      <div className="max-w-6xl mx-auto flex flex-col">
-        <div className="grid md:grid-cols-3 gap-10 items-end">
-          {/* Left: Logo */}
-          <div className="flex justify-center md:justify-start">
+    <>
+      {/* As Seen On Section */}
+      <section className="bg-[#e9e0d1] py-12">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-xs md:text-sm tracking-widest uppercase text-[#5f5241] mb-6">
+            As Seen On
+          </h2>
+          <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-6 opacity-90">
+            <img
+              src="/logos/CBS_logo.svg"
+              alt="CBS"
+              className="h-8 md:h-10 object-contain"
+            />
+            <img
+              src="/logos/usa-today.svg"
+              alt="USA Today"
+              className="h-8 md:h-10 object-contain"
+            />
+            <img
+              src="/logos/fox.svg"
+              alt="FOX"
+              className="h-8 md:h-10 object-contain"
+            />
+            <img
+              src="/logos/nbc.svg"
+              alt="NBC"
+              className="h-8 md:h-10 object-contain"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Sloped Divider */}
+      <div className="relative z-10 -mt-1">
+        <svg
+          viewBox="0 0 500 50"
+          preserveAspectRatio="none"
+          className="w-full h-10 fill-[#e9e0d1] rotate-180"
+        >
+          <path d="M0,0 C150,50 350,0 500,50 L500,0 L0,0 Z" />
+        </svg>
+      </div>
+
+      {/* Footer */}
+      <footer
+        className="relative text-[#3f2e1f] text-sm z-0"
+        style={{
+          backgroundImage: "url('/images/footer-texture.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Fade-in overlay */}
+        <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-[#e9e0d1] to-transparent z-10 pointer-events-none" />
+
+        {/* Grid Content */}
+        <div className="relative z-20 max-w-6xl mx-auto px-6 py-6 grid md:grid-cols-3 gap-10 items-start">
+          {/* Logo */}
+          <div className="flex justify-center ">
             {logoUrl && (
-              <Image src={logoUrl} alt="Logo" width={180} height={60} />
+              <Image
+                src={logoUrl}
+                alt="Fair Trade Safaris Logo"
+                width={160}
+                height={60}
+              />
             )}
           </div>
 
-          {/* Center: Explore + Connect */}
+          {/* Links */}
           <div className="grid grid-cols-2 gap-8 text-sm text-center md:text-left">
             <div>
-              <h3 className="text-lg font-bold mb-4">Explore</h3>
+              <h3 className="text-md font-semibold mb-3">Explore</h3>
               <ul className="space-y-2">
                 {exploreLinks.map((link, i) => (
                   <li key={i}>
@@ -93,48 +145,43 @@ export default function SafariFactFooter() {
                 ))}
               </ul>
             </div>
-            {connectLinks.length > 0 && (
-              <div>
-                <h3 className="text-lg font-bold mb-4">Connect With Us</h3>
-                <ul className="space-y-2">
-                  {connectLinks.map((link, i) => (
-                    <li key={i}>
-                      <Link href={link.href} className="hover:underline">
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div>
+              <h3 className="text-md font-semibold mb-3">Connect</h3>
+              <ul className="space-y-2">
+                {connectLinks.map((link, i) => (
+                  <li key={i}>
+                    <Link href={link.href} className="hover:underline">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          {/* Right: Rhino */}
-          <div className="flex justify-center md:justify-end">
+          {/* Rhino */}
+          <div className="flex justify-end pr-4">
             {imageUrl && (
               <Image
                 src={imageUrl}
-                alt="Safari Line Art"
-                width={280}
-                height={100}
-                className="opacity-60"
+                alt="Rhino Illustration"
+                width={380}
+                height={80}
+                className="opacity-70"
               />
             )}
           </div>
         </div>
-
-        {/* Safari Fact */}
         {fact && (
-          <div className="mt-6 text-center">
-            <div className="bg-[#e4d7c3] text-[#7a4e1d] px-4 py-3 rounded-md italic max-w-xl mx-auto text-sm">
+          <div className="relative z-20 mt-2 mb-4 flex justify-center">
+            <div className="bg-[#e4d7c3] text-[#7a4e1d] px-4 py-2 rounded-md italic max-w-xl text-center text-sm shadow-sm">
               Did you know? {fact}
             </div>
           </div>
         )}
-
-        {/* Social Links */}
+        {/* Social Icons */}
         {socialLinks.length > 0 && (
-          <div className="mt-6 flex justify-center space-x-4">
+          <div className="relative z-20 mt-4 mb-2 flex justify-center space-x-3">
             {socialLinks.map((social, i) => (
               <a
                 key={i}
@@ -147,8 +194,8 @@ export default function SafariFactFooter() {
                   <Image
                     src={social.icon.asset.url}
                     alt={social.platform}
-                    width={28}
-                    height={28}
+                    width={24}
+                    height={24}
                     className="hover:opacity-80 transition-opacity duration-200"
                   />
                 )}
@@ -156,7 +203,12 @@ export default function SafariFactFooter() {
             ))}
           </div>
         )}
-      </div>
-    </div>
+
+        {/* Copyright */}
+        <div className="relative z-20 text-center text-xs py-2 mt-4 border-t border-[#d2c2a3] bg-[#e5d7be]/70 backdrop-blur-sm">
+          © {new Date().getFullYear()} Fair Trade Safaris. All rights reserved.
+        </div>
+      </footer>
+    </>
   );
 }

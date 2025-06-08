@@ -8,8 +8,14 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { addMonths } from "date-fns";
 
+// Type for sanity image objects
+type SanityImage = {
+  asset: {
+    url: string;
+  };
+};
+
 export default function HeroWithSearch() {
-  const [heroImages, setHeroImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("/hero.jpg");
   const [headline, setHeadline] = useState<string>("");
   const [subheadline, setSubheadline] = useState<string>("");
@@ -29,18 +35,23 @@ export default function HeroWithSearch() {
           backgroundImages[]{asset->{url}}
         }`
       );
+
       if (result) {
         setHeadline(result.headline);
         setSubheadline(result.subheadline);
+
         const urls =
-          result.backgroundImages?.map((img: any) => img.asset.url) || [];
-        setHeroImages(urls);
+          (result.backgroundImages as SanityImage[])?.map(
+            (img) => img.asset.url
+          ) || [];
+
         if (urls.length > 0) {
           const random = Math.floor(Math.random() * urls.length);
           setSelectedImage(urls[random]);
         }
       }
     };
+
     fetchHeroContent();
   }, []);
 
@@ -69,8 +80,8 @@ export default function HeroWithSearch() {
         </p>
 
         {/* Search Box */}
-        <div className="bg-white/5 text-white rounded-3xl px-4 py-4 shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-3 w-full max-w-4xl backdrop-blur-md border border-white/10">
-          <div className="flex items-center gap-2 border border-white/10 rounded-2xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
+        <div className="bg-white/5 text-white rounded-1xl px-4 py-4 shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-3 w-full max-w-4xl backdrop-blur-md border border-white/10">
+          <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <MapPin className="w-5 h-5 text-white/70" />
             <input
               type="text"
@@ -78,7 +89,8 @@ export default function HeroWithSearch() {
               className="bg-transparent outline-none text-sm w-full placeholder-white/60 text-white"
             />
           </div>
-          <div className="flex items-center gap-2 border border-white/10 rounded-2xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
+
+          <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <CalendarDays className="w-5 h-5 text-white/70" />
             <DatePicker
               selectsRange
@@ -107,7 +119,7 @@ export default function HeroWithSearch() {
             />
           </div>
 
-          <div className="flex items-center gap-2 border border-white/10 rounded-2xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
+          <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <Users className="w-5 h-5 text-white/70" />
             <input
               type="text"
@@ -115,7 +127,8 @@ export default function HeroWithSearch() {
               className="bg-transparent outline-none text-sm w-full placeholder-white/60 text-white"
             />
           </div>
-          <button className="bg-white text-black rounded-2xl px-6 py-3 font-semibold hover:bg-gray-200 transition text-sm w-full md:w-auto flex items-center justify-center">
+
+          <button className="bg-white text-black rounded-4xl px-6 py-3 font-semibold hover:bg-gray-200 transition text-sm w-full md:w-auto flex items-center justify-center">
             <Search className="w-5 h-5" />
           </button>
         </div>

@@ -2,6 +2,8 @@
 import Link from "next/link";
 import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import HeroWithSearch from "@/components/HeroWithSearch";
+import WhyChoose from "@/components/WhyChoose";
+import type { PortableTextBlock } from "@portabletext/types"; // ✅ import for rich text
 
 type HeroContent = {
   headline: string;
@@ -16,9 +18,20 @@ type HeroContent = {
 };
 
 type WhyChooseBlock = {
-  sectionTitle: string;
+  sectionTitle: PortableTextBlock[]; // ✅ updated from string
+  sideImage?: {
+    asset: {
+      url: string;
+    };
+    alt?: string;
+  };
   reasons: {
-    icon: string;
+    icon?: {
+      asset: {
+        url: string;
+      };
+      alt?: string;
+    };
     title: string;
     description: string;
   }[];
@@ -57,8 +70,15 @@ export default async function Home() {
   const whyChoose: WhyChooseBlock | null = await sanity.fetch(
     `*[_type == "whyChoose"][0]{
       sectionTitle,
+      sideImage {
+        asset->{url},
+        alt
+      },
       reasons[] {
-        icon,
+        icon {
+          asset->{url},
+          alt
+        },
         title,
         description
       }
@@ -67,17 +87,17 @@ export default async function Home() {
 
   const journeys: Journey[] = await sanity.fetch(
     `*[_type == "featuredJourney"]{
-    _id,
-    title,
-    slug,
-    summary,
-    duration,
-    heroImage {
-      asset->{url}
-    },
-    alt,
-    ctaText
-  }`
+      _id,
+      title,
+      slug,
+      summary,
+      duration,
+      heroImage {
+        asset->{url}
+      },
+      alt,
+      ctaText
+    }`
   );
 
   if (!hero) {
@@ -96,60 +116,7 @@ export default async function Home() {
       <HeroWithSearch />
 
       {/* Why Travel With Us Section */}
-      {whyChoose && (
-        <section className="py-20 bg-white text-black">
-          <div className="max-w-6xl mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-12">
-              {whyChoose.sectionTitle}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-left">
-              {whyChoose.reasons.map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-[#fefcf9] rounded-2xl shadow-md p-6 flex flex-col items-start"
-                >
-                  <div className="text-4xl mb-4">{item.icon}</div>
-                  <h3 className="text-xl font-bold mb-2 min-h-[3rem]">
-                    {item.title}
-                  </h3>
-                  <p>{item.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* As Seen On */}
-      <section className="bg-[#f9f9f9] py-12">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-8">
-            As Seen On
-          </h2>
-          <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-6 opacity-80">
-            <img
-              src="/logos/CBS_logo.svg"
-              alt="CBS"
-              className="h-10 object-contain"
-            />
-            <img
-              src="/logos/usa-today.svg"
-              alt="USA Today"
-              className="h-10 object-contain"
-            />
-            <img
-              src="/logos/fox.svg"
-              alt="Fox"
-              className="h-10 object-contain"
-            />
-            <img
-              src="/logos/nbc.svg"
-              alt="NBC"
-              className="h-10 object-contain"
-            />
-          </div>
-        </div>
-      </section>
+      {whyChoose && <WhyChoose data={whyChoose} />}
 
       {/* Featured Journeys */}
       {journeys.length > 0 && (
@@ -169,7 +136,6 @@ export default async function Home() {
                       className="w-full h-48 object-cover"
                     />
                   )}
-
                   <div className="p-6">
                     <h3 className="text-2xl font-semibold mb-2">{j.title}</h3>
                     <p className="text-sm text-gray-500 mb-1">{j.duration}</p>
@@ -194,21 +160,47 @@ export default async function Home() {
           </div>
         </section>
       )}
-      <section className="relative w-full bg-[#d8c3a5] py-20 flex items-center justify-center overflow-hidden">
-        {/* Left Illustration (Lion + Tree) */}
+
+      {/* CTA Banner */}
+      <section
+        className="relative w-full bg-[#d8c3a5] py-20 flex items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: 'url("/images/footer-texture.jpg")',
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Top fade (still matches parent background) */}
+        <div
+          className="absolute top-0 left-0 w-full h-24 z-10 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, #f9f9f9, rgba(255, 255, 255, 0))",
+          }}
+        />
+
+        {/* Bottom fade into white */}
+        <div
+          className="absolute bottom-0 left-0 w-full h-24 z-10 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to top, #ffffff, rgba(255, 255, 255, 0))",
+          }}
+        />
+
+        {/* Background visuals */}
         <img
           src="/icons/lion-left.svg"
           className="absolute bottom-6 left-[1%] md:left-[20%] h-[110px] md:h-[250px] object-contain z-0 opacity-80 pointer-events-none"
         />
-
-        {/* Right Illustration (Safari Jeep) */}
         <img
           src="/icons/safari-jeep-right.svg"
           className="absolute bottom-0 right-[0%] md:right-[20%] h-[115px] md:h-[250px] object-contain z-0 opacity-80 pointer-events-none"
         />
 
-        {/* CTA Text */}
-        <div className="relative z-10 text-center px-6 max-w-xl">
+        {/* Text Content */}
+        <div className="relative z-20 text-center px-6 max-w-xl">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Plan Your Dream Safari?
           </h2>
@@ -230,31 +222,31 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold mb-12">What Our Guests Say</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div className="bg-gray-50 p-6 rounded-lg shadow">
-              <p className="text-lg italic mb-4">
-                “The most unforgettable experience of my life.”
-              </p>
-              <h4 className="font-semibold text-gray-800">— Jamie P.</h4>
-            </div>
-            <div className="bg-gray-50 p-6 rounded-lg shadow">
-              <p className="text-lg italic mb-4">
-                “I felt safe, inspired, and completely at ease the entire time.”
-              </p>
-              <h4 className="font-semibold text-gray-800">— Maria N.</h4>
-            </div>
-            <div className="bg-gray-50 p-6 rounded-lg shadow">
-              <p className="text-lg italic mb-4">
-                “Every detail was perfect — you’ve gained a lifelong customer.”
-              </p>
-              <h4 className="font-semibold text-gray-800">— Kevin R.</h4>
-            </div>
+            {[
+              {
+                quote: "The most unforgettable experience of my life.",
+                author: "— Jamie P.",
+              },
+              {
+                quote:
+                  "I felt safe, inspired, and completely at ease the entire time.",
+                author: "— Maria N.",
+              },
+              {
+                quote:
+                  "Every detail was perfect — you’ve gained a lifelong customer.",
+                author: "— Kevin R.",
+              },
+            ].map((t, i) => (
+              <div key={i} className="bg-gray-50 p-6 rounded-lg shadow">
+                <p className="text-lg italic mb-4">“{t.quote}”</p>
+                <h4 className="font-semibold text-gray-800">{t.author}</h4>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-
-      {/* 🔥 Chat Widget added here */}
       <ChatWidget />
     </main>
   );

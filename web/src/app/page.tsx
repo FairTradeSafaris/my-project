@@ -128,7 +128,7 @@ export default async function Home() {
           </h2>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-6 opacity-80">
             <img
-              src="/logos/cbs_logo.svg"
+              src="/logos/moved_logo.svg"
               alt="CBS"
               className="h-10 object-contain"
             />

@@ -1,32 +1,34 @@
 "use client";
 
 import { PortableText } from "@portabletext/react";
-import { PortableTextBlock } from "@sanity/types";
+import type { PortableTextBlock } from "@portabletext/types";
 
-type WhyChooseProps = {
-  data: {
-    sectionTitle: PortableTextBlock[];
-    sideImage?: {
+type WhyChooseBlock = {
+  sectionTitle: PortableTextBlock[];
+  sideImage?: {
+    asset: {
+      url: string;
+    };
+    alt?: string;
+  };
+  reasons: {
+    icon?: {
       asset: {
         url: string;
       };
       alt?: string;
     };
-    reasons: {
-      icon?: {
-        asset: {
-          url: string;
-        };
-        alt?: string;
-      };
-      title: string;
-      description: string;
-    }[];
-  };
+    title: string;
+    description: string;
+  }[];
+};
+
+type WhyChooseProps = {
+  data: WhyChooseBlock;
 };
 
 export default function WhyChoose({ data }: WhyChooseProps) {
-  const { sideImage, reasons } = data;
+  const { sectionTitle, sideImage, reasons } = data;
 
   return (
     <section className="py-8 bg-[#fdf6ee] text-[#3c2f25] font-poppins">
@@ -46,7 +48,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
         <div className="space-y-10 pt-2">
           {/* Section Title */}
           <PortableText
-            value={data.sectionTitle}
+            value={sectionTitle}
             components={{
               block: {
                 normal: ({ children }) => (

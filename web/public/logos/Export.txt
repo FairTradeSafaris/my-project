@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><SupplierInterface>
+   <Details>
+      <TypeRef>
+         <Sapaction2>ZEXP</Sapaction2>
+         <Date>03-04-2025</Date>
+         <Time>16:04:11</Time>
+      </TypeRef>
+      <Vendor>
+         <VendorCode>0000000138</VendorCode>
+         <VendorName>MAKATU</VendorName>
+      </Vendor>
+      <Model>
+         <ModelDesc>X3 XDRIVE20D</ModelDesc>
+         <ModelCode>15GR</ModelCode>
+      </Model>
+      <BodyNo>N340618</BodyNo>
+      <Colour>
+         <ColourCode>0C4P</ColourCode>
+         <ColourDesc>BROOKLYN GREY METALLIC</ColourDesc>
+      </Colour>
+      <VINNo>WBA15GR070N340618</VINNo>
+      <LoadDetails>
+         <LoadNo>EXP0040580</LoadNo>
+         <FleetNo>MAK003</FleetNo>
+         <DriverName>KYLE</DriverName>
+         <NoofVehiclesPerLoad>03</NoofVehiclesPerLoad>
+      </LoadDetails>
+      <VehicleType>NEW</VehicleType>
+      <CollectFromCode>VDC</CollectFromCode>
+      <CollectFrom>BMW VDC ROSSLYN</CollectFrom>
+      <DeliverToCode>330</DeliverToCode>
+      <DeliverTo>DURBAN PORT</DeliverTo>
+      <Urgency/>
+      <AdditionalInfo1>0005737</AdditionalInfo1>
+      <AdditionalInfo2>SILVER GLORY</AdditionalInfo2>
+      <AdditionalInfo3>25SG05</AdditionalInfo3>
+      <AdditionalInfo4/>
+      <AdditionalInfo5>BREMERHAVEN</AdditionalInfo5>
+   </Details>
+</SupplierInterface>

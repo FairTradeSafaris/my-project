@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+.hero-bg {
+  background-image: url("/sunset-safari.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.25s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+.react-datepicker__current-month,
+.react-datepicker__month-read-view,
+.react-datepicker__year-read-view {
+  font-weight: 600;
+  color: #7a6248;
+}
+
+.react-datepicker__day-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #bba88d;
+}
+
+.react-datepicker-popper {
+  transform: translateX(-33%) !important; /* Balance 3 months horizontally */
+}

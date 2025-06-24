@@ -2,11 +2,15 @@ import groq from "groq";
 import client from "../../../../lib/sanity";
 import { notFound } from "next/navigation";
 
-export default async function BlogPost({
-  params,
-}: {
-  params: { slug: string };
-}) {
+type PageProps = {
+  params: Promise<{
+    slug: string;
+  }>;
+};
+
+export default async function BlogPost({ params }: PageProps) {
+  const { slug } = await params;
+
   const query = groq`*[_type == "blog" && slug.current == $slug][0] {
     title,
     publishedAt,
@@ -15,7 +19,7 @@ export default async function BlogPost({
     body
   }`;
 
-  const post = await client.fetch(query, { slug: params.slug });
+  const post = await client.fetch(query, { slug });
 
   if (!post) return notFound();
 

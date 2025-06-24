@@ -4,6 +4,7 @@ import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import HeroWithSearch from "@/components/HeroWithSearch";
 import WhyChoose from "@/components/WhyChoose";
 import type { PortableTextBlock } from "@portabletext/types"; // ✅ import for rich text
+import TestimonialCarousel from "@/components/TestimonialCarousel";
 
 type HeroContent = {
   headline: string;
@@ -218,34 +219,7 @@ export default async function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-white py-20">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-12">What Our Guests Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {[
-              {
-                quote: "The most unforgettable experience of my life.",
-                author: "— Jamie P.",
-              },
-              {
-                quote:
-                  "I felt safe, inspired, and completely at ease the entire time.",
-                author: "— Maria N.",
-              },
-              {
-                quote:
-                  "Every detail was perfect — you’ve gained a lifelong customer.",
-                author: "— Kevin R.",
-              },
-            ].map((t, i) => (
-              <div key={i} className="bg-gray-50 p-6 rounded-lg shadow">
-                <p className="text-lg italic mb-4">“{t.quote}”</p>
-                <h4 className="font-semibold text-gray-800">{t.author}</h4>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialCarousel />
 
       <ChatWidget />
     </main>

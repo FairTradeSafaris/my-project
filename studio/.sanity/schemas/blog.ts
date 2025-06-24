@@ -35,5 +35,18 @@ export default defineType({
       type: 'array',
       of: [{type: 'string'}],
     }),
+    defineField({
+      name: 'isFeatured',
+      title: 'Feature this post',
+      type: 'boolean',
+      description: 'Mark this post to highlight it on the blog landing page',
+    }),
+    defineField({
+      name: 'views',
+      title: 'Views',
+      type: 'number',
+      initialValue: 0,
+      readOnly: true,
+    }),
   ],
 })

@@ -1,15 +1,20 @@
-import post from '../.sanity/schemas/post'
+import blog from '../.sanity/schemas/blog' // 👈 Add this line
 import hero from '../.sanity/schemas/hero'
 import whyChoose from '../.sanity/schemas/whyChoose'
 import journey from '../.sanity/schemas/journey'
 import featuredJourney from '../.sanity/schemas/featuredJourney'
-import footer from '../.sanity/schemas/footer' // ✅ Add this line
+import footer from '../.sanity/schemas/footer'
+import testimonial, {testimonialSettings} from '../.sanity/schemas/testimonial'
+import blockContent from '../.sanity/schemas/blockContent'
 
 export const schemaTypes = [
-  post,
+  blog, // 👈 And add it here too
   hero,
   whyChoose,
   journey,
   featuredJourney,
-  footer, // ✅ And register it here
+  footer,
+  testimonial,
+  testimonialSettings,
+  blockContent,
 ]

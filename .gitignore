@@ -1,2 +1,13 @@
-web/node_modules/ 
-web/node_modules/ 
+# Root-level ignores
+node_modules/
+.env
+
+# Ignore all .next build artifacts across the project
+.next/
+
+# Ignore node_modules inside the web folder (redundant if root node_modules is already ignored)
+web/node_modules/
+
+# Optional: ignore system or editor-specific files
+.DS_Store
+*.log

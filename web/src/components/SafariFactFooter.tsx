@@ -114,18 +114,18 @@ export default function SafariFactFooter() {
           backgroundPosition: "center",
         }}
       >
-        {/* Fade-in overlay */}
-        <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-[#e9e0d1] to-transparent z-10 pointer-events-none" />
+        {/* Extended fade-in overlay */}
+        <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-[#e9e0d1] via-[#e9e0d1]/80 to-transparent z-10 pointer-events-none" />
 
         {/* Grid Content */}
         <div className="relative z-20 max-w-6xl mx-auto px-6 py-6 grid md:grid-cols-3 gap-10 items-start">
           {/* Logo */}
-          <div className="flex justify-center ">
+          <div className="flex justify-center">
             {logoUrl && (
               <Image
                 src={logoUrl}
                 alt="Fair Trade Safaris Logo"
-                width={160}
+                width={260}
                 height={60}
               />
             )}
@@ -172,6 +172,8 @@ export default function SafariFactFooter() {
             )}
           </div>
         </div>
+
+        {/* Fact Box */}
         {fact && (
           <div className="relative z-20 mt-2 mb-4 flex justify-center">
             <div className="bg-[#e4d7c3] text-[#7a4e1d] px-4 py-2 rounded-md italic max-w-xl text-center text-sm shadow-sm">
@@ -179,6 +181,7 @@ export default function SafariFactFooter() {
             </div>
           </div>
         )}
+
         {/* Social Icons */}
         {socialLinks.length > 0 && (
           <div className="relative z-20 mt-4 mb-2 flex justify-center space-x-3">
@@ -194,8 +197,8 @@ export default function SafariFactFooter() {
                   <Image
                     src={social.icon.asset.url}
                     alt={social.platform}
-                    width={24}
-                    height={24}
+                    width={50}
+                    height={50}
                     className="hover:opacity-80 transition-opacity duration-200"
                   />
                 )}

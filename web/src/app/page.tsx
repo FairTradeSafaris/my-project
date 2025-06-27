@@ -101,6 +101,18 @@ export default async function Home() {
     }`
   );
 
+  const ctaBanner = await sanity.fetch(
+    `*[_type == "ctaBanner"][0]{
+    headline,
+    subheadline,
+    buttonText,
+    buttonLink,
+    "backgroundImageUrl": backgroundImage.asset->url,
+    "sideImageUrl": sideImage.asset->url,
+    textOnLeft
+  }`
+  );
+
   if (!hero) {
     return (
       <main className="min-h-screen flex items-center justify-center text-center text-red-600">
@@ -110,7 +122,7 @@ export default async function Home() {
       </main>
     );
   }
-
+  console.log("CTA Layout Debug", ctaBanner);
   return (
     <main className="min-h-screen font-poppins bg-white text-black">
       {/* Hero Section */}
@@ -162,61 +174,60 @@ export default async function Home() {
         </section>
       )}
 
-      {/* CTA Banner */}
-      <section
-        className="relative w-full bg-[#d8c3a5] py-20 flex items-center justify-center overflow-hidden"
-        style={{
-          backgroundImage: 'url("/images/footer-texture.jpg")',
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Top fade (still matches parent background) */}
-        <div
-          className="absolute top-0 left-0 w-full h-24 z-10 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(to bottom, #f9f9f9, rgba(255, 255, 255, 0))",
-          }}
-        />
+      {ctaBanner && (
+        <section
+          className="relative w-full py-20 flex items-center justify-center overflow-hidden bg-cover bg-center"
+          style={{ backgroundImage: `url(${ctaBanner.backgroundImageUrl})` }}
+        >
+          {/* Top & Bottom Fades */}
+          <div
+            className="absolute top-0 left-0 w-full h-32 z-10 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to bottom, #f9f9f9, rgba(255, 255, 255, 0))",
+            }}
+          />
+          <div
+            className="absolute bottom-0 left-0 w-full h-32 z-10 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to top, #ffffff, rgba(255, 255, 255, 0))",
+            }}
+          />
 
-        {/* Bottom fade into white */}
-        <div
-          className="absolute bottom-0 left-0 w-full h-24 z-10 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(to top, #ffffff, rgba(255, 255, 255, 0))",
-          }}
-        />
-
-        {/* Background visuals */}
-        <img
-          src="/icons/lion-left.svg"
-          className="absolute bottom-6 left-[1%] md:left-[20%] h-[110px] md:h-[250px] object-contain z-0 opacity-80 pointer-events-none"
-        />
-        <img
-          src="/icons/safari-jeep-right.svg"
-          className="absolute bottom-0 right-[0%] md:right-[20%] h-[115px] md:h-[250px] object-contain z-0 opacity-80 pointer-events-none"
-        />
-
-        {/* Text Content */}
-        <div className="relative z-20 text-center px-6 max-w-xl">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Plan Your Dream Safari?
-          </h2>
-          <p className="text-md md:text-lg mb-6">
-            Talk to our local experts and start customizing your perfect trip to
-            Africa today.
-          </p>
-          <Link
-            href="/contact"
-            className="inline-block bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition"
+          {/* Content Row */}
+          <div
+            className={`relative z-20 flex flex-col ${
+              ctaBanner.textOnLeft ? "md:flex-row" : "md:flex-row-reverse"
+            } items-center justify-between max-w-6xl w-full px-6`}
           >
-            Start Planning
-          </Link>
-        </div>
-      </section>
+            {/* Image */}
+            {ctaBanner.sideImageUrl && (
+              <div className="w-full md:w-1/2 flex justify-center md:justify-start mb-8 md:mb-0">
+                <img
+                  src={ctaBanner.sideImageUrl}
+                  alt="CTA illustration"
+                  className="max-h-72 object-contain"
+                />
+              </div>
+            )}
+
+            {/* Text */}
+            <div className="w-full md:w-1/2 text-center md:text-left">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                {ctaBanner.headline}
+              </h2>
+              <p className="text-md md:text-lg mb-6">{ctaBanner.subheadline}</p>
+              <Link
+                href={ctaBanner.buttonLink}
+                className="inline-block bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition"
+              >
+                {ctaBanner.buttonText}
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Testimonials */}
       <TestimonialCarousel />

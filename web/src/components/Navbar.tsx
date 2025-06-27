@@ -20,11 +20,13 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Shrink on scroll
+  // Show nav animation after 2 seconds
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const timer = setTimeout(() => {
+      setScrolled(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (

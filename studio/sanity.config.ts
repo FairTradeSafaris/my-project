@@ -1,16 +1,17 @@
 import {defineConfig} from 'sanity'
-import {structureTool} from 'sanity/structure'
+import {deskTool} from 'sanity/desk'
 import {visionTool} from '@sanity/vision'
-import {schemaTypes} from './schemaTypes'
+import {codeInput} from '@sanity/code-input'
+import {schemaTypes} from '../studio/.sanity/schema'
 
 export default defineConfig({
   name: 'default',
-  title: 'FTS Studio',
+  title: 'fts-studio',
 
-  projectId: 'jw971r14',
+  projectId: 'jw971r14', // Replace with your actual project ID
   dataset: 'production',
 
-  plugins: [structureTool(), visionTool()],
+  plugins: [deskTool(), visionTool(), codeInput()],
 
   schema: {
     types: schemaTypes,

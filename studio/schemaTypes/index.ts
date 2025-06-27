@@ -7,6 +7,8 @@ import footer from '../.sanity/schemas/footer'
 import testimonial, {testimonialSettings} from '../.sanity/schemas/testimonial'
 import blockContent from '../.sanity/schemas/blockContent'
 import ctaBanner from '../.sanity/schemas/ctaBanner'
+import techStack from '../.sanity/schemas/techStack'
+import projectPortal from '../.sanity/schemas/projectPortal'
 
 export const schemaTypes = [
   blog, // 👈 And add it here too
@@ -19,4 +21,6 @@ export const schemaTypes = [
   testimonialSettings,
   blockContent,
   ctaBanner,
+  techStack,
+  projectPortal,
 ]

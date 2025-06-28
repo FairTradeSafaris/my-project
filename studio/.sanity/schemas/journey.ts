@@ -32,6 +32,12 @@ export default defineType({
       type: 'string',
     }),
     defineField({
+      name: 'price',
+      title: 'Price Per Person (Sharing)',
+      type: 'string',
+      description: 'e.g. From $5,200 pp',
+    }),
+    defineField({
       name: 'heroImage',
       title: 'Hero Image',
       type: 'image',
@@ -55,34 +61,17 @@ export default defineType({
     defineField({
       name: 'region',
       title: 'Region',
-      type: 'string',
-      options: {
-        list: [
-          {title: 'East Africa', value: 'East Africa'},
-          {title: 'Southern Africa', value: 'Southern Africa'},
-          {title: 'West Africa', value: 'West Africa'},
-          {title: 'Indian Ocean', value: 'Indian Ocean'},
-          {title: 'North Africa', value: 'North Africa'},
-        ],
-        layout: 'dropdown',
-      },
+      type: 'reference',
+      to: [{type: 'region'}],
     }),
+
     defineField({
       name: 'country',
       title: 'Country',
-      type: 'string',
-      options: {
-        list: [
-          {title: 'Kenya', value: 'Kenya'},
-          {title: 'Tanzania', value: 'Tanzania'},
-          {title: 'South Africa', value: 'South Africa'},
-          {title: 'Botswana', value: 'Botswana'},
-          {title: 'Zambia', value: 'Zambia'},
-          {title: 'Namibia', value: 'Namibia'},
-        ],
-        layout: 'dropdown',
-      },
+      type: 'reference',
+      to: [{type: 'country'}],
     }),
+
     defineField({
       name: 'star',
       title: 'Star Level',
@@ -92,6 +81,16 @@ export default defineType({
         layout: 'radio',
       },
     }),
+    defineField({
+      name: 'starIcon',
+      title: 'Custom Star Icon (SVG)',
+      type: 'image',
+      options: {
+        accept: 'image/svg+xml',
+      },
+      description: 'Optional – upload an SVG to use instead of default stars.',
+    }),
+
     defineField({
       name: 'travelStyle',
       title: 'Travel Style',

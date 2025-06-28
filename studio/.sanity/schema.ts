@@ -10,6 +10,8 @@ import testimonial from './schemas/testimonial'
 import hero from './schemas/hero'
 import journey from './schemas/journey'
 import blockContent from './schemas/blockContent'
+import region from './schemas/region'
+import country from './schemas/country'
 
 export const schemaTypes = [
   blog,
@@ -22,6 +24,8 @@ export const schemaTypes = [
   journey,
   blockContent,
   table,
+  country,
+  region,
 ]
 
 export const schema = {

@@ -12,13 +12,15 @@ type Journey = {
   summary: string;
   slug?: { current: string };
   duration?: string;
+  price?: string; // ✅ Add this line
   heroUrl?: string;
   alt?: string;
   ctaText?: string;
   wetuLink?: string;
-  region?: string;
-  country?: string;
+  region?: { title: string };
+  country?: { title: string; flag?: string };
   star?: string;
+  starIcon?: string; // ✅ Add this
   travelStyle?: string[];
 };
 
@@ -31,8 +33,6 @@ type Filters = {
 
 type FilterKey = keyof Filters;
 
-// ✅ Component
-
 export default function JourneyFinderPage() {
   const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
   const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
@@ -44,38 +44,11 @@ export default function JourneyFinderPage() {
     star: "",
     types: [],
   });
-
-  const filterGroups = [
-    {
-      label: "Regions",
-      items: [
-        "East Africa",
-        "Southern Africa",
-        "West Africa",
-        "Indian Ocean",
-        "North Africa",
-      ],
-      filterKey: "region" as FilterKey,
-    },
-    {
-      label: "Countries",
-      items: [
-        "Kenya",
-        "Tanzania",
-        "South Africa",
-        "Botswana",
-        "Zambia",
-        "Namibia",
-      ],
-      filterKey: "country" as FilterKey,
-    },
-    {
-      label: "Travel Style",
-      items: ["Luxury", "Cultural", "Adventure", "Wildlife"],
-      filterKey: "types" as FilterKey,
-      multi: true,
-    },
-  ];
+  const [filterOptions, setFilterOptions] = useState({
+    regions: [] as string[],
+    countries: [] as string[],
+    styles: [] as string[],
+  });
 
   useEffect(() => {
     sanityClient
@@ -85,23 +58,46 @@ export default function JourneyFinderPage() {
           summary,
           slug,
           duration,
+          price,
           "heroUrl": heroImage.asset->url,
           alt,
           ctaText,
           wetuLink,
-          region,
-          country,
+          region->{ title },
+          country->{ title, "flag": flag.asset->url },
           star,
+          "starIcon": starIcon.asset->url,
           travelStyle
         }`
       )
       .then((data: Journey[]) => {
-        console.log("✅ Sanity journey data loaded:", data);
         setAllJourneys(data);
         setFilteredJourneys(data);
+
+        const regions = Array.from(
+          new Set(
+            data
+              .map((j) => j.region?.title)
+              .filter((title): title is string => !!title)
+          )
+        );
+
+        const countries = Array.from(
+          new Set(
+            data
+              .map((j) => j.country?.title)
+              .filter((title): title is string => !!title)
+          )
+        );
+
+        const styles = Array.from(
+          new Set(data.flatMap((j) => j.travelStyle || []))
+        );
+
+        setFilterOptions({ regions, countries, styles });
       })
       .catch((error) => {
-        console.error("❌ Failed to fetch journey data from Sanity:", error);
+        console.error("Failed to fetch journey data from Sanity:", error);
       });
   }, []);
 
@@ -111,26 +107,17 @@ export default function JourneyFinderPage() {
       const matches =
         text.includes(searchTerm.toLowerCase()) &&
         (!selectedFilters.region ||
-          (j.region &&
-            j.region.toLowerCase() === selectedFilters.region.toLowerCase())) &&
+          j.region?.title === selectedFilters.region) &&
         (!selectedFilters.country ||
-          (j.country &&
-            j.country.toLowerCase() ===
-              selectedFilters.country.toLowerCase())) &&
-        (!selectedFilters.star ||
-          (j.star &&
-            j.star.toLowerCase() === selectedFilters.star.toLowerCase())) &&
+          j.country?.title === selectedFilters.country) &&
+        (!selectedFilters.star || j.star === selectedFilters.star) &&
         (selectedFilters.types.length === 0 ||
           (j.travelStyle &&
             selectedFilters.types.some((type) =>
-              j
-                .travelStyle!.map((t) => t.toLowerCase())
-                .includes(type.toLowerCase())
+              j.travelStyle!.includes(type)
             )));
-      console.log("🔍 Evaluated:", { title: j.title, matches });
       return matches;
     });
-    console.log("🎯 Filtered results:", filtered);
     setFilteredJourneys(filtered);
   }, [searchTerm, selectedFilters, allJourneys]);
 
@@ -145,7 +132,6 @@ export default function JourneyFinderPage() {
 
   return (
     <main className="min-h-screen text-black bg-[#fdf8f3]">
-      {/* Hero */}
       <section
         className="relative h-[400px] bg-cover bg-center text-white"
         style={{ backgroundImage: `url('../sunset-safari.webp')` }}
@@ -166,10 +152,43 @@ export default function JourneyFinderPage() {
         </div>
       </section>
 
-      {/* Layout */}
       <section className="relative flex">
         <aside className="w-72 p-6 border-r bg-[#f5f3ef] hidden lg:block relative z-10">
-          {filterGroups.map((group) => (
+          <div className="mb-6 flex justify-between items-center">
+            <h2 className="text-md font-semibold text-gray-800">Filters</h2>
+            <button
+              onClick={() =>
+                setSelectedFilters({
+                  region: "",
+                  country: "",
+                  star: "",
+                  types: [],
+                })
+              }
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Clear All
+            </button>
+          </div>
+
+          {[
+            {
+              label: "Regions",
+              items: filterOptions.regions,
+              filterKey: "region",
+            },
+            {
+              label: "Countries",
+              items: filterOptions.countries,
+              filterKey: "country",
+            },
+            {
+              label: "Travel Style",
+              items: filterOptions.styles,
+              filterKey: "types",
+              multi: true,
+            },
+          ].map((group) => (
             <div key={group.label} className="mb-6">
               <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase border-b pb-1">
                 {group.label}
@@ -179,10 +198,9 @@ export default function JourneyFinderPage() {
                   <button
                     key={item}
                     onClick={() => {
-                      const key = group.filterKey;
-                      if (group.multi) {
-                        toggleType(item);
-                      } else {
+                      const key = group.filterKey as FilterKey;
+                      if (group.multi) toggleType(item);
+                      else {
                         setSelectedFilters((prev) => ({
                           ...prev,
                           [key]: prev[key] === item ? "" : item,
@@ -192,7 +210,7 @@ export default function JourneyFinderPage() {
                     className={`px-3 py-1 rounded-full border text-sm transition-all ${
                       group.multi
                         ? selectedFilters.types.includes(item)
-                        : selectedFilters[group.filterKey] === item
+                        : selectedFilters[group.filterKey as FilterKey] === item
                         ? "bg-black text-white border-black"
                         : "bg-white text-black border-gray-300"
                     }`}
@@ -215,6 +233,11 @@ export default function JourneyFinderPage() {
                     summary={j.summary}
                     imageUrl={j.heroUrl || ""}
                     alt={j.alt || j.title}
+                    duration={j.duration || ""}
+                    price={j.price || ""}
+                    star={j.star ? parseInt(j.star) : 0}
+                    starIcon={j.starIcon}
+                    region={j.region?.title || ""}
                   />
                 </div>
               ))
@@ -224,39 +247,34 @@ export default function JourneyFinderPage() {
           </div>
         </section>
       </section>
-
-      {/* Drawer */}
       {selectedJourney && (
-        <>
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setSelectedJourney(null)}
-          />
-          <div className="fixed top-0 right-0 h-full w-full sm:w-[80vw] md:w-[60vw] lg:w-[45vw] bg-white shadow-2xl z-50 transition-transform duration-300 ease-in-out">
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex justify-between items-center border-b pb-3">
-                <h2 className="text-xl font-bold text-black">
-                  {selectedJourney.title}
-                </h2>
-                <button
-                  onClick={() => setSelectedJourney(null)}
-                  className="text-2xl text-black"
-                >
-                  &times;
-                </button>
-              </div>
-              <p className="text-gray-700 mt-4">{selectedJourney.summary}</p>
-              <div className="mt-6 rounded overflow-hidden flex-grow">
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSelectedJourney(null)}
+        >
+          <div className="fixed top-0 right-0 h-full w-full sm:w-[80vw] md:w-[60vw] lg:w-[45vw] bg-white shadow-2xl z-50 p-6 overflow-auto">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h2 className="text-xl font-bold">{selectedJourney.title}</h2>
+              <button
+                onClick={() => setSelectedJourney(null)}
+                className="text-2xl"
+              >
+                &times;
+              </button>
+            </div>
+            <p className="mt-4 text-gray-700">{selectedJourney.summary}</p>
+            {selectedJourney.wetuLink && (
+              <div className="mt-6 rounded overflow-hidden">
                 <iframe
                   src={selectedJourney.wetuLink}
-                  className="w-full h-full"
+                  className="w-full h-[400px]"
                   allowFullScreen
                   loading="lazy"
                 />
               </div>
-            </div>
+            )}
           </div>
-        </>
+        </div>
       )}
     </main>
   );

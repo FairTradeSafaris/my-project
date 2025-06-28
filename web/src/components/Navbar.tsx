@@ -9,7 +9,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // Click outside to close menu
+  // Close menu on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -20,12 +20,9 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Show nav animation after 2 seconds
+  // Delayed navbar scroll effect
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setScrolled(true);
-    }, 2000);
-
+    const timer = setTimeout(() => setScrolled(true), 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -50,7 +47,7 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Icon Row */}
+        {/* Icons */}
         <div className="flex items-center gap-6 text-black">
           <button title="Search">
             <Search size={20} />
@@ -68,23 +65,56 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mega Menu Panel */}
+      {/* Responsive Mega Menu */}
       {menuOpen && (
         <div
           ref={menuRef}
-          className="fixed top-24 left-1/2 -translate-x-1/2 z-40 inline-grid grid-cols-[140px_auto_auto] gap-3 bg-white/90 backdrop-blur-md shadow-2xl border border-gray-200 rounded-2xl px-6 py-5 animate-fadeIn"
+          className="fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-xl animate-fadeIn
+            bg-white/95 backdrop-blur-md shadow-2xl border border-gray-200 rounded-2xl
+            p-4 flex flex-col gap-4 md:grid md:grid-cols-3 md:gap-4"
         >
-          {/* Column 1 - Explore links */}
+          {/* --- IMAGE BLOCKS FIRST on Mobile --- */}
+
+          {/* Plan Your Trip */}
+          <div
+            className="w-full md:w-48 h-48 bg-cover bg-center flex flex-col justify-end p-4 text-white shadow-inner relative overflow-hidden rounded-2xl animate-fadeIn delay-100"
+            style={{ backgroundImage: "url('/plantrip.png')" }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl" />
+            <div className="relative z-10">
+              <h4 className="text-sm font-bold">Plan Your Trip</h4>
+              <p className="text-xs leading-tight">
+                Use our planner to build your safari.
+              </p>
+            </div>
+          </div>
+
+          {/* Why Fair Trade */}
+          <div
+            className="w-full md:w-48 h-48 bg-cover bg-center flex flex-col justify-end p-4 text-white shadow-inner relative overflow-hidden rounded-2xl animate-fadeIn delay-200"
+            style={{ backgroundImage: "url('/impact.png')" }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl" />
+            <div className="relative z-10">
+              <h4 className="text-sm font-bold">Why Fair Trade?</h4>
+              <p className="text-xs leading-tight">
+                Ethical. Sustainable. Local impact.
+              </p>
+            </div>
+          </div>
+
+          {/* --- NAV LINKS LAST on Mobile --- */}
           <div className="flex flex-col gap-2">
             {[
-              { title: "Journeys", href: "/journeys" },
+              { title: "Journeys", href: "/journey" },
               { title: "Destinations", href: "/destinations" },
               { title: "Our Mission", href: "/mission" },
             ].map((item, idx) => (
               <Link
                 key={idx}
                 href={item.href}
-                className="w-full flex items-center justify-between px-4 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition text-sm text-gray-800 hover:text-black"
+                onClick={() => setMenuOpen(false)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow-sm hover:shadow-md transition text-base text-gray-800 hover:text-black"
               >
                 {item.title}
                 <svg
@@ -103,34 +133,6 @@ export default function Navbar() {
                 </svg>
               </Link>
             ))}
-          </div>
-
-          {/* Plan Your Trip */}
-          <div
-            className="rounded-2xl w-48 h-48 bg-cover bg-center flex flex-col justify-end p-4 text-white shadow-inner relative overflow-hidden animate-fadeIn delay-100"
-            style={{ backgroundImage: "url('/plantrip.png')" }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl" />
-            <div className="relative z-10">
-              <h4 className="text-sm font-bold">Plan Your Trip</h4>
-              <p className="text-xs leading-tight">
-                Use our planner to build your safari.
-              </p>
-            </div>
-          </div>
-
-          {/* Why Fair Trade */}
-          <div
-            className="rounded-2xl w-48 h-48 bg-cover bg-center flex flex-col justify-end p-4 text-white shadow-inner relative overflow-hidden animate-fadeIn delay-200"
-            style={{ backgroundImage: "url('/impact.png')" }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl" />
-            <div className="relative z-10">
-              <h4 className="text-sm font-bold">Why Fair Trade?</h4>
-              <p className="text-xs leading-tight">
-                Ethical. Sustainable. Local impact.
-              </p>
-            </div>
           </div>
         </div>
       )}

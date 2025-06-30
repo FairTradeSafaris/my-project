@@ -102,6 +102,14 @@ export default defineType({
       },
     }),
 
+    defineField({
+      name: 'featuredOnHome',
+      title: 'Feature on Homepage',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Enable to show this journey on the homepage',
+    }),
+
     // 🔗 Wetu link for itinerary preview
     defineField({
       name: 'wetuLink',

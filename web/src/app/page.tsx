@@ -5,6 +5,7 @@ import HeroWithSearch from "@/components/HeroWithSearch";
 import WhyChoose from "@/components/WhyChoose";
 import type { PortableTextBlock } from "@portabletext/types"; // ✅ import for rich text
 import TestimonialCarousel from "@/components/TestimonialCarousel";
+import JourneyCard from "@/components/JourneyCard";
 
 type HeroContent = {
   headline: string;
@@ -46,6 +47,7 @@ type Journey = {
   };
   summary: string;
   duration: string;
+  price?: string; // ← Add this
   heroImage: {
     asset: {
       url: string;
@@ -53,6 +55,11 @@ type Journey = {
   };
   alt: string;
   ctaText: string;
+  region?: {
+    title: string;
+  }; // ← Add this for `j.region?.title`
+  star?: number; // ← Add this for ratings
+  starIcon?: string; // ← Add this for star image path
 };
 
 export default async function Home() {
@@ -87,18 +94,20 @@ export default async function Home() {
   );
 
   const journeys: Journey[] = await sanity.fetch(
-    `*[_type == "featuredJourney"]{
-      _id,
-      title,
-      slug,
-      summary,
-      duration,
-      heroImage {
-        asset->{url}
-      },
-      alt,
-      ctaText
-    }`
+    `*[_type == "journey" && featuredOnHome == true]{
+  _id,
+  title,
+  slug,
+  summary,
+  duration,
+  price,
+  heroImage { asset->{url} },
+  alt,
+  ctaText,
+  region->{ title },
+  star,
+  "starIcon": starIcon.asset->url
+}`
   );
 
   const ctaBanner = await sanity.fetch(
@@ -131,48 +140,49 @@ export default async function Home() {
       {/* Why Travel With Us Section */}
       {whyChoose && <WhyChoose data={whyChoose} />}
 
-      {/* Featured Journeys */}
-      {journeys.length > 0 && (
-        <section className="py-20 bg-[#f9f9f9] text-black">
-          <div className="max-w-6xl mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-12">Featured Journeys</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-left">
+      <section className="py-20 bg-[#f9f9f9] text-black">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-4xl font-bold mb-4">Your Journey Starts Here</h2>
+          <p className="text-lg text-gray-600 mb-12">
+            Handpicked safari experiences to inspire your next adventure.
+          </p>
+
+          {journeys.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-center">
               {journeys.map((j) => (
-                <div
+                <Link
                   key={j._id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden"
+                  href={`/journeys/${j.slug.current}`}
+                  className="block"
                 >
-                  {j.heroImage?.asset?.url && (
-                    <img
-                      src={j.heroImage.asset.url}
-                      alt={j.alt || "Journey image"}
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
-                  <div className="p-6">
-                    <h3 className="text-2xl font-semibold mb-2">{j.title}</h3>
-                    <p className="text-sm text-gray-500 mb-1">{j.duration}</p>
-                    <p className="text-gray-700 mb-4">{j.summary}</p>
-                    {j.slug?.current && (
-                      <Link href={`/journeys/${j.slug.current}`}>
-                        <span className="inline-block bg-black text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition">
-                          {j.ctaText}
-                        </span>
-                      </Link>
-                    )}
-                  </div>
-                </div>
+                  <JourneyCard
+                    title={j.title}
+                    summary={j.summary}
+                    imageUrl={j.heroImage.asset.url}
+                    alt={j.alt}
+                    price={j.price}
+                    duration={j.duration}
+                    region={j.region?.title}
+                    star={Number(j.star || 0)}
+                    starIcon={j.starIcon}
+                  />
+                </Link>
               ))}
             </div>
-            <Link
-              href="/journeys"
-              className="mt-10 inline-block text-black border border-black px-5 py-2 rounded-full font-semibold hover:bg-black hover:text-white transition"
-            >
-              See All Itineraries →
-            </Link>
-          </div>
-        </section>
-      )}
+          ) : (
+            <p className="text-gray-500 mt-10">
+              No featured journeys available.
+            </p>
+          )}
+
+          <Link
+            href="/journeys"
+            className="mt-12 inline-block text-black border border-black px-6 py-3 rounded-full font-semibold hover:bg-black hover:text-white transition"
+          >
+            Explore All Journeys →
+          </Link>
+        </div>
+      </section>
 
       {ctaBanner && (
         <section

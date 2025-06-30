@@ -1,29 +1,3 @@
-// testimonial.ts
-
-// Testimonial Section Settings (singleton document)
-export const testimonialSettings = {
-  name: 'testimonialSettings',
-  title: 'Testimonial Section Settings',
-  type: 'document',
-  fields: [
-    {
-      name: 'heading',
-      title: 'Section Heading',
-      type: 'string',
-      initialValue: 'Client Feedback & Testimonial',
-    },
-    {
-      name: 'subheading',
-      title: 'Section Subheading',
-      type: 'text',
-      rows: 2,
-      initialValue:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit diam nonummy euismod tincidunt laoreet dolore magna aliquam erat volutpat.',
-    },
-  ],
-}
-
-// Testimonial Items
 const testimonial = {
   name: 'testimonial',
   title: 'Testimonial',
@@ -43,6 +17,33 @@ const testimonial = {
           {title: 'Blue', value: 'bg-blue-500'},
           {title: 'Orange', value: 'bg-orange-500'},
         ],
+      },
+    },
+    {
+      name: 'regionVisited',
+      title: 'Country or Region Visited',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Tanzania', value: 'Tanzania'},
+          {title: 'Kenya', value: 'Kenya'},
+          {title: 'Botswana', value: 'Botswana'},
+          {title: 'South Africa', value: 'South Africa'},
+          {title: 'Namibia', value: 'Namibia'},
+        ],
+      },
+    },
+    {
+      name: 'sourceLink',
+      title: 'Review Source Link',
+      type: 'url',
+    },
+    {
+      name: 'sourceLogo',
+      title: 'Review Source Logo',
+      type: 'image',
+      options: {
+        hotspot: true,
       },
     },
   ],

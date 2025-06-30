@@ -1,4 +1,4 @@
-import blog from '../.sanity/schemas/blog' // 👈 Add this line
+import blog from '../.sanity/schemas/blog'
 import hero from '../.sanity/schemas/hero'
 import whyChoose from '../.sanity/schemas/whyChoose'
 import journey from '../.sanity/schemas/journey'
@@ -9,9 +9,10 @@ import blockContent from '../.sanity/schemas/blockContent'
 import ctaBanner from '../.sanity/schemas/ctaBanner'
 import techStack from '../.sanity/schemas/techStack'
 import projectPortal from '../.sanity/schemas/projectPortal'
+import destination from '../.sanity/schemas/destination'
 
 export const schemaTypes = [
-  blog, // 👈 And add it here too
+  blog,
   hero,
   whyChoose,
   journey,
@@ -23,4 +24,5 @@ export const schemaTypes = [
   ctaBanner,
   techStack,
   projectPortal,
+  destination,
 ]

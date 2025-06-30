@@ -12,6 +12,9 @@ import journey from './schemas/journey'
 import blockContent from './schemas/blockContent'
 import region from './schemas/region'
 import country from './schemas/country'
+import featuredJourney from '../.sanity/schemas/featuredJourney'
+import whyChoose from './schemas/whyChoose'
+import destination from './schemas/destination'
 
 export const schemaTypes = [
   blog,
@@ -26,6 +29,9 @@ export const schemaTypes = [
   table,
   country,
   region,
+  featuredJourney,
+  whyChoose,
+  destination,
 ]
 
 export const schema = {

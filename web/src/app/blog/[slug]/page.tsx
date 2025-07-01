@@ -1,5 +1,5 @@
 import groq from "groq";
-import client from "../../../../lib/sanity";
+import { client } from "../../../../lib/sanity";
 import { notFound } from "next/navigation";
 
 type PageProps = {

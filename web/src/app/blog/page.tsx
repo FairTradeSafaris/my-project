@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { client } from "../../../lib/sanity";
+import { client } from "@lib/sanity";
 
 type BlogPost = {
   title: string;

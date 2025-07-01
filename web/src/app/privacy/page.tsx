@@ -1,4 +1,5 @@
-import client from "@/../lib/sanity";
+import { client } from "@/../lib/sanity";
+
 import { PortableText } from "@portabletext/react";
 import { portableTextComponents } from "@/../lib/portableTextComponents";
 

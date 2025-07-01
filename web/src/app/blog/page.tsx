@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import sanityClient from "../../../lib/sanity";
+import { client } from "../../../lib/sanity";
 
 type BlogPost = {
   title: string;
@@ -21,17 +21,17 @@ export default function BlogPage() {
   const postsPerPage = 10;
 
   useEffect(() => {
-    sanityClient
+    client
       .fetch(
         `*[_type == "blog"] | order(publishedAt desc) {
-          title,
-          slug,
-          summary,
-          publishedAt,
-          isFeatured,
-          "coverImage": coverImage.asset->url,
-          "alt": coverImage.alt
-        }`
+        title,
+        slug,
+        summary,
+        publishedAt,
+        isFeatured,
+        "coverImage": coverImage.asset->url,
+        "alt": coverImage.alt
+      }`
       )
       .then((data) => {
         setPosts(data);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import sanity from "../../../lib/sanity";
+import { client } from "../../../lib/sanity";
 import type { PortableTextBlock } from "@portabletext/types";
 import PortableTextRenderer from "@/components/PortableTextRenderer";
 
@@ -50,7 +50,7 @@ export default function ProjectPortal() {
       const fetchData = async () => {
         setLoading(true);
         try {
-          const data = await sanity.fetch(
+          const data = await client.fetch(
             `*[_type == "projectPortal"][0]{ title, sections }`
           );
           setSections(data?.sections || []);

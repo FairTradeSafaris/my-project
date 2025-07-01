@@ -1,20 +1,18 @@
-// page.tsx
+// src/app/journey/JourneyFinderClient.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { client as sanityClient } from "../../../lib/sanity";
-
-import JourneyCard from "@/components/JourneyCard";
 import { useSearchParams } from "next/navigation";
+import { client as sanityClient } from "../../../lib/sanity";
+import JourneyCard from "@/components/JourneyCard";
 
-// ✅ Type Definitions
-
+// Types
 type Journey = {
   title: string;
   summary: string;
   slug?: { current: string };
   duration?: string;
-  price?: string; // ✅ Add this line
+  price?: string;
   heroUrl?: string;
   alt?: string;
   ctaText?: string;
@@ -22,7 +20,7 @@ type Journey = {
   region?: { title: string };
   country?: { title: string; flag?: string };
   star?: string;
-  starIcon?: string; // ✅ Add this
+  starIcon?: string;
   travelStyle?: string[];
 };
 
@@ -35,7 +33,7 @@ type Filters = {
 
 type FilterKey = keyof Filters;
 
-export default function JourneyFinderPage() {
+export default function JourneyFinderClient() {
   const searchParams = useSearchParams();
   const prefillQuery = searchParams.get("q") || "";
 
@@ -49,6 +47,7 @@ export default function JourneyFinderPage() {
     star: "",
     types: [],
   });
+
   const [filterOptions, setFilterOptions] = useState({
     regions: [] as string[],
     countries: [] as string[],
@@ -63,21 +62,21 @@ export default function JourneyFinderPage() {
     sanityClient
       .fetch(
         `*[_type == "journey"]{
-        title,
-        summary,
-        slug,
-        duration,
-        price,
-        "heroUrl": heroImage.asset->url,
-        alt,
-        ctaText,
-        wetuLink,
-        region->{ title },
-        country->{ title, "flag": flag.asset->url },
-        star,
-        "starIcon": starIcon.asset->url,
-        travelStyle
-      }`
+          title,
+          summary,
+          slug,
+          duration,
+          price,
+          "heroUrl": heroImage.asset->url,
+          alt,
+          ctaText,
+          wetuLink,
+          region->{ title },
+          country->{ title, "flag": flag.asset->url },
+          star,
+          "starIcon": starIcon.asset->url,
+          travelStyle
+        }`
       )
       .then((data: Journey[]) => {
         setAllJourneys(data);
@@ -88,20 +87,17 @@ export default function JourneyFinderPage() {
             data.map((j) => j.region?.title).filter((t): t is string => !!t)
           )
         );
-
         const countries = Array.from(
           new Set(
             data.map((j) => j.country?.title).filter((t): t is string => !!t)
           )
         );
-
         const styles = Array.from(
           new Set(data.flatMap((j) => j.travelStyle || []))
         );
 
         setFilterOptions({ regions, countries, styles });
 
-        // Auto-select and open modal if query param matches
         if (queryTitle && shouldOpen) {
           const found = data.find(
             (j) => j.title.toLowerCase() === queryTitle.toLowerCase()
@@ -109,15 +105,15 @@ export default function JourneyFinderPage() {
           if (found) setSelectedJourney(found);
         }
       })
-      .catch((error) => {
-        console.error("Failed to fetch journey data from Sanity:", error);
+      .catch((err) => {
+        console.error("Error fetching journeys:", err);
       });
   }, []);
 
   useEffect(() => {
     const filtered = allJourneys.filter((j) => {
       const text = `${j.title} ${j.summary}`.toLowerCase();
-      const matches =
+      return (
         text.includes(searchTerm.toLowerCase()) &&
         (!selectedFilters.region ||
           j.region?.title === selectedFilters.region) &&
@@ -127,10 +123,11 @@ export default function JourneyFinderPage() {
         (selectedFilters.types.length === 0 ||
           (j.travelStyle &&
             selectedFilters.types.some((type) =>
-              j.travelStyle!.includes(type)
-            )));
-      return matches;
+              j.travelStyle?.includes(type)
+            )))
+      );
     });
+
     setFilteredJourneys(filtered);
   }, [searchTerm, selectedFilters, allJourneys]);
 
@@ -260,6 +257,7 @@ export default function JourneyFinderPage() {
           </div>
         </section>
       </section>
+
       {selectedJourney && (
         <div
           className="fixed inset-0 bg-black/50 z-40"

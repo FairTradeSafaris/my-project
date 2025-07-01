@@ -152,7 +152,10 @@ export default async function Home() {
               {journeys.map((j) => (
                 <Link
                   key={j._id}
-                  href={`/journeys/${j.slug.current}`}
+                  href={{
+                    pathname: "/journey",
+                    query: { q: j.title },
+                  }}
                   className="block"
                 >
                   <JourneyCard

@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import sanityClient from "../../../lib/sanity";
 import JourneyCard from "@/components/JourneyCard";
+import { useSearchParams } from "next/navigation";
 
 // ✅ Type Definitions
 
@@ -34,10 +35,13 @@ type Filters = {
 type FilterKey = keyof Filters;
 
 export default function JourneyFinderPage() {
+  const searchParams = useSearchParams();
+  const prefillQuery = searchParams.get("q") || "";
+
   const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
   const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(prefillQuery);
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
     region: "",
     country: "",

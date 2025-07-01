@@ -45,7 +45,7 @@ export default function JourneyCard({
       </div>
 
       {/* Text Box */}
-      <div className="absolute top-48 left-4 right-4 bg-white p-4 shadow-lg border border-gray-200 rounded-md z-30">
+      <div className="absolute top-48 left-4 right-4 bg-white p-4 shadow-lg border border-gray-200 rounded-md z-30 flex flex-col h-[220px]">
         {(duration || region) && (
           <p className="text-xs uppercase text-orange-600 font-bold mb-1">
             {duration}
@@ -53,7 +53,9 @@ export default function JourneyCard({
           </p>
         )}
 
-        <h3 className="text-lg font-bold text-gray-800 mb-1">{title}</h3>
+        <h3 className="text-lg font-bold text-gray-800 mb-1 leading-snug line-clamp-2">
+          {title}
+        </h3>
 
         {summary && <p className="text-sm text-gray-600 mb-2">{summary}</p>}
 

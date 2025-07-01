@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import sanity from "@/../lib/sanity";
+import { client, urlFor } from "@/../lib/sanity";
+import type { SanityImageAssetDocument } from "@sanity/client";
 
 type SocialLink = {
   platform: string;
-  icon?: { asset?: { url: string } };
+  icon?: { asset?: SanityImageAssetDocument };
   url: string;
 };
 
@@ -28,16 +29,16 @@ export default function SafariFactFooter() {
 
   useEffect(() => {
     const fetchFooter = async () => {
-      const result = await sanity.fetch(
+      const result = await client.fetch(
         `*[_type == "footer"][0]{
           facts,
-          lineArt { asset->{url} },
-          logo { asset->{url} },
+          lineArt { asset },
+          logo { asset },
           contactEmail,
           exploreLinks,
           socialLinks[] {
             platform,
-            icon { asset->{url} },
+            icon { asset },
             url
           },
           connectLinks
@@ -50,8 +51,10 @@ export default function SafariFactFooter() {
           const random = facts[Math.floor(Math.random() * facts.length)];
           setFact(random);
         }
-        setImageUrl(result.lineArt?.asset?.url || "");
-        setLogoUrl(result.logo?.asset?.url || "");
+        setImageUrl(
+          result.lineArt?.asset ? urlFor(result.lineArt.asset).url() : ""
+        );
+        setLogoUrl(result.logo?.asset ? urlFor(result.logo.asset).url() : "");
         setExploreLinks(result.exploreLinks || []);
         setConnectLinks(result.connectLinks || []);
         setSocialLinks(result.socialLinks || []);
@@ -114,12 +117,9 @@ export default function SafariFactFooter() {
           backgroundPosition: "center",
         }}
       >
-        {/* Extended fade-in overlay */}
         <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-[#e9e0d1] via-[#e9e0d1]/80 to-transparent z-10 pointer-events-none" />
 
-        {/* Grid Content */}
         <div className="relative z-20 max-w-6xl mx-auto px-6 py-6 grid md:grid-cols-3 gap-10 items-start">
-          {/* Logo */}
           <div className="flex justify-center">
             {logoUrl && (
               <Image
@@ -131,7 +131,6 @@ export default function SafariFactFooter() {
             )}
           </div>
 
-          {/* Links */}
           <div className="grid grid-cols-2 gap-8 text-sm text-center md:text-left">
             <div>
               <h3 className="text-md font-semibold mb-3">Explore</h3>
@@ -159,7 +158,6 @@ export default function SafariFactFooter() {
             </div>
           </div>
 
-          {/* Rhino */}
           <div className="flex justify-end pr-4">
             {imageUrl && (
               <Image
@@ -173,7 +171,6 @@ export default function SafariFactFooter() {
           </div>
         </div>
 
-        {/* Fact Box */}
         {fact && (
           <div className="relative z-20 mt-2 mb-4 flex justify-center">
             <div className="bg-[#e4d7c3] text-[#7a4e1d] px-4 py-2 rounded-md italic max-w-xl text-center text-sm shadow-sm">
@@ -182,7 +179,6 @@ export default function SafariFactFooter() {
           </div>
         )}
 
-        {/* Social Icons */}
         {socialLinks.length > 0 && (
           <div className="relative z-20 mt-4 mb-2 flex justify-center space-x-3">
             {socialLinks.map((social, i) => (
@@ -193,9 +189,9 @@ export default function SafariFactFooter() {
                 rel="noopener noreferrer"
                 aria-label={social.platform}
               >
-                {social.icon?.asset?.url && (
+                {social.icon?.asset && (
                   <Image
-                    src={social.icon.asset.url}
+                    src={urlFor(social.icon.asset).width(50).height(50).url()}
                     alt={social.platform}
                     width={50}
                     height={50}
@@ -206,10 +202,17 @@ export default function SafariFactFooter() {
             ))}
           </div>
         )}
-
-        {/* Copyright */}
-        <div className="relative z-20 text-center text-xs py-2 mt-4 border-t border-[#d2c2a3] bg-[#e5d7be]/70 backdrop-blur-sm">
-          © {new Date().getFullYear()} Fair Trade Safaris. All rights reserved.
+        <div className="relative z-20 text-xs py-2 mt-4 border-t border-[#d2c2a3] bg-[#e5d7be]/70 backdrop-blur-sm px-6 flex flex-col md:flex-row items-center justify-between text-[#3f2e1f]">
+          <Link
+            href="/privacy"
+            className="underline hover:text-black mb-1 md:mb-0"
+          >
+            Privacy Policy
+          </Link>
+          <p className="text-center">
+            © {new Date().getFullYear()} Fair Trade Safaris. All rights
+            reserved.
+          </p>
         </div>
       </footer>
     </>

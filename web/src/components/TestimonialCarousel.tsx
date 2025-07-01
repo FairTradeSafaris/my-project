@@ -1,8 +1,10 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import sanity from "@/../lib/sanity";
+import { client as sanity } from "@/../lib/sanity";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { SanityImageAssetDocument } from "@sanity/client";
 
 interface Testimonial {
   name: string;
@@ -12,9 +14,7 @@ interface Testimonial {
   regionVisited?: string;
   sourceLink?: string;
   sourceLogo?: {
-    asset: {
-      url: string;
-    };
+    asset: SanityImageAssetDocument;
   };
 }
 
@@ -42,7 +42,7 @@ export default function TestimonialJourney() {
           name, title, text, rating, regionVisited, sourceLink, sourceLogo{asset->{url}}
         }`
       )
-      .then((data) => {
+      .then((data: Testimonial[]) => {
         const dummyCount = Math.max(0, 4 - data.length);
         const dummyTestimonials = Array.from({ length: dummyCount }, () => ({
           name: "Coming Soon",
@@ -55,7 +55,7 @@ export default function TestimonialJourney() {
 
     sanity
       .fetch(`*[_type == "testimonialSettings"][0]{ heading }`)
-      .then((data) => {
+      .then((data: { heading?: string }) => {
         setSettings(data);
       });
   }, []);

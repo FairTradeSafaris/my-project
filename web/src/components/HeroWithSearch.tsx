@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { CalendarDays, MapPin, Users, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import sanity from "../../lib/sanity";
+import { client as sanity } from "@/../lib/sanity";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { addMonths } from "date-fns";

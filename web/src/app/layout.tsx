@@ -1,6 +1,7 @@
 import "./globals.css";
 import "@fontsource/poppins";
 import LayoutWrapper from "../components/LayoutWrapper";
+import CookieConsent from "@/components/CookieConsent";
 
 export default function RootLayout({
   children,
@@ -11,6 +12,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans">
         <LayoutWrapper>{children}</LayoutWrapper>
+        <CookieConsent />
       </body>
     </html>
   );

@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import sanityClient from "../../../lib/sanity";
+import { client as sanityClient } from "../../../lib/sanity";
+
 import JourneyCard from "@/components/JourneyCard";
 import { useSearchParams } from "next/navigation";
 
@@ -55,24 +56,28 @@ export default function JourneyFinderPage() {
   });
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const queryTitle = searchParams.get("q");
+    const shouldOpen = searchParams.get("open") === "true";
+
     sanityClient
       .fetch(
         `*[_type == "journey"]{
-          title,
-          summary,
-          slug,
-          duration,
-          price,
-          "heroUrl": heroImage.asset->url,
-          alt,
-          ctaText,
-          wetuLink,
-          region->{ title },
-          country->{ title, "flag": flag.asset->url },
-          star,
-          "starIcon": starIcon.asset->url,
-          travelStyle
-        }`
+        title,
+        summary,
+        slug,
+        duration,
+        price,
+        "heroUrl": heroImage.asset->url,
+        alt,
+        ctaText,
+        wetuLink,
+        region->{ title },
+        country->{ title, "flag": flag.asset->url },
+        star,
+        "starIcon": starIcon.asset->url,
+        travelStyle
+      }`
       )
       .then((data: Journey[]) => {
         setAllJourneys(data);
@@ -80,17 +85,13 @@ export default function JourneyFinderPage() {
 
         const regions = Array.from(
           new Set(
-            data
-              .map((j) => j.region?.title)
-              .filter((title): title is string => !!title)
+            data.map((j) => j.region?.title).filter((t): t is string => !!t)
           )
         );
 
         const countries = Array.from(
           new Set(
-            data
-              .map((j) => j.country?.title)
-              .filter((title): title is string => !!title)
+            data.map((j) => j.country?.title).filter((t): t is string => !!t)
           )
         );
 
@@ -99,6 +100,14 @@ export default function JourneyFinderPage() {
         );
 
         setFilterOptions({ regions, countries, styles });
+
+        // Auto-select and open modal if query param matches
+        if (queryTitle && shouldOpen) {
+          const found = data.find(
+            (j) => j.title.toLowerCase() === queryTitle.toLowerCase()
+          );
+          if (found) setSelectedJourney(found);
+        }
       })
       .catch((error) => {
         console.error("Failed to fetch journey data from Sanity:", error);

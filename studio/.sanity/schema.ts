@@ -4,6 +4,7 @@ import ctaBanner from './schemas/ctaBanner'
 import techStack from './schemas/techStack'
 import projectPortal from './schemas/projectPortal'
 import table from './schemas/objects/table'
+import privacyPolicy from './schemas/privacyPolicy'
 
 // 👉 Add other schemas as needed:
 import testimonial from './schemas/testimonial'
@@ -15,6 +16,7 @@ import country from './schemas/country'
 import featuredJourney from '../.sanity/schemas/featuredJourney'
 import whyChoose from './schemas/whyChoose'
 import destination from './schemas/destination'
+import megamenu from '../.sanity/schemas/megaMenu'
 
 export const schemaTypes = [
   blog,
@@ -32,6 +34,8 @@ export const schemaTypes = [
   featuredJourney,
   whyChoose,
   destination,
+  privacyPolicy,
+  megamenu,
 ]
 
 export const schema = {

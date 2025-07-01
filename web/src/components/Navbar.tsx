@@ -3,11 +3,52 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, Search, User, X } from "lucide-react";
+import { client, urlFor } from "@/../lib/sanity";
+
+interface MenuItem {
+  title: string;
+  href: string;
+}
+
+interface FeatureCard {
+  title: string;
+  description: string;
+  image: {
+    asset: {
+      _ref: string;
+      _type: string;
+    };
+    _type: string;
+  };
+
+  alt: string;
+  link: string;
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navLinks, setNavLinks] = useState<MenuItem[]>([]);
+  const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch from Sanity
+  useEffect(() => {
+    const fetchMenu = async () => {
+      const data = await client.fetch(
+        `*[_type == "megaMenu"][0]{navLinks, featureCards}`
+      );
+      setNavLinks(data?.navLinks || []);
+      setFeatureCards(data?.featureCards || []);
+    };
+    fetchMenu();
+  }, []);
+
+  // Scroll animation
+  useEffect(() => {
+    const timer = setTimeout(() => setScrolled(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Close menu on outside click
   useEffect(() => {
@@ -20,14 +61,9 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Delayed navbar scroll effect
-  useEffect(() => {
-    const timer = setTimeout(() => setScrolled(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <>
+      {/* Sticky Nav */}
       <nav
         className={`fixed top-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full flex items-center justify-between gap-6 w-[92vw] max-w-4xl transition-all duration-500 ${
           scrolled
@@ -35,7 +71,6 @@ export default function Navbar() {
             : "bg-transparent shadow-none"
         }`}
       >
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logos/logo-top.png"
@@ -47,7 +82,6 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Icons */}
         <div className="flex items-center gap-6 text-black">
           <button title="Search">
             <Search size={20} />
@@ -65,58 +99,46 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Responsive Mega Menu */}
+      {/* Mega Menu */}
       {menuOpen && (
         <div
           ref={menuRef}
-          className="fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-xl animate-fadeIn
-            bg-white/95 backdrop-blur-md shadow-2xl border border-gray-200 rounded-2xl
-            p-4 flex flex-col gap-4 md:grid md:grid-cols-3 md:gap-4"
+          className="fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl animate-fadeIn
+            bg-white/95 backdrop-blur-md shadow-xl border border-gray-200 rounded-3xl
+            p-8 grid grid-cols-1 md:grid-cols-3 gap-6"
         >
-          {/* --- IMAGE BLOCKS FIRST on Mobile --- */}
-
-          {/* Plan Your Trip */}
-          <div
-            className="w-full md:w-48 h-48 bg-cover bg-center flex flex-col justify-end p-4 text-white shadow-inner relative overflow-hidden rounded-2xl animate-fadeIn delay-100"
-            style={{ backgroundImage: "url('/plantrip.png')" }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl" />
-            <div className="relative z-10">
-              <h4 className="text-sm font-bold">Plan Your Trip</h4>
-              <p className="text-xs leading-tight">
-                Use our planner to build your safari.
-              </p>
+          {/* Columns 1 & 2: Feature Cards */}
+          {featureCards.slice(0, 4).map((card, idx) => (
+            <div
+              key={idx}
+              className="group relative rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition"
+            >
+              <img
+                src={urlFor(card.image).width(800).height(200).url()}
+                alt={card.alt}
+                className="w-full h-36 object-cover"
+              />
+              <div className="p-4">
+                <h4 className="font-semibold text-sm text-gray-800 transition-colors duration-200 group-hover:text-[#5a3e2b]">
+                  {card.title}
+                </h4>
+                <p className="text-xs text-gray-600 mt-1">{card.description}</p>
+              </div>
             </div>
-          </div>
+          ))}
 
-          {/* Why Fair Trade */}
-          <div
-            className="w-full md:w-48 h-48 bg-cover bg-center flex flex-col justify-end p-4 text-white shadow-inner relative overflow-hidden rounded-2xl animate-fadeIn delay-200"
-            style={{ backgroundImage: "url('/impact.png')" }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl" />
-            <div className="relative z-10">
-              <h4 className="text-sm font-bold">Why Fair Trade?</h4>
-              <p className="text-xs leading-tight">
-                Ethical. Sustainable. Local impact.
-              </p>
-            </div>
-          </div>
-
-          {/* --- NAV LINKS LAST on Mobile --- */}
-          <div className="flex flex-col gap-2">
-            {[
-              { title: "Journeys", href: "/journey" },
-              { title: "Destinations", href: "/destinations" },
-              { title: "Our Mission", href: "/mission" },
-            ].map((item, idx) => (
+          {/* Column 3: Nav Links */}
+          <div className="flex flex-col gap-3 justify-center">
+            {navLinks.map((item, idx) => (
               <Link
                 key={idx}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow-sm hover:shadow-md transition text-base text-gray-800 hover:text-black"
+                className="flex items-center justify-between px-5 py-4 rounded-xl bg-white border hover:shadow-md transition group"
               >
-                {item.title}
+                <span className="text-gray-800 group-hover:text-black text-sm font-medium">
+                  {item.title}
+                </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4 text-gray-400 group-hover:text-black transition"

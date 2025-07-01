@@ -10,6 +10,7 @@ import ctaBanner from '../.sanity/schemas/ctaBanner'
 import techStack from '../.sanity/schemas/techStack'
 import projectPortal from '../.sanity/schemas/projectPortal'
 import destination from '../.sanity/schemas/destination'
+import privacyPolicy from '../.sanity/schemas/privacyPolicy'
 
 export const schemaTypes = [
   blog,
@@ -25,4 +26,5 @@ export const schemaTypes = [
   techStack,
   projectPortal,
   destination,
+  privacyPolicy,
 ]

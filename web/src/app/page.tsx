@@ -1,4 +1,4 @@
-﻿import sanity from "../../lib/sanity";
+﻿import { client as sanity } from "../../lib/sanity";
 import Link from "next/link";
 import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import HeroWithSearch from "@/components/HeroWithSearch";
@@ -154,7 +154,10 @@ export default async function Home() {
                   key={j._id}
                   href={{
                     pathname: "/journey",
-                    query: { q: j.title },
+                    query: {
+                      q: j.title,
+                      open: "true",
+                    },
                   }}
                   className="block"
                 >

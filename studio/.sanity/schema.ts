@@ -17,6 +17,7 @@ import featuredJourney from '../.sanity/schemas/featuredJourney'
 import whyChoose from './schemas/whyChoose'
 import destination from './schemas/destination'
 import megamenu from '../.sanity/schemas/megaMenu'
+import sitePages from '../.sanity/schemas/sitePages'
 
 export const schemaTypes = [
   blog,
@@ -36,6 +37,7 @@ export const schemaTypes = [
   destination,
   privacyPolicy,
   megamenu,
+  sitePages,
 ]
 
 export const schema = {

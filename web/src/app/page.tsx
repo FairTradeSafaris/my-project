@@ -1,6 +1,4 @@
-﻿export const revalidate = 60; // Revalidate every 60 seconds
-
-import { client as sanity } from "../../lib/sanity";
+﻿import { client as sanity } from "../../lib/sanity";
 import Link from "next/link";
 import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import HeroWithSearch from "@/components/HeroWithSearch";
@@ -8,7 +6,30 @@ import WhyChoose from "@/components/WhyChoose";
 import type { PortableTextBlock } from "@portabletext/types"; // ✅ import for rich text
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import JourneyCard from "@/components/JourneyCard";
-import Head from "next/head";
+
+export const revalidate = 60; // Revalidate every 60 seconds
+
+export async function generateMetadata() {
+  const data = await sanity.fetch(
+    `*[_type == "sitePages" && slug.current == "home"][0]{
+      metaTitle,
+      metaDescription
+    }`
+  );
+
+  return {
+    title: data?.metaTitle ?? "Fair Trade Safaris",
+    description:
+      data?.metaDescription ??
+      "Explore ethical luxury safaris in Africa with Fair Trade Safaris. Travel with heart and purpose.",
+    openGraph: {
+      title: data?.metaTitle ?? "Fair Trade Safaris",
+      description:
+        data?.metaDescription ??
+        "Explore ethical luxury safaris in Africa with Fair Trade Safaris. Travel with heart and purpose.",
+    },
+  };
+}
 
 type HeroContent = {
   headline: string;
@@ -78,9 +99,7 @@ export default async function Home() {
       alt
     },
     primaryCTA,
-    secondaryCTA,
-    metaTitle,
-    metaDescription
+    secondaryCTA
   }`
   );
 
@@ -144,17 +163,6 @@ export default async function Home() {
 
   return (
     <>
-      <Head>
-        <title>{hero.metaTitle || "Fair Trade Safaris"}</title>
-        <meta
-          name="description"
-          content={
-            hero.metaDescription ||
-            "Explore ethical luxury safaris in Africa with Fair Trade Safaris. Travel with heart and purpose."
-          }
-        />
-      </Head>
-
       <main className="min-h-screen font-poppins bg-white text-black">
         {/* Hero Section */}
         <HeroWithSearch />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { client as sanityClient } from "@/../lib/sanity";
 import JourneyCard from "@/components/JourneyCard";
@@ -33,9 +33,10 @@ type Filters = {
 type FilterKey = keyof Filters;
 
 export default function JourneyFinderClient() {
+  const [visibleCount, setVisibleCount] = useState(9);
+  const [loadingMore, setLoadingMore] = useState(false);
   const searchParams = useSearchParams();
   const prefillQuery = searchParams.get("q") || "";
-
   const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
   const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
@@ -47,11 +48,40 @@ export default function JourneyFinderClient() {
     types: [],
   });
 
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !loadingMore) {
+        setLoadingMore(true);
+        setVisibleCount((prev) => prev + 9); // Load 9 more
+      }
+    });
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [loadingMore]);
+
   const [filterOptions, setFilterOptions] = useState({
     regions: [] as string[],
     countries: [] as string[],
     styles: [] as string[],
   });
+
+  const loadMoreJourneys = () => {
+    setLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + 9);
+      setLoadingMore(false);
+    }, 500); // Simulate loading delay
+  };
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -60,43 +90,48 @@ export default function JourneyFinderClient() {
 
     sanityClient
       .fetch(
-        `*[_type == "journey"]{
-          title,
-          summary,
-          slug,
-          duration,
-          price,
-          "heroUrl": heroImage.asset->url,
-          alt,
-          ctaText,
-          wetuLink,
-          region->{ title },
-          country->{ title, "flag": flag.asset->url },
-          star,
-          "starIcon": starIcon.asset->url,
-          travelStyle
-        }`
+        `*[_type == "journey"][0...${visibleCount}]{
+        title,
+        summary,
+        slug,
+        duration,
+        price,
+        "heroUrl": heroImage.asset->url,
+        alt,
+        ctaText,
+        wetuLink,
+        region->{ title },
+        country->{ title, "flag": flag.asset->url },
+        star,
+        "starIcon": starIcon.asset->url,
+        travelStyle
+      }`
       )
       .then((data: Journey[]) => {
-        setAllJourneys(data);
-        setFilteredJourneys(data);
+        setAllJourneys((prev) => {
+          const merged = [
+            ...prev,
+            ...data.filter(
+              (j) => !prev.some((p) => p.slug?.current === j.slug?.current)
+            ),
+          ];
+          return merged;
+        });
 
+        // Only set filter options based on first load (optional)
         const regions = Array.from(
           new Set(
             data.map((j) => j.region?.title).filter((t): t is string => !!t)
           )
         );
-
         const countries = Array.from(
           new Set(
             data.map((j) => j.country?.title).filter((t): t is string => !!t)
           )
         );
-
         const styles = Array.from(
           new Set(data.flatMap((j) => j.travelStyle || []))
         );
-
         setFilterOptions({ regions, countries, styles });
 
         if (queryTitle && shouldOpen) {
@@ -105,11 +140,14 @@ export default function JourneyFinderClient() {
           );
           if (found) setSelectedJourney(found);
         }
+
+        setLoadingMore(false);
       })
       .catch((err) => {
         console.error("Error fetching journeys:", err);
+        setLoadingMore(false);
       });
-  }, []);
+  }, [visibleCount]);
 
   useEffect(() => {
     const filtered = allJourneys.filter((j) => {
@@ -267,6 +305,17 @@ export default function JourneyFinderClient() {
               <p className="text-gray-600">No journeys found.</p>
             )}
           </div>
+          {allJourneys.length >= visibleCount && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={loadMoreJourneys}
+                disabled={loadingMore}
+                className="px-6 py-3 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition"
+              >
+                {loadingMore ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </section>
       </section>
 
@@ -300,6 +349,7 @@ export default function JourneyFinderClient() {
           </div>
         </div>
       )}
+      <div ref={loadMoreRef} />
     </main>
   );
 }

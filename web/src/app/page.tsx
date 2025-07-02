@@ -220,12 +220,15 @@ export default async function Home() {
             } items-center justify-between max-w-6xl w-full px-6`}
           >
             {/* Image */}
+            {/* Image */}
             {ctaBanner.sideImageUrl && (
               <div className="w-full md:w-1/2 flex justify-center md:justify-start mb-8 md:mb-0">
                 <img
                   src={ctaBanner.sideImageUrl}
                   alt="CTA illustration"
                   className="max-h-72 object-contain"
+                  width={600}
+                  height={400}
                 />
               </div>
             )}

@@ -74,24 +74,32 @@ export default function SafariFactFooter() {
           </h2>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-6 opacity-90">
             <img
-              src="/logos/CBS_logo.svg"
-              alt="CBS"
+              src="/logos/nbc.svg"
+              alt="NBC"
               className="h-8 md:h-10 object-contain"
+              width={100}
+              height={40}
             />
             <img
               src="/logos/usa-today.svg"
               alt="USA Today"
               className="h-8 md:h-10 object-contain"
+              width={120}
+              height={40}
             />
             <img
               src="/logos/fox.svg"
               alt="FOX"
               className="h-8 md:h-10 object-contain"
+              width={90}
+              height={40}
             />
             <img
-              src="/logos/nbc.svg"
-              alt="NBC"
+              src="/logos/CBS_logo.svg"
+              alt="CBS"
               className="h-8 md:h-10 object-contain"
+              width={110}
+              height={40}
             />
           </div>
         </div>

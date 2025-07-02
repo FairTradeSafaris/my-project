@@ -1,4 +1,6 @@
-﻿import { client as sanity } from "../../lib/sanity";
+﻿export const revalidate = 60; // Revalidate every 60 seconds
+
+import { client as sanity } from "../../lib/sanity";
 import Link from "next/link";
 import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import HeroWithSearch from "@/components/HeroWithSearch";

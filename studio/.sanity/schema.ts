@@ -18,6 +18,7 @@ import whyChoose from './schemas/whyChoose'
 import destination from './schemas/destination'
 import megamenu from '../.sanity/schemas/megaMenu'
 import sitePages from '../.sanity/schemas/sitePages'
+import ambassador from '../.sanity/schemas/ambassador'
 
 export const schemaTypes = [
   blog,
@@ -38,6 +39,7 @@ export const schemaTypes = [
   privacyPolicy,
   megamenu,
   sitePages,
+  ambassador,
 ]
 
 export const schema = {

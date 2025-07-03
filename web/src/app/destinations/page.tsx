@@ -1,7 +1,23 @@
-// app/destinations/page.tsx
-"use client";
+export const revalidate = 60; // Optional: Revalidate every 60 seconds
 
+import { client as sanity } from "@/../lib/sanity";
 import DestinationMap from "@/components/DestinationMap";
+
+export async function generateMetadata() {
+  const data = await sanity.fetch(
+    `*[_type == "sitePages" && slug.current == "destinations"][0]{
+      metaTitle,
+      metaDescription
+    }`
+  );
+
+  return {
+    title: data?.metaTitle || "Explore Destinations | Fair Trade Safaris",
+    description:
+      data?.metaDescription ||
+      "Discover our featured ethical safari destinations across Africa.",
+  };
+}
 
 export default function DestinationsPage() {
   return (

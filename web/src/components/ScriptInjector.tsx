@@ -3,29 +3,19 @@
 import { useEffect } from "react";
 
 type Script = {
+  label: string;
   code: string;
-  label?: string;
 };
 
 export default function ScriptInjector({ scripts }: { scripts: Script[] }) {
   useEffect(() => {
     scripts.forEach(({ code }) => {
-      const script = document.createElement("script");
-
-      // Try to extract the `src` if present
-      const srcMatch = code.match(/src=["']([^"']+)["']/);
-      if (srcMatch) {
-        script.src = srcMatch[1];
-        script.defer = true;
-      } else {
-        // Otherwise strip <script> tags and inject code
-        const cleanedCode = code
-          .replace(/<script.*?>/, "")
-          .replace(/<\/script>/, "");
-        script.innerHTML = cleanedCode;
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = code.trim();
+      const scriptEl = wrapper.firstElementChild;
+      if (scriptEl && scriptEl.tagName === "SCRIPT") {
+        document.body.appendChild(scriptEl);
       }
-
-      document.head.appendChild(script);
     });
   }, [scripts]);
 

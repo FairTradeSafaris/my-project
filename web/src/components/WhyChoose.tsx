@@ -45,7 +45,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
         )}
 
         {/* Right Content */}
-        <div className="space-y-10 pt-2">
+        <div className="space-y-10 pt-2 min-h-[400px]">
           {/* Section Title */}
           <PortableText
             value={sectionTitle}

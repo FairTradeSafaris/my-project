@@ -66,7 +66,7 @@ export default function HeroWithSearch() {
         <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-md">
           {headline || "Safari. Reimagined."}
         </h1>
-        <p className="text-lg md:text-xl text-white/80 max-w-2xl mb-10">
+        <p className="text-lg md:text-xl text-white/80 max-w-2xl mb-10 min-h-[72px]">
           {subheadline ||
             "Plan your once-in-a-lifetime journey with local experts who care."}
         </p>

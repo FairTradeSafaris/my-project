@@ -18,12 +18,13 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        {globalSettings?.customHeaderScripts && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: globalSettings.customHeaderScripts,
-            }}
-          />
+        {globalSettings?.customHeaderScripts?.map(
+          (script: { label: string; code: string }, index: number) => (
+            <script
+              key={index}
+              dangerouslySetInnerHTML={{ __html: script.code }}
+            />
+          )
         )}
       </head>
       <body className="font-sans">

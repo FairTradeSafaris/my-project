@@ -64,6 +64,7 @@ export default function HeroWithSearch() {
         fill
         className="object-cover object-center opacity-80"
         priority
+        fetchPriority="high"
       />
 
       {/* Overlay */}

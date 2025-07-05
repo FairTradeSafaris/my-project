@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 import lineClamp from "@tailwindcss/line-clamp";
 
 const config: Config = {
-  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       fontFamily: {

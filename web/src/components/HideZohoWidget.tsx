@@ -18,9 +18,11 @@ declare global {
 export default function HideZohoWidget() {
   useEffect(() => {
     const interval = setInterval(() => {
-      if (window.$zoho && window.$zoho.salesiq) {
-        window.$zoho?.salesiq?.floatwindow?.visible?.("hide");
-
+      if (
+        window.$zoho?.salesiq?.floatwindow?.visible &&
+        typeof window.$zoho.salesiq.floatwindow.visible === "function"
+      ) {
+        window.$zoho.salesiq.floatwindow.visible("hide");
         clearInterval(interval);
       }
     }, 500);

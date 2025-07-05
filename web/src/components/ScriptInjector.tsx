@@ -10,23 +10,28 @@ type Script = {
 export default function ScriptInjector({ scripts }: { scripts: Script[] }) {
   useEffect(() => {
     scripts.forEach(({ code }) => {
-      try {
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = code.trim();
-        const scriptTag = wrapper.querySelector("script");
+      // Create a temporary DOM element to extract all <script> tags
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = code.trim();
 
-        if (scriptTag) {
-          const newScript = document.createElement("script");
-          // Copy attributes from original <script> tag
-          Array.from(scriptTag.attributes).forEach((attr) =>
-            newScript.setAttribute(attr.name, attr.value)
-          );
-          newScript.textContent = scriptTag.textContent;
-          document.body.appendChild(newScript);
+      const scriptTags = wrapper.querySelectorAll("script");
+
+      scriptTags.forEach((node) => {
+        const script = document.createElement("script");
+
+        // Copy attributes
+        for (const attr of node.attributes) {
+          script.setAttribute(attr.name, attr.value);
         }
-      } catch (err) {
-        console.error("Script injection failed:", err);
-      }
+
+        // Copy inline script content
+        if (node.textContent) {
+          script.textContent = node.textContent;
+        }
+
+        // Append to body (as per Zoho’s requirement)
+        document.body.appendChild(script);
+      });
     });
   }, [scripts]);
 

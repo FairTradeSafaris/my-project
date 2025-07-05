@@ -4,6 +4,7 @@ import LayoutWrapper from "../components/LayoutWrapper";
 import CookieConsent from "@/components/CookieConsent";
 import { client as sanity } from "../../lib/sanity";
 import ScriptInjector from "@/components/ScriptInjector";
+import HideZohoWidget from "@/components/HideZohoWidget";
 
 const globalSettings = await sanity.fetch(
   `*[_type == "globalSettings"][0]{
@@ -27,6 +28,8 @@ export default function RootLayout({
         <ScriptInjector scripts={globalSettings?.customHeaderScripts || []} />
         <LayoutWrapper>{children}</LayoutWrapper>
         <CookieConsent />
+        {children}
+        <HideZohoWidget />
       </body>
     </html>
   );

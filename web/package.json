@@ -8,6 +8,11 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "browserslist": [
+    "defaults and supports es6-module",
+    "not IE 11",
+    "not dead"
+  ],
   "dependencies": {
     "@fontsource/poppins": "^5.2.6",
     "@next/font": "^14.2.15",

@@ -24,11 +24,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans">
+      <body className="font-sans min-h-screen flex flex-col">
         <ScriptInjector scripts={globalSettings?.customHeaderScripts || []} />
         <LayoutWrapper>{children}</LayoutWrapper>
         <CookieConsent />
-        {children}
         <HideZohoWidget />
       </body>
     </html>

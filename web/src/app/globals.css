@@ -1,8 +1,6 @@
 @import "tailwindcss";
 
-/* ===============================
-   🌗 Light / Dark Theme Variables
-   =============================== */
+/* 🌗 Theme Variables */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -15,180 +13,15 @@
   }
 }
 
-/* ===============================
-   🧍 Base Body Styles
-   =============================== */
+/* 🧍 Base Body Styles */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-/* ===============================
-   🌅 Hero Background
-   =============================== */
-.hero-bg {
-  background-image: url("/sunset-safari.webp");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-/* ===============================
-   🌀 Animations
-   =============================== */
-@keyframes fade-in-up {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.3s ease-out;
-}
-
-@keyframes bounce-in {
-  0% {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.animate-bounce-in {
-  animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@layer utilities {
-  .animate-fadeIn {
-    animation: fadeIn 0.25s ease-out forwards;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-}
-
-/* ===============================
-   📆 React Datepicker Overrides
-   =============================== */
-.react-datepicker__current-month,
-.react-datepicker__month-read-view,
-.react-datepicker__year-read-view {
-  font-weight: 600;
-  color: #7a6248;
-}
-
-.react-datepicker__day-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #bba88d;
-}
-
-.react-datepicker-popper {
-  transform: translateX(-33%) !important; /* Balance 3 months horizontally */
-}
-
-/* ===============================
-   🧭 Swiper Pagination Styling
-   =============================== */
-.swiper-pagination-bullet {
-  background: #ccc !important;
-  opacity: 1 !important;
-}
-
-.swiper-pagination-bullet-active {
-  background: #fb923c !important;
-}
-/* 🔪 Custom notch clip shape */
-.clip-notch {
-  clip-path: path(
-    "M0,0 
-     H calc(50% - 28px)
-     A 28 28 0 0 1 calc(50% + 28px) 0
-     H 100% 
-     V 100% 
-     H 0 
-     Z"
-  );
-}
-.ribbon-shape {
-  clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%);
-}
-
-@layer utilities {
-  .ribbon-shape {
-    clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
-  }
-}
-.price-ribbon {
-  position: absolute;
-  top: 12px;
-  right: -20px; /* bring it closer inside */
-  background-color: #bb8b68; /* Tailwind orange-600 */
-  color: rgb(255, 255, 255);
-  font-weight: 600;
-  font-size: 0.95rem; /* text-xs */
-  padding: 0.25rem 1rem; /* py-1 px-4 */
-  border-top-right-radius: 0.375rem; /* rounded-tr-md */
-  border-bottom-right-radius: 0.375rem; /* rounded-br-md */
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
-  z-index: 20;
-  cursor: default;
-}
-
-.price-ribbon::before,
-.price-ribbon::after {
-  content: "";
-  position: absolute;
-  right: -20px; /* closer */
-  width: 0;
-  height: 0;
-  border-top: 12px solid transparent; /* smaller height */
-  border-bottom: 12px solid transparent;
-}
-
-.price-label {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none; /* no background block */
-  color: #b87a4e; /* orange */
-  font-weight: 700;
-  font-size: 1.1rem; /* larger text */
-  font-family: "Georgia", serif; /* or any font you prefer */
-  cursor: default;
-  padding: 0; /* no padding */
-  user-select: none;
-  z-index: 20;
-}
-.perspective {
-  perspective: 1000px;
-}
-.transform-style-preserve-3d {
-  transform-style: preserve-3d;
-}
-.backface-hidden {
-  backface-visibility: hidden;
-}
-.rotate-y-180 {
-  transform: rotateY(180deg);
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }

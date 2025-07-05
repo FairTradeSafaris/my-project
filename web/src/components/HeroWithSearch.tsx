@@ -13,7 +13,7 @@ type SanityImage = {
 };
 
 export default function HeroWithSearch() {
-  const [selectedImage, setSelectedImage] = useState<string>("/hero.jpg");
+  const [sanityImage, setSanityImage] = useState<string | null>(null);
   const [headline, setHeadline] = useState<string>("");
   const [subheadline, setSubheadline] = useState<string>("");
 
@@ -38,7 +38,7 @@ export default function HeroWithSearch() {
 
         if (urls.length > 0) {
           const random = Math.floor(Math.random() * urls.length);
-          setSelectedImage(urls[random]);
+          setTimeout(() => setSanityImage(urls[random]), 100); // delay to simulate fade-in
         }
       }
     };
@@ -48,15 +48,26 @@ export default function HeroWithSearch() {
 
   return (
     <section className="relative h-[90vh] w-full bg-black text-white font-poppins overflow-hidden">
-      {/* Background Image */}
+      {/* Static Fast Image */}
       <Image
-        src={selectedImage}
-        alt="Safari hero background"
+        src="/hero.webp"
+        alt="Static hero fallback"
         fill
-        className="object-cover object-center opacity-80"
+        className="object-cover object-center opacity-80 transition-opacity duration-500 ease-in"
         priority
         fetchPriority="high"
       />
+
+      {/* Dynamic Sanity Image (fades in over static) */}
+      {sanityImage && (
+        <Image
+          src={sanityImage}
+          alt="Safari hero background"
+          fill
+          className="object-cover object-center opacity-0 animate-fadeIn absolute top-0 left-0 w-full h-full"
+          onLoadingComplete={(img) => img.classList.remove("opacity-0")}
+        />
+      )}
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/10 z-10" />
@@ -112,6 +123,24 @@ export default function HeroWithSearch() {
           </button>
         </div>
       </div>
+
+      {/* Fade Animation Style */}
+      <style jsx>{`
+        .animate-fadeIn {
+          animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            filter: blur(8px);
+          }
+          to {
+            opacity: 1;
+            filter: blur(0);
+          }
+        }
+      `}</style>
     </section>
   );
 }

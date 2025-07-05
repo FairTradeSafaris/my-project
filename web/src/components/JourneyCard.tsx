@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 type Props = {
   title: string;
   summary?: string;
@@ -29,9 +31,11 @@ export default function JourneyCard({
       {/* Image container */}
       <div className="relative">
         {imageUrl && (
-          <img
+          <Image
             src={imageUrl}
             alt={alt || "Journey image"}
+            width={400}
+            height={256}
             className="w-full h-64 object-cover rounded-md"
           />
         )}

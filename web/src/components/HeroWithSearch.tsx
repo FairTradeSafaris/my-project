@@ -1,12 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { CalendarDays, MapPin, Users, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { client as sanity } from "@/../lib/sanity";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { addMonths } from "date-fns";
+import { MapPin, Users, Search } from "lucide-react";
 
 // Type for sanity image objects
 type SanityImage = {
@@ -19,12 +16,6 @@ export default function HeroWithSearch() {
   const [selectedImage, setSelectedImage] = useState<string>("/hero.jpg");
   const [headline, setHeadline] = useState<string>("");
   const [subheadline, setSubheadline] = useState<string>("");
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-    null,
-    null,
-  ]);
-  const [startDate, endDate] = dateRange;
-  const sixMonthsFromNow = addMonths(new Date(), 6);
 
   useEffect(() => {
     const fetchHeroContent = async () => {
@@ -92,32 +83,19 @@ export default function HeroWithSearch() {
           </div>
 
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
-            <CalendarDays className="w-5 h-5 text-white/70" />
-            <DatePicker
-              selectsRange
-              startDate={startDate}
-              endDate={endDate}
-              onChange={(update) => setDateRange(update)}
-              monthsShown={3}
-              showMonthDropdown
-              showYearDropdown
-              minDate={sixMonthsFromNow}
-              dateFormat="dd/MM/yyyy"
-              placeholderText="Travel dates"
-              wrapperClassName="w-full"
-              calendarClassName="!bg-[#f9f5f0] !text-[#4a3c2c] !font-poppins shadow-xl rounded-lg border border-[#e4dcd2]"
-              dayClassName={() =>
-                "rounded-md px-1 py-1 hover:bg-[#e8ddcf] hover:text-[#4a3c2c] transition duration-200"
-              }
-              calendarContainer={({ children }) => (
-                <div className="bg-[#f9f5f0] rounded-xl shadow-xl border border-[#e4dcd2] p-4 text-sm w-fit text-[#4a3c2c] font-poppins">
-                  <div className="mb-2 text-xs text-[#6b4e3d] font-medium">
-                    Select your first day of travel, then your return date.
-                  </div>
-                  <div className="flex justify-center gap-6">{children}</div>
-                </div>
-              )}
-            />
+            <MapPin className="w-5 h-5 text-white/70" />
+            <select
+              className="bg-transparent outline-none text-sm w-full text-white placeholder-white/60 appearance-none"
+              defaultValue=""
+            >
+              <option value="" disabled hidden>
+                Choose a destination
+              </option>
+              <option>Tanzania</option>
+              <option>South Africa</option>
+              <option>Botswana</option>
+              <option>Kenya</option>
+            </select>
           </div>
 
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">

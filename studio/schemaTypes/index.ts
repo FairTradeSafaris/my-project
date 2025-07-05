@@ -11,6 +11,10 @@ import techStack from '../.sanity/schemas/techStack'
 import projectPortal from '../.sanity/schemas/projectPortal'
 import destination from '../.sanity/schemas/destination'
 import privacyPolicy from '../.sanity/schemas/privacyPolicy'
+import megamenu from '../.sanity/schemas/megaMenu'
+import sitePages from '../.sanity/schemas/sitePages'
+import ambassador from '../.sanity/schemas/ambassador'
+import globalsettings from '../.sanity/schemas/globalSettings'
 
 export const schemaTypes = [
   blog,
@@ -27,4 +31,8 @@ export const schemaTypes = [
   projectPortal,
   destination,
   privacyPolicy,
+  megamenu,
+  sitePages,
+  ambassador,
+  globalsettings,
 ]

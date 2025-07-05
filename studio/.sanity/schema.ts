@@ -19,6 +19,7 @@ import destination from './schemas/destination'
 import megamenu from '../.sanity/schemas/megaMenu'
 import sitePages from '../.sanity/schemas/sitePages'
 import ambassador from '../.sanity/schemas/ambassador'
+import globalsettings from '../.sanity/schemas/globalSettings'
 
 export const schemaTypes = [
   blog,
@@ -40,6 +41,7 @@ export const schemaTypes = [
   megamenu,
   sitePages,
   ambassador,
+  globalsettings,
 ]
 
 export const schema = {

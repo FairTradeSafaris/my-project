@@ -1,6 +1,5 @@
 ﻿import { client as sanity } from "../../lib/sanity";
 import Link from "next/link";
-import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import HeroWithSearch from "@/components/HeroWithSearch";
 import WhyChoose from "@/components/WhyChoose";
 import type { PortableTextBlock } from "@portabletext/types"; // ✅ import for rich text
@@ -280,7 +279,6 @@ export default async function Home() {
         )}
         {/* Testimonials */}
         <TestimonialCarousel />
-        <ChatWidget />
       </main>
     </>
   );

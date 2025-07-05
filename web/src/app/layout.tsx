@@ -24,6 +24,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link
+          rel="preconnect"
+          href="https://my-project-pi-five-35.vercel.app"
+        />
+      </head>
       <body className="font-sans min-h-screen flex flex-col">
         <ScriptInjector scripts={globalSettings?.customHeaderScripts || []} />
         <LayoutWrapper>{children}</LayoutWrapper>

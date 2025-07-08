@@ -4,10 +4,7 @@ import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 
 // Dynamically import to reduce initial bundle size
-const Navbar = dynamic(() => import("./NavbarWrapper"), {
-  ssr: false,
-});
-
+const Navbar = dynamic(() => import("./NavbarWrapper"));
 const SafariFactFooter = dynamic(() => import("./SafariFactFooter"));
 
 export default function LayoutWrapper({

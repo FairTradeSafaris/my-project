@@ -17,7 +17,6 @@ interface FeatureCard {
     asset: {
       _ref: string;
       _type: string;
-      url: string;
     };
     _type: string;
   };
@@ -34,13 +33,13 @@ export default function Navbar({ navLinks, featureCards }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  // Close menu on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);

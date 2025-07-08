@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { useMemo } from "react";
 import { MapPin, Users, Search } from "lucide-react";
+
+type SanityImage = {
+  asset: {
+    url: string;
+  };
+};
 
 export default function HeroWithSearch({
   data,
@@ -9,10 +16,16 @@ export default function HeroWithSearch({
   data: {
     headline: string;
     subheadline: string;
-    imageUrl?: string;
+    backgroundImages: SanityImage[];
   };
 }) {
-  const { headline, subheadline, imageUrl } = data;
+  const { headline, subheadline, backgroundImages } = data;
+
+  const sanityImage = useMemo(() => {
+    if (!backgroundImages || backgroundImages.length === 0) return null;
+    const random = Math.floor(Math.random() * backgroundImages.length);
+    return backgroundImages[random].asset.url;
+  }, [backgroundImages]);
 
   return (
     <section className="relative min-h-[90vh] w-full pt-24 md:pt-28 overflow-hidden">
@@ -26,10 +39,10 @@ export default function HeroWithSearch({
         fetchPriority="high"
       />
 
-      {/* Random Sanity Background Image */}
-      {imageUrl && (
+      {/* Sanity Background Image */}
+      {sanityImage && (
         <Image
-          src={imageUrl}
+          src={sanityImage}
           alt="Dynamic safari background"
           fill
           className="absolute top-0 left-0 w-full h-full object-cover object-center animate-fadeIn"
@@ -39,7 +52,7 @@ export default function HeroWithSearch({
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/10 z-10" />
 
-      {/* Content */}
+      {/* Text + Search Box */}
       <div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-4">
         <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-md">
           {headline || "Safari. Reimagined."}

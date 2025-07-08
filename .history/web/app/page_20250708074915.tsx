@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { PortableTextBlock } from "@portabletext/types";
 import JourneyCard from "@/components/JourneyCard";
-import HeroWrapper from "@/components/HeroWrapper";
+import HeroWithSearchWrapper from "@/components/HeroWithSearchWrapper";
 
 import dynamic from "next/dynamic";
 
@@ -174,7 +174,7 @@ export default async function Home() {
     <>
       <main className="min-h-screen font-poppins bg-white text-black">
         {/* Hero Section */}
-        <HeroWrapper />
+        <HeroWithSearchWrapper />
 
         {/* Why Travel With Us Section */}
         {whyChoose && <WhyChoose data={whyChoose} />}

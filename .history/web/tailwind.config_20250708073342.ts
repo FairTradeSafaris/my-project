@@ -20,14 +20,14 @@ const config: Config = {
         },
       },
       keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0", filter: "blur(8px)" },
-          "100%": { opacity: "1", filter: "blur(0)" },
+        pulseOnce: {
+          "0%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.25)" },
+          "100%": { transform: "scale(1)" },
         },
       },
       animation: {
-        fadeIn: "fadeIn 0.8s ease-in-out forwards",
-        "pulse-once": "pulseOnce 0.5s ease", // ← your existing animation, keep this too
+        "pulse-once": "pulseOnce 0.5s ease",
       },
     },
   },

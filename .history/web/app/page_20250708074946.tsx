@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { PortableTextBlock } from "@portabletext/types";
 import JourneyCard from "@/components/JourneyCard";
-import HeroWrapper from "@/components/HeroWrapper";
+import HeroWithSearchWrapper from "@/components/HeroWithSearchWrapper";
 
 import dynamic from "next/dynamic";
 

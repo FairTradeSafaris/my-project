@@ -1,0 +1,29 @@
+import { client } from "@/lib/sanity";
+import { NextResponse } from "next/server";
+
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing post ID" }, { status: 400 });
+  }
+
+  try {
+    const result = await client
+      .patch(id)
+      .setIfMissing({ likes: 0 })
+      .inc({ likes: 1 })
+      .commit({ autoGenerateArrayKeys: true });
+
+    return NextResponse.json({ likes: result.likes });
+  } catch (error) {
+    console.error("Error updating likes:", error);
+    return NextResponse.json(
+      { error: "Failed to update likes" },
+      { status: 500 }
+    );
+  }
+}

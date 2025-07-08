@@ -1,0 +1,58 @@
+import {defineType, defineField} from 'sanity'
+
+export default defineType({
+  name: 'blog',
+  title: 'Blog Post',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {source: 'title', maxLength: 96},
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({name: 'summary', title: 'Summary', type: 'text'}),
+    defineField({name: 'content', title: 'Content', type: 'blockContent'}),
+    defineField({name: 'author', title: 'Author', type: 'string'}),
+    defineField({name: 'publishedAt', title: 'Published At', type: 'datetime'}),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover Image',
+      type: 'image',
+      options: {hotspot: true},
+      fields: [{name: 'alt', title: 'Alt Text', type: 'string'}],
+    }),
+    defineField({
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      of: [{type: 'string'}],
+    }),
+    defineField({
+      name: 'isFeatured',
+      title: 'Feature this post',
+      type: 'boolean',
+      description: 'Mark this post to highlight it on the blog landing page',
+    }),
+    defineField({
+      name: 'views',
+      title: 'Views',
+      type: 'number',
+      initialValue: 0,
+      readOnly: true,
+    }),
+    defineField({
+      name: 'likes',
+      title: 'Likes',
+      type: 'number',
+      initialValue: 0,
+    }),
+  ],
+})

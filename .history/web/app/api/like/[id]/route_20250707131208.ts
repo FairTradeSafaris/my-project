@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { serverClient } from "@/lib/sanity.server";
-import type { NextRequest } from "next/server";
 
-export async function POST(req: NextRequest) {
-  const id = req.nextUrl.pathname.split("/").pop(); // extract [id] from the path
+export async function POST(req: Request, context: { params: { id: string } }) {
+  const { id } = context.params; // ✅ Access from context.params
 
   if (!id) {
     return NextResponse.json({ error: "Missing post ID" }, { status: 400 });

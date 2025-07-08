@@ -7,6 +7,7 @@ import { useTestimonials, Testimonial } from "@/hooks/useTestimonials";
 
 export default function TestimonialCarousel() {
   const { settings, cardsToShow, next, prev } = useTestimonials();
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const renderStars = (count = 5) =>
@@ -39,11 +40,13 @@ export default function TestimonialCarousel() {
           <p className="text-sm text-gray-700 leading-relaxed line-clamp-5">
             {t.text}
           </p>
+
           {t.text.length > 200 && (
             <span className="text-xs text-[#b49a7f] font-semibold mt-2">
               Read More
             </span>
           )}
+
           <p className="mt-2 text-sm italic text-gray-800">{t.name}</p>
         </div>
 
@@ -84,30 +87,27 @@ export default function TestimonialCarousel() {
         </h2>
 
         <div className="relative flex items-center justify-center overflow-visible">
-          <div className="relative w-full max-w-7xl mx-auto flex items-center justify-center px-0 overflow-visible">
-            {/* Left Arrow */}
+          <div className="relative w-full max-w-7xl mx-auto flex items-center justify-center px-4">
             <button
               onClick={prev}
-              aria-label="Previous testimonials"
               className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+              aria-label="Previous testimonials"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            {/* Cards */}
-            <div className="overflow-visible w-full" ref={containerRef}>
-              <div className="flex transition-transform duration-500">
+            <div className="overflow-hidden w-full" ref={containerRef}>
+              <div className="flex transition-transform duration-500 ease-in-out">
                 {cardsToShow.map((t, i) => (
                   <Card key={i} t={t} />
                 ))}
               </div>
             </div>
 
-            {/* Right Arrow */}
             <button
               onClick={next}
-              aria-label="Next testimonials"
               className="absolute top-1/2 -translate-y-1/2 -right-4 sm:-right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+              aria-label="Next testimonials"
             >
               <ChevronRight className="w-5 h-5" />
             </button>

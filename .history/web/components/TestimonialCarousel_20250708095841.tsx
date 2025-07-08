@@ -7,6 +7,7 @@ import { useTestimonials, Testimonial } from "@/hooks/useTestimonials";
 
 export default function TestimonialCarousel() {
   const { settings, cardsToShow, next, prev } = useTestimonials();
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const renderStars = (count = 5) =>
@@ -39,11 +40,13 @@ export default function TestimonialCarousel() {
           <p className="text-sm text-gray-700 leading-relaxed line-clamp-5">
             {t.text}
           </p>
+
           {t.text.length > 200 && (
             <span className="text-xs text-[#b49a7f] font-semibold mt-2">
               Read More
             </span>
           )}
+
           <p className="mt-2 text-sm italic text-gray-800">{t.name}</p>
         </div>
 
@@ -78,24 +81,17 @@ export default function TestimonialCarousel() {
   return (
     <section className="bg-white pt-24 pb-16 px-4 font-sans relative overflow-visible">
       <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-16">
-          {settings?.heading || "Client Feedback"}{" "}
-          <span className="text-[#b49a7f]">& Testimonials</span>
-        </h2>
+        <h2 className="...">...</h2>
 
         <div className="relative flex items-center justify-center overflow-visible">
           <div className="relative w-full max-w-7xl mx-auto flex items-center justify-center px-0 overflow-visible">
             {/* Left Arrow */}
-            <button
-              onClick={prev}
-              aria-label="Previous testimonials"
-              className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
-            >
-              <ChevronLeft className="w-5 h-5" />
+            <button className="...">
+              <ChevronLeft />
             </button>
 
             {/* Cards */}
-            <div className="overflow-visible w-full" ref={containerRef}>
+            <div className="overflow-visible">
               <div className="flex transition-transform duration-500">
                 {cardsToShow.map((t, i) => (
                   <Card key={i} t={t} />
@@ -104,12 +100,8 @@ export default function TestimonialCarousel() {
             </div>
 
             {/* Right Arrow */}
-            <button
-              onClick={next}
-              aria-label="Next testimonials"
-              className="absolute top-1/2 -translate-y-1/2 -right-4 sm:-right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
-            >
-              <ChevronRight className="w-5 h-5" />
+            <button className="...">
+              <ChevronRight />
             </button>
           </div>
         </div>

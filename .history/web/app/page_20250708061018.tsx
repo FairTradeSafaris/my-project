@@ -1,6 +1,9 @@
 ﻿import { client as sanity } from "@/lib/sanity";
 import Link from "next/link";
+
+import WhyChoose from "@/components/WhyChoose";
 import type { PortableTextBlock } from "@portabletext/types"; // ✅ import for rich text
+import TestimonialCarousel from "@/components/TestimonialCarousel";
 import JourneyCard from "@/components/JourneyCard";
 
 import dynamic from "next/dynamic";
@@ -9,18 +12,6 @@ const HeroWithSearch = dynamic(() => import("@/components/HeroWithSearch"), {
   loading: () => <p>Loading hero...</p>, // optional fallback UI
   ssr: false, // optionally disable server-side render if browser-only
 });
-
-const WhyChoose = dynamic(() => import("@/components/WhyChoose"), {
-  loading: () => <p>Loading section...</p>,
-});
-
-const TestimonialCarousel = dynamic(
-  () => import("@/components/TestimonialCarousel"),
-  {
-    loading: () => <p>Loading testimonials...</p>,
-  }
-);
-
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export async function generateMetadata() {

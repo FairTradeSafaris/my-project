@@ -31,7 +31,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
   const { sectionTitle, sideImage, reasons } = data;
 
   return (
-    <section className="py-8 bg-[#fdf6ee] text-[#3c2f25]">
+    <section className="py-8 bg-[#fdf6ee] text-[#3c2f25] font-poppins">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-stretch">
         {/* Left Image */}
         {sideImage?.asset?.url && (

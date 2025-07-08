@@ -36,7 +36,7 @@ export default function ChatWidget() {
       }}
       className="fixed bottom-6 right-6 z-50 flex items-center gap-3 hover:scale-105 transition"
     >
-      <div className="bg-white text-black text-sm font-semibold px-4 py-2 rounded-full shadow-md">
+      <div className="bg-white text-black text-sm font-semibold px-4 py-2 rounded-full shadow-md font-poppins">
         {greeting}
       </div>
       <div className="relative w-16 h-16 rounded-full bg-[#d8c3a5] shadow-lg">

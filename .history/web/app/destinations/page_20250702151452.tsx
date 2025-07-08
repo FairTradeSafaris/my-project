@@ -1,6 +1,6 @@
 export const revalidate = 60; // Optional: Revalidate every 60 seconds
 
-import { client as sanity } from "@/lib/sanity";
+import { client as sanity } from "@/../lib/sanity";
 import DestinationMap from "@/components/DestinationMap";
 
 export async function generateMetadata() {

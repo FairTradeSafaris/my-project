@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import JourneyFinderClient from "../../components/JourneyFinderClient";
-import { client as sanity } from "@/lib/sanity";
+import { client as sanity } from "@/../lib/sanity";
 
 // Dynamically fetch metadata from Sanity
 export async function generateMetadata() {

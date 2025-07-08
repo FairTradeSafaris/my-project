@@ -1,7 +1,7 @@
-import { client } from "@/lib/sanity";
+import { client } from "@/../lib/sanity";
 
 import { PortableText } from "@portabletext/react";
-import { portableTextComponents } from "@/lib/portableTextComponents";
+import { portableTextComponents } from "@/../lib/portableTextComponents";
 
 export default async function PrivacyPolicyPage() {
   const data = await client.fetch(`*[_type == "privacyPolicy"][0]{

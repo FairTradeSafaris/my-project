@@ -1,8 +1,8 @@
 export const revalidate = 60;
 
-import { client } from "@/lib/sanity";
+import { client } from "@/../lib/sanity";
 import AmbassadorCard from "@/components/AmbassadorCard";
-import type { Ambassador } from "@/types/ambassador";
+import type { Ambassador } from "@/../types/ambassador";
 
 export default async function AmbassadorsPage() {
   const ambassadors: Ambassador[] = await client.fetch(`

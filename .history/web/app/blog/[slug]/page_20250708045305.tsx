@@ -8,6 +8,7 @@ import { LikeButton } from "@/components/LikeButton";
 import BlogContent from "@/components/BlogContent";
 import ShareButtons from "@/components/ShareButtons";
 import type { Block } from "@/types/block";
+import { Metadata } from "next";
 
 type BlogPost = {
   _id: string;

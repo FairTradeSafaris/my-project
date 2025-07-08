@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { client as sanity } from "@/lib/sanity";
 import { MapPin, Users, Search } from "lucide-react";
-import styles from "./Hero.module.css";
 
 // Type for sanity image objects
 type SanityImage = {

@@ -2,12 +2,18 @@
 node_modules/
 .env
 
-# Ignore all .next build artifacts across the project
+# Build artifacts
 .next/
+dist/
+out/
+build/
 
-# Ignore node_modules inside the web folder (redundant if root node_modules is already ignored)
-web/node_modules/
-
-# Optional: ignore system or editor-specific files
+# Editor + system-specific files
 .DS_Store
 *.log
+.vscode/
+.idea/
+.history/
+
+# Redundant node_modules folder (still good to keep)
+web/node_modules/

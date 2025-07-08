@@ -325,31 +325,30 @@ export default function JourneyFinderClient() {
 
       {/* Modal */}
       {selectedJourney && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50"
-          onClick={() => setSelectedJourney(null)}
-        >
-          <div
-            className="fixed top-0 right-0 h-full w-full sm:w-[80vw] md:w-[60vw] lg:w-[45vw] bg-white shadow-2xl z-50"
-            onClick={(e) => e.stopPropagation()}
+        <div className="fixed inset-0 bg-white z-[100] overflow-auto">
+          <button
+            onClick={() => setSelectedJourney(null)}
+            className="absolute top-4 right-6 text-3xl font-bold z-[101]"
           >
-            <button
-              onClick={() => setSelectedJourney(null)}
-              className="absolute top-4 right-6 text-3xl font-bold z-10"
-            >
-              &times;
-            </button>
+            &times;
+          </button>
 
-            {selectedJourney.wetuLink && (
-              <iframe
-                src={selectedJourney.wetuLink}
-                className="w-full h-full"
-                allowFullScreen
-                loading="lazy"
-                style={{ border: "none" }}
-              />
-            )}
-          </div>
+          {selectedJourney.wetuLink ? (
+            <iframe
+              src={selectedJourney.wetuLink}
+              className="w-full min-h-screen"
+              allowFullScreen
+              loading="lazy"
+              style={{ border: "none" }}
+            />
+          ) : (
+            <div className="p-10 text-center text-gray-600">
+              <h2 className="text-2xl font-semibold mb-4">
+                {selectedJourney.title}
+              </h2>
+              <p>No itinerary link available.</p>
+            </div>
+          )}
         </div>
       )}
 

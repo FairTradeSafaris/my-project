@@ -48,6 +48,13 @@ export default function JourneyCard({
             {price.startsWith("$") ? price : `$${price}`} p/p sharing
           </div>
         )}
+
+        {/* 🟥 Featured Badge – Only if featured */}
+        {isFeatured && (
+          <div className="absolute top-2 left-[-22px] transform -rotate-30 bg-red-600 text-white text-xs font-bold px-8 py-1 z-20 shadow-md tracking-wide">
+            Featured
+          </div>
+        )}
       </div>
 
       {/* Text Box */}
@@ -80,13 +87,7 @@ export default function JourneyCard({
         )}
 
         {isFeatured && (
-          <div
-            className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
-            style={{
-              animationDelay: "5s",
-              animationIterationCount: "infinite",
-            }}
-          >
+          <div className="inline-block bg-yellow-400 text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow">
             ★ Featured Journey
           </div>
         )}

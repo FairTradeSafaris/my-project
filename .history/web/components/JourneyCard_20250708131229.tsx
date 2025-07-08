@@ -80,13 +80,7 @@ export default function JourneyCard({
         )}
 
         {isFeatured && (
-          <div
-            className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
-            style={{
-              animationDelay: "5s",
-              animationIterationCount: "infinite",
-            }}
-          >
+          <div className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow">
             ★ Featured Journey
           </div>
         )}

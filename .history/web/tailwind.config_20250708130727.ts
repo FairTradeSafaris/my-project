@@ -24,26 +24,15 @@ const config: Config = {
           "0%": { opacity: "0", filter: "blur(8px)" },
           "100%": { opacity: "1", filter: "blur(0)" },
         },
-        pulseOnce: {
-          "0%": { transform: "scale(1)" },
-          "50%": { transform: "scale(1.05)" },
-          "100%": { transform: "scale(1)" },
-        },
-        bounceSlow: {
-          "0%, 100%": {
-            transform: "translateY(0)",
-            animationTimingFunction: "ease-in-out",
-          },
-          "50%": {
-            transform: "translateY(-10%)",
-            animationTimingFunction: "ease-in-out",
-          },
+        popIn: {
+          "0%": { opacity: "0", transform: "scale(0.8)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
         },
       },
       animation: {
         fadeIn: "fadeIn 0.8s ease-in-out forwards",
         "pulse-once": "pulseOnce 0.5s ease",
-        bounceSlow: "bounceSlow 1s ease-in-out infinite",
+        popIn: "popIn 0.4s ease-out forwards", // ✅ Add this
       },
     },
   },

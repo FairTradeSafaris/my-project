@@ -12,7 +12,7 @@ type Props = {
   starIcon?: string;
   star?: number;
   metaIcons?: React.ReactNode;
-  isFeatured: boolean; // ✅ passed from Sanity
+  badgeText?: string; // 🆕 for "Hot Seller", etc.
 };
 
 export default function JourneyCard({
@@ -26,7 +26,7 @@ export default function JourneyCard({
   starIcon,
   star = 0,
   metaIcons,
-  isFeatured,
+  badgeText,
 }: Props) {
   return (
     <div className="relative w-full max-w-sm overflow-visible pb-40 bg-transparent">
@@ -42,15 +42,22 @@ export default function JourneyCard({
           />
         )}
 
-        {/* 🟧 Price Tag – Larger & Sand Brown */}
+        {/* 🟥 Featured Badge */}
+        {badgeText && (
+          <div className="absolute top-2 left-[-20px] transform -rotate-45 bg-red-600 text-white text-[10px] font-bold px-8 py-1 z-20 shadow-md">
+            {badgeText}
+          </div>
+        )}
+
+        {/* 🟧 Price Tag */}
         {price && (
-          <div className="absolute -top-3 -right-3 bg-[#d2b48c] text-black text-sm font-bold px-4 py-2 rounded-md shadow-md z-20">
+          <div className="absolute top-2 right-2 bg-amber-700 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md z-10">
             {price.startsWith("$") ? price : `$${price}`} p/p sharing
           </div>
         )}
       </div>
 
-      {/* Text Box */}
+      {/* Info Box */}
       <div className="absolute top-48 left-4 right-4 bg-white p-4 shadow-lg border border-gray-200 rounded-md z-30 flex flex-col h-[220px]">
         {(duration || region) && (
           <p className="text-xs uppercase text-orange-600 font-bold mb-1">
@@ -79,19 +86,7 @@ export default function JourneyCard({
           </div>
         )}
 
-        {isFeatured && (
-          <div
-            className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
-            style={{
-              animationDelay: "5s",
-              animationIterationCount: "infinite",
-            }}
-          >
-            ★ Featured Journey
-          </div>
-        )}
-
-        {/* Optional Meta Icons */}
+        {/* Extra Metadata Icons if any */}
         {metaIcons && (
           <div className="flex items-center gap-4 mt-2">{metaIcons}</div>
         )}

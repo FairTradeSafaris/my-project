@@ -326,33 +326,33 @@ export default function JourneyFinderClient() {
       {/* Modal */}
       {selectedJourney && (
         <div
-          className="fixed inset-0 bg-black/50 z-50"
+          className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setSelectedJourney(null)}
         >
-          <div
-            className="fixed top-0 right-0 h-full w-full sm:w-[80vw] md:w-[60vw] lg:w-[45vw] bg-white shadow-2xl z-50"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedJourney(null)}
-              className="absolute top-4 right-6 text-3xl font-bold z-10"
-            >
-              &times;
-            </button>
-
+          <div className="fixed top-0 right-0 h-full w-full sm:w-[80vw] md:w-[60vw] lg:w-[45vw] bg-white shadow-2xl z-50 p-6 overflow-auto">
+            <div className="flex justify-between items-center border-b pb-3">
+              <h2 className="text-xl font-bold">{selectedJourney.title}</h2>
+              <button
+                onClick={() => setSelectedJourney(null)}
+                className="text-2xl"
+              >
+                &times;
+              </button>
+            </div>
+            <p className="mt-4 text-gray-700">{selectedJourney.summary}</p>
             {selectedJourney.wetuLink && (
-              <iframe
-                src={selectedJourney.wetuLink}
-                className="w-full h-full"
-                allowFullScreen
-                loading="lazy"
-                style={{ border: "none" }}
-              />
+              <div className="mt-6 rounded overflow-hidden">
+                <iframe
+                  src={selectedJourney.wetuLink}
+                  className="w-full h-[400px]"
+                  allowFullScreen
+                  loading="lazy"
+                />
+              </div>
             )}
           </div>
         </div>
       )}
-
       <div ref={loadMoreRef} />
     </main>
   );

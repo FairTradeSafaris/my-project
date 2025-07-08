@@ -12,7 +12,6 @@ type Props = {
   starIcon?: string;
   star?: number;
   metaIcons?: React.ReactNode;
-  isFeatured: boolean; // ✅ passed from Sanity
 };
 
 export default function JourneyCard({
@@ -26,7 +25,6 @@ export default function JourneyCard({
   starIcon,
   star = 0,
   metaIcons,
-  isFeatured,
 }: Props) {
   return (
     <div className="relative w-full max-w-sm overflow-visible pb-40 bg-transparent">
@@ -42,12 +40,17 @@ export default function JourneyCard({
           />
         )}
 
-        {/* 🟧 Price Tag – Larger & Sand Brown */}
+        {/* 🟧 Price Tag */}
         {price && (
-          <div className="absolute -top-3 -right-3 bg-[#d2b48c] text-black text-sm font-bold px-4 py-2 rounded-md shadow-md z-20">
+          <div className="absolute top-2 right-2 bg-amber-700 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md z-10">
             {price.startsWith("$") ? price : `$${price}`} p/p sharing
           </div>
         )}
+
+        {/* 🟥 Featured Badge */}
+        <div className="absolute top-2 left-[-22px] transform -rotate- bg-red-600 text-white text-[12px] font-bold px-8 py-0.5 z-18 shadow-md tracking-wide">
+          Featured
+        </div>
       </div>
 
       {/* Text Box */}
@@ -76,18 +79,6 @@ export default function JourneyCard({
                 className={`w-4 h-4 ${i >= star ? "opacity-30" : ""}`}
               />
             ))}
-          </div>
-        )}
-
-        {isFeatured && (
-          <div
-            className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
-            style={{
-              animationDelay: "5s",
-              animationIterationCount: "infinite",
-            }}
-          >
-            ★ Featured Journey
           </div>
         )}
 

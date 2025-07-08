@@ -1,5 +1,4 @@
 import Image from "next/image";
-
 type Props = {
   title: string;
   summary?: string;
@@ -12,7 +11,7 @@ type Props = {
   starIcon?: string;
   star?: number;
   metaIcons?: React.ReactNode;
-  isFeatured: boolean; // ✅ passed from Sanity
+  badgeText?: string; // 🆕 NEW PROP
 };
 
 export default function JourneyCard({
@@ -26,7 +25,7 @@ export default function JourneyCard({
   starIcon,
   star = 0,
   metaIcons,
-  isFeatured,
+  badgeText,
 }: Props) {
   return (
     <div className="relative w-full max-w-sm overflow-visible pb-40 bg-transparent">
@@ -42,10 +41,17 @@ export default function JourneyCard({
           />
         )}
 
-        {/* 🟧 Price Tag – Larger & Sand Brown */}
+        {/* Price Ribbon */}
         {price && (
-          <div className="absolute -top-3 -right-3 bg-[#d2b48c] text-black text-sm font-bold px-4 py-2 rounded-md shadow-md z-20">
-            {price.startsWith("$") ? price : `$${price}`} p/p sharing
+          <div className="price-ribbon">
+            From {price.startsWith("$") ? price : `$${price}`}/person
+          </div>
+        )}
+
+        {/* 🆕 Featured/Hot Seller Badge */}
+        {badgeText && (
+          <div className="absolute top-2 left-2 bg-yellow-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg uppercase z-10">
+            {badgeText}
           </div>
         )}
       </div>
@@ -65,7 +71,6 @@ export default function JourneyCard({
 
         {summary && <p className="text-sm text-gray-600 mb-2">{summary}</p>}
 
-        {/* ⭐ Star Rating */}
         {star > 0 && (
           <div className="flex items-center space-x-1 mb-2">
             {[...Array(5)].map((_, i) => (
@@ -79,19 +84,6 @@ export default function JourneyCard({
           </div>
         )}
 
-        {isFeatured && (
-          <div
-            className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
-            style={{
-              animationDelay: "5s",
-              animationIterationCount: "infinite",
-            }}
-          >
-            ★ Featured Journey
-          </div>
-        )}
-
-        {/* Optional Meta Icons */}
         {metaIcons && (
           <div className="flex items-center gap-4 mt-2">{metaIcons}</div>
         )}

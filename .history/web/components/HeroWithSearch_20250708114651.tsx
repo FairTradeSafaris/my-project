@@ -63,23 +63,23 @@ export default function HeroWithSearch({
         {/* Search Form */}
         <form
           aria-label="Safari Search Form"
-          className="bg-white/60 backdrop-blur-md text-black rounded-lg px-4 py-4 shadow-2xl flex flex-col md:flex-row items-stretch gap-3 w-full max-w-4xl border border-black/10"
+          className="bg-white/20 backdrop-blur-md text-white rounded-2xl px-4 py-4 shadow-2xl flex flex-col md:flex-row items-stretch gap-3 w-full max-w-4xl border border-white/20"
         >
           {/* Where To */}
-          <div className="flex items-center gap-2 border border-black/20 rounded-lg px-4 py-3 w-full bg-white/80 hover:bg-white transition backdrop-blur-sm">
-            <MapPin className="w-5 h-5 text-black/80" />
+          <div className="flex items-center gap-2 border border-white/20 rounded-xl px-4 py-3 w-full bg-white/10 hover:bg-white/20 transition backdrop-blur-md">
+            <MapPin className="w-5 h-5 text-white/90" />
             <input
               type="text"
               placeholder="Where to?"
-              className="bg-transparent outline-none text-sm w-full placeholder-black/70 text-black"
+              className="bg-transparent outline-none text-sm w-full placeholder-white/90 text-white"
             />
           </div>
 
           {/* Destination Select */}
-          <div className="flex items-center gap-2 border border-black/20 rounded-lg px-4 py-3 w-full bg-white/80 hover:bg-white transition backdrop-blur-sm">
-            <MapPin className="w-5 h-5 text-black/80" />
+          <div className="flex items-center gap-2 border border-white/20 rounded-xl px-4 py-3 w-full bg-white/10 hover:bg-white/20 transition backdrop-blur-md">
+            <MapPin className="w-5 h-5 text-white/90" />
             <select
-              className="bg-transparent outline-none text-sm w-full text-black placeholder-black/70 appearance-none"
+              className="bg-transparent outline-none text-sm w-full text-white placeholder-white/90 appearance-none"
               defaultValue=""
             >
               <option value="" disabled hidden>
@@ -93,12 +93,12 @@ export default function HeroWithSearch({
           </div>
 
           {/* Guests */}
-          <div className="flex items-center gap-2 border border-black/20 rounded-lg px-4 py-3 w-full bg-white/80 hover:bg-white transition backdrop-blur-sm">
-            <Users className="w-5 h-5 text-black/80" />
+          <div className="flex items-center gap-2 border border-white/20 rounded-xl px-4 py-3 w-full bg-white/10 hover:bg-white/20 transition backdrop-blur-md">
+            <Users className="w-5 h-5 text-white/90" />
             <input
               type="text"
               placeholder="Guests"
-              className="bg-transparent outline-none text-sm w-full placeholder-black/70 text-black"
+              className="bg-transparent outline-none text-sm w-full placeholder-white/90 text-white"
             />
           </div>
 
@@ -106,7 +106,7 @@ export default function HeroWithSearch({
           <button
             type="submit"
             aria-label="Search safaris"
-            className="bg-black text-white rounded-lg px-6 py-3 font-semibold hover:bg-gray-800 shadow-md transition text-sm w-full md:w-auto flex items-center justify-center"
+            className="bg-white text-black rounded-2xl px-6 py-3 font-semibold hover:bg-gray-100 shadow-md transition text-sm w-full md:w-auto flex items-center justify-center"
           >
             <Search className="w-5 h-5" />
           </button>

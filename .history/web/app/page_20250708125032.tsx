@@ -134,20 +134,19 @@ export default async function Home() {
 
   const journeys: Journey[] = await sanity.fetch(
     `*[_type == "journey" && featuredOnHome == true]{
-    _id,
-    title,
-    slug,
-    summary,
-    duration,
-    price,
-    heroImage { asset->{url} },
-    alt,
-    ctaText,
-    region->{ title },
-    star,
-    "starIcon": starIcon.asset->url,
-    featuredOnHome // ✅ <-- add this line
-  }`
+      _id,
+      title,
+      slug,
+      summary,
+      duration,
+      price,
+      heroImage { asset->{url} },
+      alt,
+      ctaText,
+      region->{ title },
+      star,
+      "starIcon": starIcon.asset->url
+    }`
   );
 
   const ctaBanner = await sanity.fetch(

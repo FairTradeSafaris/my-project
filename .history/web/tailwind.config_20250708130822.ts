@@ -43,7 +43,7 @@ const config: Config = {
       animation: {
         fadeIn: "fadeIn 0.8s ease-in-out forwards",
         "pulse-once": "pulseOnce 0.5s ease",
-        bounceSlow: "bounceSlow 1s ease-in-out infinite",
+        bounceSlow: "bounceSlow 1s ease-in-out infinite 5s",
       },
     },
   },

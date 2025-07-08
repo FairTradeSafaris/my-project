@@ -78,18 +78,15 @@ export default function JourneyCard({
             ))}
           </div>
         )}
-
-        {isFeatured && (
-          <div
-            className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
-            style={{
-              animationDelay: "5s",
-              animationIterationCount: "infinite",
-            }}
-          >
-            ★ Featured Journey
-          </div>
-        )}
+        <div
+          className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
+          style={{
+            animationDelay: "1s",
+            animationIterationCount: "infinite",
+          }}
+        >
+          ★ Featured Journey
+        </div>
 
         {/* Optional Meta Icons */}
         {metaIcons && (

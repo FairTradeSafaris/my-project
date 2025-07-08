@@ -74,9 +74,9 @@ async function getApprovedComments(postId: string): Promise<Comment[]> {
 export default async function BlogPost({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
 
   if (!slug) return notFound();
 

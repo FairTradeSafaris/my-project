@@ -85,6 +85,10 @@ export default async function BlogPost({
 
   const comments = await getApprovedComments(post._id);
 
+  // ... rest of your component unchanged
+}
+
+
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen px-0">
       {post.coverImage && (

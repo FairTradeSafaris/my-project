@@ -61,12 +61,7 @@ export default function HeroWithSearch({
 
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <MapPin className="w-5 h-5 text-white/70" />
-
-            <label htmlFor="destination" className="sr-only">
-              Choose a destination
-            </label>
             <select
-              id="destination"
               className="bg-transparent outline-none text-sm w-full text-white placeholder-white/60 appearance-none"
               defaultValue=""
             >

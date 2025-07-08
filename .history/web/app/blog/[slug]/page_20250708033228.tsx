@@ -1,5 +1,3 @@
-// app/blog/[slug]/page.tsx
-
 import { notFound } from "next/navigation";
 import groq from "groq";
 import { client } from "@/lib/sanity";
@@ -7,8 +5,7 @@ import CommentFormWrapper from "@/components/CommentFormWrapper";
 import { LikeButton } from "@/components/LikeButton";
 import BlogContent from "@/components/BlogContent";
 import ShareButtons from "@/components/ShareButtons";
-import type { Block } from "@/types/block";
-import { Metadata } from "next";
+import type { Block } from "../../../types/block";
 
 type BlogPost = {
   _id: string;
@@ -74,28 +71,15 @@ async function getApprovedComments(postId: string): Promise<Comment[]> {
   return await client.fetch(query, { postId });
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const post = await getPost(slug);
-
-  if (!post) return { title: "Not Found" };
-
-  return {
-    title: post.title,
-    description: post.summary,
-  };
-}
-
 export default async function BlogPost({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string }; // ✅ CORRECT type (NOT a Promise)
 }) {
-  const { slug } = await params;
+  const { slug } = params;
+
+  if (!slug) return notFound();
+
   const post = await getPost(slug);
   if (!post) return notFound();
 
@@ -103,7 +87,6 @@ export default async function BlogPost({
 
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen px-0">
-      {/* --- Cover Image --- */}
       {post.coverImage && (
         <div
           className="relative w-full h-[400px] flex items-center"
@@ -127,16 +110,17 @@ export default async function BlogPost({
         </div>
       )}
 
-      {/* --- Content + Sidebar --- */}
       <div className="max-w-screen-2xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-12 mt-10">
         <div className="lg:col-span-3">
           <BlogContent blocks={post.content} />
+
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <LikeButton postId={post._id} initialLikes={post.likes || 0} />
             <ShareButtons title={post.title} />
           </div>
         </div>
 
+        {/* Sidebar */}
         <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           {post.author?.image && (
             <img
@@ -153,7 +137,8 @@ export default async function BlogPost({
               {post.author.bio}
             </p>
           )}
-          {Array.isArray(post.tags) && post.tags.length > 0 && (
+
+          {post.tags && post.tags.length > 0 && (
             <div className="mt-6">
               <h3 className="text-sm font-semibold mb-2 text-gray-800">Tags</h3>
               <ul className="flex flex-wrap gap-2">
@@ -171,7 +156,7 @@ export default async function BlogPost({
         </aside>
       </div>
 
-      {/* --- Comments --- */}
+      {/* Comments Section */}
       <div className="max-w-3xl mx-auto px-6 mt-16">
         <section className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">
@@ -180,7 +165,9 @@ export default async function BlogPost({
           <p className="mb-4 text-gray-600 text-sm">
             We love hearing from mindful travelers. Leave a comment below.
           </p>
+
           <CommentFormWrapper postId={post._id} />
+
           {comments.length > 0 && (
             <div className="mt-8 space-y-6">
               <h3 className="text-lg font-semibold text-gray-800">Comments</h3>

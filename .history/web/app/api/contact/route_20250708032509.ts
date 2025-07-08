@@ -25,7 +25,10 @@ async function refreshAccessToken() {
   return accessToken;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  _context: any // ✅ This works and avoids type conflicts
+) {
   const body = await req.json();
 
   const lead = {

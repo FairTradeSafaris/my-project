@@ -77,11 +77,9 @@ async function getApprovedComments(postId: string): Promise<Comment[]> {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const post = await getPost(slug);
-
+  params: { slug: string };
+}): Promise<Metadata> {
+  const post = await getPost(params.slug);
   if (!post) return { title: "Not Found" };
 
   return {
@@ -93,10 +91,9 @@ export async function generateMetadata({
 export default async function BlogPost({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }) {
-  const { slug } = await params;
-  const post = await getPost(slug);
+  const post = await getPost(params.slug);
   if (!post) return notFound();
 
   const comments = await getApprovedComments(post._id);
@@ -153,7 +150,7 @@ export default async function BlogPost({
               {post.author.bio}
             </p>
           )}
-          {Array.isArray(post.tags) && post.tags.length > 0 && (
+          {post.tags?.length > 0 && (
             <div className="mt-6">
               <h3 className="text-sm font-semibold mb-2 text-gray-800">Tags</h3>
               <ul className="flex flex-wrap gap-2">

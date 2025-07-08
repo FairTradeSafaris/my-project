@@ -1,18 +1,23 @@
-import { NextResponse } from "next/server";
+// app/api/like/[id]/route.ts
+
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { serverClient } from "@/lib/sanity.server";
 
-// ✅ You no longer need a special RouteContext interface
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
 
-export async function POST(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const { id } = await context.params; // ✅ Await this!
+export async function POST(req: NextRequest, context: RouteContext) {
+  const id = context.params?.id;
 
   if (!id) {
     return NextResponse.json({ error: "Missing post ID" }, { status: 400 });
   }
+
+  console.log("🔁 Liking post ID:", id);
 
   try {
     const result = await serverClient
@@ -20,6 +25,8 @@ export async function POST(
       .setIfMissing({ likes: 0 })
       .inc({ likes: 1 })
       .commit();
+
+    console.log("✅ Updated likes:", result.likes);
 
     return NextResponse.json({ likes: result.likes });
   } catch (error) {

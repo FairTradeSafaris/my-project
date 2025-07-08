@@ -25,7 +25,10 @@ async function refreshAccessToken() {
   return accessToken;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  _context: { params: {} } // ✅ Explicit context typing
+) {
   const body = await req.json();
 
   const lead = {

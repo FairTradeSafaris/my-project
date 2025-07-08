@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { urlFor } from "@/lib/sanity";
+import { urlFor } from "@/../lib/sanity";
 import { PortableText } from "@portabletext/react";
 import SocialIcon from "./SocialIcon";
-import { portableTextComponents } from "@/lib/portableTextComponents";
-import type { Ambassador } from "@/types/ambassador";
+import { portableTextComponents } from "@/../lib/portableTextComponents";
+import type { Ambassador } from "@/../types/ambassador";
 
 export default function AmbassadorCard({ amb }: { amb: Ambassador }) {
   const [isFlipped, setIsFlipped] = useState(false);

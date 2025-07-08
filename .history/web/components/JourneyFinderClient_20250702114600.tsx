@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { client as sanityClient } from "@/lib/sanity";
+import { client as sanityClient } from "@/../lib/sanity";
 import JourneyCard from "@/components/JourneyCard";
 
 // Types
@@ -270,8 +270,8 @@ export default function JourneyFinderClient() {
                       group.multi
                         ? selectedFilters.types.includes(item)
                         : selectedFilters[group.filterKey as FilterKey] === item
-                          ? "bg-black text-white border-black"
-                          : "bg-white text-black border-gray-300"
+                        ? "bg-black text-white border-black"
+                        : "bg-white text-black border-gray-300"
                     }`}
                   >
                     {item}

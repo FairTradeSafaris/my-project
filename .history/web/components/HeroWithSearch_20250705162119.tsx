@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { client as sanity } from "@/lib/sanity";
+import { client as sanity } from "@/../lib/sanity";
 import { MapPin, Users, Search } from "lucide-react";
 
 // Type for sanity image objects

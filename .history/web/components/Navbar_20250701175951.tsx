@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, Search, User, X } from "lucide-react";
-import { client, urlFor } from "@/lib/sanity";
+import { client, urlFor } from "@/../lib/sanity";
 
 interface MenuItem {
   title: string;

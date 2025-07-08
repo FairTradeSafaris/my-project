@@ -7,8 +7,8 @@ import {
   Twitter,
   Globe,
 } from "lucide-react";
-import { urlFor } from "@/lib/sanity";
-import type { Platform } from "@/types/ambassador";
+import { urlFor } from "@/../lib/sanity";
+import type { Platform } from "@/../types/ambassador";
 import * as React from "react"; // Ensures JSX types are available
 
 interface Props {

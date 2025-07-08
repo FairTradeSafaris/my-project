@@ -2,15 +2,6 @@
 
 import Image from "next/image";
 import { MapPin, Users, Search } from "lucide-react";
-import imageUrlBuilder from "@sanity/image-url";
-import { client } from "../lib/sanity";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-
-const builder = imageUrlBuilder(client);
-
-function urlFor(source: SanityImageSource) {
-  return builder.image(source).width(1920).url();
-}
 
 export default function HeroWithSearch({
   data,
@@ -18,16 +9,14 @@ export default function HeroWithSearch({
   data: {
     headline: string;
     subheadline: string;
-    imageUrl?: SanityImageSource; // accepts Sanity image object
+    imageUrl?: string;
   };
 }) {
   const { headline, subheadline, imageUrl } = data;
 
-  const sanityImage = imageUrl ? urlFor(imageUrl) : null;
-
   return (
     <section className="relative min-h-[90vh] w-full pt-24 md:pt-28 overflow-hidden">
-      {/* Static Fallback Background */}
+      {/* Fallback Static Image */}
       <Image
         src="/hero.webp"
         alt="Safari fallback background"
@@ -37,13 +26,16 @@ export default function HeroWithSearch({
         fetchPriority="high"
       />
 
-      {/* Dynamic Sanity Background */}
-      {sanityImage && (
+      {/* Random Sanity Background Image */}
+      {imageUrl && (
         <Image
-          src={sanityImage}
+          src={imageUrl}
           alt="Dynamic safari background"
           fill
           className="absolute top-0 left-0 w-full h-full object-cover object-center animate-fadeIn"
+          onError={(e) => {
+            console.warn("Image failed to load:", imageUrl);
+          }}
         />
       )}
 
@@ -60,12 +52,7 @@ export default function HeroWithSearch({
             "Plan your once-in-a-lifetime journey with local experts who care."}
         </p>
 
-        {/* Search Form */}
-        <form
-          aria-label="Safari Search Form"
-          className="bg-white/5 text-white rounded-1xl px-4 py-4 shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-3 w-full max-w-4xl backdrop-blur-md border border-white/10"
-        >
-          {/* Where To */}
+        <div className="bg-white/5 text-white rounded-1xl px-4 py-4 shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-3 w-full max-w-4xl backdrop-blur-md border border-white/10">
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <MapPin className="w-5 h-5 text-white/70" />
             <input
@@ -75,10 +62,14 @@ export default function HeroWithSearch({
             />
           </div>
 
-          {/* Destination Select */}
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <MapPin className="w-5 h-5 text-white/70" />
+
+            <label htmlFor="destination" className="sr-only">
+              Choose a destination
+            </label>
             <select
+              id="destination"
               className="bg-transparent outline-none text-sm w-full text-white placeholder-white/60 appearance-none"
               defaultValue=""
             >
@@ -92,7 +83,6 @@ export default function HeroWithSearch({
             </select>
           </div>
 
-          {/* Guests */}
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <Users className="w-5 h-5 text-white/70" />
             <input
@@ -102,15 +92,13 @@ export default function HeroWithSearch({
             />
           </div>
 
-          {/* Submit Button */}
           <button
-            type="submit"
-            aria-label="Search safaris"
             className="bg-white text-black rounded-4xl px-6 py-3 font-semibold hover:bg-gray-200 transition text-sm w-full md:w-auto flex items-center justify-center"
+            aria-label="Search safaris"
           >
             <Search className="w-5 h-5" />
           </button>
-        </form>
+        </div>
       </div>
     </section>
   );

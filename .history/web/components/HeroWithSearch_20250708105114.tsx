@@ -2,15 +2,6 @@
 
 import Image from "next/image";
 import { MapPin, Users, Search } from "lucide-react";
-import imageUrlBuilder from "@sanity/image-url";
-import { client } from "../lib/sanity";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
-
-const builder = imageUrlBuilder(client);
-
-function urlFor(source: SanityImageSource) {
-  return builder.image(source).width(1920).url();
-}
 
 export default function HeroWithSearch({
   data,
@@ -18,12 +9,13 @@ export default function HeroWithSearch({
   data: {
     headline: string;
     subheadline: string;
-    imageUrl?: SanityImageSource; // accepts Sanity image object
+    imageUrl?: string;
   };
 }) {
   const { headline, subheadline, imageUrl } = data;
 
-  const sanityImage = imageUrl ? urlFor(imageUrl) : null;
+  // Sanitize image URL — allow only Sanity-hosted images
+  const isValidImage = imageUrl?.startsWith("https://cdn.sanity.io") ?? false;
 
   return (
     <section className="relative min-h-[90vh] w-full pt-24 md:pt-28 overflow-hidden">
@@ -38,14 +30,17 @@ export default function HeroWithSearch({
       />
 
       {/* Dynamic Sanity Background */}
-      {sanityImage && (
+      {imageUrl ? (
         <Image
-          src={sanityImage}
+          src={imageUrl}
           alt="Dynamic safari background"
           fill
           className="absolute top-0 left-0 w-full h-full object-cover object-center animate-fadeIn"
+          onError={() => {
+            console.warn("⚠️ Failed to load hero image:", imageUrl);
+          }}
         />
-      )}
+      ) : null}
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/10 z-10" />
@@ -66,9 +61,13 @@ export default function HeroWithSearch({
           className="bg-white/5 text-white rounded-1xl px-4 py-4 shadow-xl flex flex-col md:flex-row items-stretch gap-3 md:gap-3 w-full max-w-4xl backdrop-blur-md border border-white/10"
         >
           {/* Where To */}
+          <label className="sr-only" htmlFor="destination-input">
+            Destination input
+          </label>
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <MapPin className="w-5 h-5 text-white/70" />
             <input
+              id="destination-input"
               type="text"
               placeholder="Where to?"
               className="bg-transparent outline-none text-sm w-full placeholder-white/60 text-white"
@@ -76,9 +75,13 @@ export default function HeroWithSearch({
           </div>
 
           {/* Destination Select */}
+          <label className="sr-only" htmlFor="destination-select">
+            Choose destination
+          </label>
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <MapPin className="w-5 h-5 text-white/70" />
             <select
+              id="destination-select"
               className="bg-transparent outline-none text-sm w-full text-white placeholder-white/60 appearance-none"
               defaultValue=""
             >
@@ -93,9 +96,13 @@ export default function HeroWithSearch({
           </div>
 
           {/* Guests */}
+          <label className="sr-only" htmlFor="guests-input">
+            Number of guests
+          </label>
           <div className="flex items-center gap-2 border border-white/10 rounded-1xl px-4 py-3 w-full bg-white/5 hover:bg-white/10 transition">
             <Users className="w-5 h-5 text-white/70" />
             <input
+              id="guests-input"
               type="text"
               placeholder="Guests"
               className="bg-transparent outline-none text-sm w-full placeholder-white/60 text-white"

@@ -120,7 +120,7 @@ export default function SafariFactFooter() {
       <footer
         className="relative text-[#3f2e1f] text-sm z-0"
         style={{
-          backgroundImage: "url('/images/footer-texture.webp')",
+          backgroundImage: "url('/images/footer-texture.webpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

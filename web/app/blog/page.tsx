@@ -35,10 +35,16 @@ type Journey = {
 export default async function BlogIndexPage({
   searchParams,
 }: {
-  searchParams?: { search?: string; page?: string };
+  searchParams: Record<string, string | string[] | undefined>;
 }) {
-  const searchQuery = searchParams?.search?.toLowerCase() || "";
-  const page = parseInt(searchParams?.page || "1", 10);
+  const rawSearch = searchParams?.search;
+  const searchQuery =
+    typeof rawSearch === "string" ? rawSearch.toLowerCase() : "";
+
+  const rawPage = searchParams?.page;
+  const page =
+    typeof rawPage === "string" && !isNaN(+rawPage) ? parseInt(rawPage, 10) : 1;
+
   const pageSize = 6;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;

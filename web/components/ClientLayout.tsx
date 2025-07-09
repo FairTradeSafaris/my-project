@@ -10,25 +10,30 @@ type MenuItem = {
   href: string;
 };
 
+type NavSection = {
+  heading?: string;
+  links: MenuItem[];
+};
+
 type FeatureCard = {
   title: string;
   description: string;
   image: {
     asset: {
-      _ref: string;
-      _type: string;
       url: string;
     };
-    _type: string;
   };
   alt: string;
   link: string;
 };
+type PromoCard = FeatureCard;
 
 const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 const SafariFactFooter = dynamic(
   () => import("@/components/SafariFactFooter"),
-  { ssr: false }
+  {
+    ssr: false,
+  }
 );
 
 export default function ClientLayout({
@@ -39,32 +44,60 @@ export default function ClientLayout({
   const pathname = usePathname();
   const hideUI = pathname === "/project-portal";
 
-  const [navLinks, setNavLinks] = useState<MenuItem[]>([]);
+  const [navSections, setNavSections] = useState<NavSection[]>([]);
   const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
+  const [promoCard, setPromoCard] = useState<PromoCard | undefined>(undefined);
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await client.fetch(
         `*[_type == "megaMenu"][0]{
-          navLinks,
-          featureCards[]{
-            title,
-            description,
-            alt,
-            link,
-            image {
-              asset->{
-                _ref,
-                _type,
-                url
-              },
-              _type
-            }
-          }
-        }`
+    navSections[] {
+      heading,
+      links[] {
+        title,
+        href
+      }
+    },
+    featureCards[] {
+      title,
+      description,
+      alt,
+      link,
+      image {
+        asset->{
+          _ref,
+          _type,
+          url
+        },
+        _type
+      }
+    },
+    promoCard {
+      title,
+      description,
+      alt,
+      link,
+      image {
+        asset->{
+          _ref,
+          _type,
+          url
+        },
+        _type
+      }
+    }
+  }`
       );
-      setNavLinks(data?.navLinks || []);
+
+      setNavSections(data?.navSections || []);
       setFeatureCards(data?.featureCards || []);
+      setPromoCard(data?.promoCard || null); // ✅ Use `null` not `undefined`
+      console.log("PROMO CARD CHECK", {
+        title: data?.promoCard?.title,
+        link: data?.promoCard?.link,
+        imageUrl: data?.promoCard?.image?.asset?.url,
+      });
     };
 
     fetchData();
@@ -72,7 +105,13 @@ export default function ClientLayout({
 
   return (
     <>
-      {!hideUI && <Navbar navLinks={navLinks} featureCards={featureCards} />}
+      {!hideUI && (
+        <Navbar
+          navSections={navSections}
+          featureCards={featureCards}
+          promoCard={promoCard}
+        />
+      )}
       <main>{children}</main>
       {!hideUI && <SafariFactFooter />}
     </>

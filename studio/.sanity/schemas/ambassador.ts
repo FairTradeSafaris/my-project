@@ -7,17 +7,18 @@ export default defineType({
   fields: [
     defineField({
       name: 'name',
-      title: 'Name',
+      title: 'Full Name',
       type: 'string',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'role',
-      title: 'Role / Title',
+      title: 'Role or Title',
       type: 'string',
     }),
     defineField({
       name: 'slug',
-      title: 'Slug (optional, for landing page)',
+      title: 'Slug (Optional)',
       type: 'slug',
       options: {
         source: 'name',
@@ -32,22 +33,20 @@ export default defineType({
     }),
     defineField({
       name: 'description',
-      title: 'Rich Description',
+      title: 'Bio / Description',
       type: 'array',
       of: [{type: 'block'}],
     }),
     defineField({
       name: 'ctaLabel',
-      title: 'CTA Label',
+      title: 'CTA Button Label (e.g. Learn More)',
       type: 'string',
     }),
     defineField({
       name: 'ctaLink',
-      title: 'CTA Link (can be external or internal)',
+      title: 'CTA URL (Internal or External)',
       type: 'url',
     }),
-
-    // 🔗 SOCIALS
     defineField({
       name: 'socials',
       title: 'Social Media Links',

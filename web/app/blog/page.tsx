@@ -32,54 +32,36 @@ type Journey = {
   };
 };
 
-export default async function BlogIndexPage({
-  searchParams,
-}: {
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
-  const rawSearch = searchParams?.search;
-  const searchQuery =
-    typeof rawSearch === "string" ? rawSearch.toLowerCase() : "";
-
-  const rawPage = searchParams?.page;
-  const page =
-    typeof rawPage === "string" && !isNaN(+rawPage) ? parseInt(rawPage, 10) : 1;
-
-  const pageSize = 6;
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-
+export default async function BlogIndexPage() {
   const filteredPosts: BlogPostPreview[] = await client.fetch(
-    groq`*[_type == "blog" && (!defined(isFeatured) || isFeatured == false) && title match "*${searchQuery}*"] | order(publishedAt desc) {
-      _id,
-      title,
-      summary,
-      publishedAt,
-      "slug": slug,
-      "coverImage": coverImage.asset->url,
-      "alt": coverImage.alt,
-      "author": author->{name},
-      tags,
-      likes
-    }`
+    groq`*[_type == "blog" && (!defined(isFeatured) || isFeatured == false)] | order(publishedAt desc) {
+    _id,
+    title,
+    summary,
+    publishedAt,
+    "slug": slug,
+    "coverImage": coverImage.asset->url,
+    "alt": coverImage.alt,
+    "author": author->{name},
+    tags,
+    likes
+  }`
   );
 
-  const featuredPost: BlogPostPreview | null = searchQuery
-    ? null
-    : await client.fetch(
-        groq`*[_type == "blog" && isFeatured == true][0] {
-          _id,
-          title,
-          summary,
-          publishedAt,
-          "slug": slug,
-          "coverImage": coverImage.asset->url,
-          "alt": coverImage.alt,
-          "author": author->{name},
-          tags,
-          likes
-        }`
-      );
+  const featuredPost: BlogPostPreview | null = await client.fetch(
+    groq`*[_type == "blog" && isFeatured == true][0] {
+    _id,
+    title,
+    summary,
+    publishedAt,
+    "slug": slug,
+    "coverImage": coverImage.asset->url,
+    "alt": coverImage.alt,
+    "author": author->{name},
+    tags,
+    likes
+  }`
+  );
 
   const featuredJourneys: Journey[] = await client.fetch(
     groq`*[_type == "journey" && featuredOnHome == true][0...3]{
@@ -108,8 +90,7 @@ export default async function BlogIndexPage({
     }`
   );
 
-  const paginatedPosts = filteredPosts.slice(start, end);
-  const totalPages = Math.ceil(filteredPosts.length / pageSize);
+  const paginatedPosts = filteredPosts;
 
   return (
     <main className="min-h-screen bg-[#fdf8f3] text-black">
@@ -121,25 +102,6 @@ export default async function BlogIndexPage({
           <h1 className="text-4xl md:text-5xl font-bold mb-6 max-w-xl">
             Discover stories from the wild.
           </h1>
-          <form className="w-full max-w-2xl relative" method="GET">
-            <div className="bg-white/20 backdrop-blur-sm p-6 rounded-xl shadow-md">
-              <input
-                type="text"
-                name="search"
-                defaultValue={searchQuery}
-                placeholder="Search blogs..."
-                className="w-full px-4 py-3 rounded border text-white placeholder-white bg-transparent"
-              />
-              {searchQuery && (
-                <Link
-                  href="/blog"
-                  className="absolute top-6 right-6 text-white text-sm underline"
-                >
-                  Clear
-                </Link>
-              )}
-            </div>
-          </form>
         </div>
       </section>
 
@@ -238,27 +200,6 @@ export default async function BlogIndexPage({
               </Link>
             ))}
           </div>
-
-          {totalPages > 1 && (
-            <div className="flex justify-center mt-12 gap-2">
-              {Array.from({ length: totalPages }).map((_, idx) => {
-                const pg = idx + 1;
-                const q = new URLSearchParams({
-                  search: searchQuery,
-                  page: pg.toString(),
-                });
-                return (
-                  <Link
-                    key={pg}
-                    href={`?${q.toString()}`}
-                    className={`px-4 py-2 rounded border ${pg === page ? "bg-black text-white" : "bg-white text-black"}`}
-                  >
-                    {pg}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* Sidebar */}

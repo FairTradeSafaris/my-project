@@ -92,22 +92,22 @@ export default function JourneyFinderClient() {
     sanityClient
       .fetch(
         `*[_type == "journey"][0...${visibleCount}]{
-      title,
-      summary,
-      slug,
-      duration,
-      price,
-      "heroUrl": heroImage.asset->url,
-      alt,
-      ctaText,
-      wetuLink,
-      region->{ title },
-      country->{ title, "flag": flag.asset->url },
-      star,
-      "starIcon": starIcon.asset->url,
-      travelStyle,
-      featuredOnHome
-    }`
+    title,
+    summary,
+    slug,
+    duration,
+    price,
+    "heroUrl": heroImage.asset->url,
+    alt,
+    ctaText,
+    wetuLink,
+    region->{ title },
+    country->{ title, "flag": flag.asset->url },
+    star,
+    "starIcon": starIcon.asset->url,
+    travelStyle,
+    "featuredOnHome": featuredOnHome
+  }`
       )
 
       .then((data: Journey[]) => {
@@ -141,7 +141,14 @@ export default function JourneyFinderClient() {
           const found = data.find(
             (j) => j.title.toLowerCase() === queryTitle.toLowerCase()
           );
-          if (found) setSelectedJourney(found);
+          if (found) {
+            setSelectedJourney(found);
+            setSearchTerm(""); // ✅ Clear the search input
+
+            const url = new URL(window.location.href);
+            url.searchParams.delete("open");
+            window.history.replaceState({}, "", url.toString());
+          }
         }
 
         setLoadingMore(false);
@@ -301,7 +308,7 @@ export default function JourneyFinderClient() {
                     star={j.star ? parseInt(j.star) : 0}
                     starIcon={j.starIcon}
                     region={j.region?.title || ""}
-                    isFeatured={j.featuredOnHome === true} // ✅ Add this line
+                    isFeatured={j.featuredOnHome === true} // ✅ THIS LINE GOES HERE
                   />
                 </div>
               ))
@@ -323,31 +330,35 @@ export default function JourneyFinderClient() {
         </section>
       </section>
 
-      {/* Modal */}
       {selectedJourney && (
         <div
-          className="fixed inset-0 bg-black/50 z-50"
+          className="fixed inset-0 z-50 bg-black/50"
           onClick={() => setSelectedJourney(null)}
         >
           <div
-            className="fixed top-0 right-0 h-full w-full sm:w-[80vw] md:w-[60vw] lg:w-[45vw] bg-white shadow-2xl z-50"
+            className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[80vw] lg:w-[70vw] bg-white shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedJourney(null)}
-              className="absolute top-4 right-6 text-3xl font-bold z-10"
+              className="absolute top-4 right-6 text-3xl font-bold text-gray-800 z-10"
+              aria-label="Close"
             >
               &times;
             </button>
 
-            {selectedJourney.wetuLink && (
+            {selectedJourney.wetuLink ? (
               <iframe
                 src={selectedJourney.wetuLink}
                 className="w-full h-full"
+                style={{ border: "none" }}
                 allowFullScreen
                 loading="lazy"
-                style={{ border: "none" }}
               />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-gray-600 text-lg">
+                No itinerary available.
+              </div>
             )}
           </div>
         </div>

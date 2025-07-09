@@ -52,8 +52,11 @@ export default defineType({
       title: 'Cover Image',
       type: 'image',
       options: {hotspot: true},
-      fields: [{name: 'alt', title: 'Alt Text', type: 'string'}],
+      fields: [
+        {name: 'alt', title: 'Alt Text', type: 'string'}, // ✅ This is the alt field
+      ],
     }),
+
     defineField({
       name: 'tags',
       title: 'Tags',

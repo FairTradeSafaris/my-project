@@ -15,6 +15,7 @@ type BlogPost = {
   summary: string;
   publishedAt: string;
   coverImage?: string;
+  heroImage?: string; // ✅ Add this line
   content: Block[];
   likes?: number;
   author?: {
@@ -41,24 +42,26 @@ export async function generateStaticParams() {
 
 async function getPost(slug: string): Promise<BlogPost | null> {
   const query = groq`*[_type == "blog" && slug.current == $slug][0] {
-    _id,
-    title,
-    publishedAt,
-    "coverImage": coverImage.asset->url,
-    summary,
-    content[] {
-      ...,
-      image { ..., asset-> },
-      images[] { ..., asset-> }
-    },
-    likes,
-    author-> {
-      name,
-      "image": image.asset->url,
-      bio
-    },
-    tags
-  }`;
+  _id,
+  title,
+  publishedAt,
+  "coverImage": coverImage.asset->url,
+  "heroImage": heroImage.asset->url,
+  summary,
+  content[] {
+    ...,
+    image { ..., asset-> },
+    images[] { ..., asset-> }
+  },
+  likes,
+  author-> {
+    name,
+    "image": image.asset->url,
+    bio
+  },
+  tags
+}`;
+
   return await client.fetch(query, { slug });
 }
 
@@ -103,11 +106,11 @@ export default async function BlogPost({
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen px-0">
       {/* --- Cover Image --- */}
-      {post.coverImage && (
+      {post.heroImage && (
         <div
           className="relative w-full h-[400px] flex items-center"
           style={{
-            backgroundImage: `url(${post.coverImage})`,
+            backgroundImage: `url(${post.heroImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -118,9 +121,6 @@ export default async function BlogPost({
               <h1 className="text-white text-4xl md:text-5xl font-bold mb-3">
                 {post.title}
               </h1>
-              {post.summary && (
-                <p className="text-white text-lg">{post.summary}</p>
-              )}
             </div>
           </div>
         </div>

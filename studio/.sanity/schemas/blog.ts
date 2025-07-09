@@ -19,7 +19,32 @@ export default defineType({
       options: {source: 'title', maxLength: 96},
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'heroImage',
+      title: 'Hero Image (Banner)',
+      type: 'image',
+      options: {hotspot: true},
+      fields: [
+        {
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+        },
+      ],
+    }),
+
+    defineField({name: 'publishedAt', title: 'Published At', type: 'datetime'}),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover Image',
+      type: 'image',
+      options: {hotspot: true},
+      fields: [
+        {name: 'alt', title: 'Alt Text', type: 'string'}, // ✅ This is the alt field
+      ],
+    }),
     defineField({name: 'summary', title: 'Summary', type: 'text'}),
+
     defineField({
       name: 'content',
       title: 'Content Blocks',
@@ -44,17 +69,6 @@ export default defineType({
       type: 'reference',
       to: [{type: 'author'}],
       validation: (Rule) => Rule.required(),
-    }),
-
-    defineField({name: 'publishedAt', title: 'Published At', type: 'datetime'}),
-    defineField({
-      name: 'coverImage',
-      title: 'Cover Image',
-      type: 'image',
-      options: {hotspot: true},
-      fields: [
-        {name: 'alt', title: 'Alt Text', type: 'string'}, // ✅ This is the alt field
-      ],
     }),
 
     defineField({

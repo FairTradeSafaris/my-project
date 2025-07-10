@@ -17,6 +17,7 @@ import sitePages from '../.sanity/schemas/sitePages'
 import ambassador from '../.sanity/schemas/ambassador'
 import globalsettings from '../.sanity/schemas/globalSettings'
 import comments from '../.sanity/schemas/comments'
+import team from '../.sanity/schemas/teamMember'
 
 // 🆕 Modular Blocks (must match names from ./blocks)
 import table from '../.sanity/schemas/objects/table'
@@ -30,6 +31,8 @@ import ctaBlock from '../.sanity/schemas/blocks/ctaBlock'
 import mapBlock from '../.sanity/schemas/blocks/mapBlock'
 import zohoForm from '../.sanity/schemas/blocks/zohoForm'
 import smartCarousel from '../.sanity/schemas/blocks/smartCarousel'
+import teamMember from '../.sanity/schemas/teamMember'
+import foundersPromise from '../.sanity/schemas/founderPromise'
 
 export const schemaTypes = [
   blog,
@@ -64,4 +67,7 @@ export const schemaTypes = [
   mapBlock,
   zohoForm,
   smartCarousel,
+  teamMember,
+  team,
+  foundersPromise,
 ]

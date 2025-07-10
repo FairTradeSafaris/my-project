@@ -32,6 +32,8 @@ import mapBlock from './schemas/blocks/mapBlock'
 import zohoForm from './schemas/blocks/zohoForm'
 import smartCarousel from './schemas/blocks/smartCarousel'
 import author from './schemas/author'
+import teamMember from '../.sanity/schemas/teamMember'
+import foundersPromise from '../.sanity/schemas/founderPromise'
 
 export const schemaTypes = [
   blog,
@@ -67,6 +69,8 @@ export const schemaTypes = [
   zohoForm,
   smartCarousel,
   author,
+  teamMember,
+  foundersPromise,
 ]
 
 export const schema = {

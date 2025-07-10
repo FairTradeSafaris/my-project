@@ -1,8 +1,12 @@
-﻿import { client as sanity } from "@/lib/sanity";
+﻿export const revalidate = 60;
+
+import { client as sanity } from "@/lib/sanity";
 import Link from "next/link";
 import type { PortableTextBlock } from "@portabletext/types";
 import JourneyCard from "@/components/JourneyCard";
 import HeroWrapper from "@/components/HeroWrapper";
+import FoundersPromise from "@/components/FoundersPromise";
+import type { FoundersPromiseBlock } from "@/types/types";
 
 import dynamic from "next/dynamic";
 
@@ -17,7 +21,30 @@ const TestimonialCarousel = dynamic(
   }
 );
 
-export const revalidate = 60;
+const foundersPromise: FoundersPromiseBlock | null = await sanity.fetch(
+  `*[_type == "foundersPromise"][0]{
+    headline,
+    intro,
+    safelist,
+    buttonText,
+    buttonLink,
+    textOnLeft,
+    backgroundImage {
+      asset->{url},
+      alt
+    },
+    lineArtImage {
+      asset->{url},
+      alt
+    },
+    impactContent {
+      title,
+      body,
+      ctaText,
+      ctaLink
+    }
+  }`
+);
 
 export async function generateMetadata() {
   const data = await sanity.fetch(
@@ -180,7 +207,7 @@ export default async function Home() {
 
         {/* Why Travel With Us Section */}
         {whyChoose && <WhyChoose data={whyChoose} />}
-
+        {foundersPromise && <FoundersPromise data={foundersPromise} />}
         {/* Journeys Section */}
         <section className="py-20 bg-[#f9f9f9] text-black">
           <div className="max-w-6xl mx-auto px-6 text-center">

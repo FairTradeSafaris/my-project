@@ -10,4 +10,5 @@ export interface TeamMember {
   linkedin?: string;
   image: string;
   bio: PortableTextBlock[];
+  featured?: boolean;
 }

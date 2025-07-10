@@ -48,15 +48,34 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
             const imageUrl =
               block.image?.asset?.url ??
               (block.image ? urlFor(block.image).url() : null);
+
+            // ✅ Moved inside the case block, after block is available
+            const imageSize = (block.imageSize || "md") as
+              | "sm"
+              | "md"
+              | "lg"
+              | "full";
+
+            const imageSizeClass: Record<typeof imageSize, string> = {
+              sm: "md:w-1/4",
+              md: "md:w-1/3",
+              lg: "md:w-1/2",
+              full: "md:w-full",
+            };
+
+            const selectedSizeClass = imageSizeClass[imageSize];
+
             return (
               <section
                 key={index}
                 className={`max-w-7xl mx-auto px-6 flex flex-col md:flex-row ${
                   block.align === "right" ? "md:flex-row-reverse" : ""
-                } items-stretch gap-8 py-8`}
+                } items-stretch gap-8 py-2`}
               >
                 {imageUrl && (
-                  <div className="w-full md:w-1/3 overflow-hidden rounded">
+                  <div
+                    className={`w-full ${selectedSizeClass} overflow-hidden rounded`}
+                  >
                     <Image
                       src={imageUrl}
                       alt={block.image?.alt || "Image"}
@@ -66,7 +85,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                     />
                   </div>
                 )}
-                <div className="w-full md:w-2/3 flex items-center">
+                <div className="w-full flex items-center">
                   <div className="prose max-w-none text-justify">
                     <PortableText value={block.text} />
                   </div>

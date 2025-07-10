@@ -63,7 +63,8 @@ export default function FoundersPromise({ data }: Props) {
       <div className="relative z-20 max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-20">
         {/* Left Column */}
         <div
-          className="w-full lg:w-1/2 h-full min-h-[500px] border border-black/10 p-10 rounded-md shadow-md flex flex-col justify-between backdrop-blur-sm"
+          id="promise"
+          className="w-full lg:w-1/2 h-full min-h-[450px] border border-black/10 p-10 rounded-md shadow-md flex flex-col justify-between backdrop-blur-sm"
           style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
         >
           <div>
@@ -98,6 +99,7 @@ export default function FoundersPromise({ data }: Props) {
         {/* Right Column */}
         {impactContent && (
           <div
+            id="sustainability"
             className="w-full lg:w-1/2 h-full min-h-[450px] border border-black/10 p-10 rounded-md shadow-md flex flex-col justify-between backdrop-blur-sm"
             style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
           >

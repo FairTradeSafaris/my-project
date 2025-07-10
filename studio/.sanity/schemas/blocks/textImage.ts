@@ -30,5 +30,21 @@ export default defineType({
       },
       initialValue: 'left',
     }),
+    defineField({
+      name: 'imageSize',
+      title: 'Image Size',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Small', value: 'sm'},
+          {title: 'Medium', value: 'md'},
+          {title: 'Large', value: 'lg'},
+          {title: 'Full Width', value: 'full'},
+        ],
+        layout: 'radio',
+        direction: 'horizontal',
+      },
+      initialValue: 'md',
+    }),
   ],
 })

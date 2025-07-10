@@ -22,62 +22,88 @@ export type PortableTextBlock = {
   style?: string;
 }[];
 
+// Optional: Enum for stricter typing
+export type ImageSize = "sm" | "md" | "lg" | "full";
+
+// All block types individually
+export type HeroImageBlock = {
+  _type: "heroImage";
+  image: SanityImage;
+  text?: string;
+  alignment?: string;
+};
+
+export type TextImageBlock = {
+  _type: "textImage";
+  image: SanityImage;
+  text: PortableTextBlock;
+  align?: "left" | "right";
+  imageSize?: ImageSize;
+};
+
+export type QuoteBlock = {
+  _type: "quoteBlock";
+  quote: string;
+  attribution?: string;
+};
+
+export type TextBlock = {
+  _type: "textBlock";
+  body: PortableTextBlock;
+};
+
+export type VideoEmbedBlock = {
+  _type: "videoEmbed";
+  url: string;
+  caption?: string;
+};
+
+export type CtaBlock = {
+  _type: "ctaBlock";
+  headline: string;
+  subtext: string;
+  buttonText?: string;
+  link?: string;
+  backgroundColor?: { hex: string };
+  buttonColor?: { hex: string };
+  buttonBackground?: { hex: string };
+};
+
+export type MapBlock = {
+  _type: "mapBlock";
+  mapUrl: string;
+};
+
+export type ZohoFormBlock = {
+  _type: "zohoForm";
+  iframeUrl: string;
+  height?: number;
+};
+
+export type GalleryBlock = {
+  _type: "galleryBlock";
+  images: SanityImage[];
+};
+
+export type SmartCarouselBlock = {
+  _type: "smartCarousel";
+  slides: {
+    image: SanityImage;
+    caption?: string;
+    buttonText?: string;
+    buttonLink?: string;
+  }[];
+};
+
+// Unified Block type for rendering
 export type Block =
-  | {
-      _type: "heroImage";
-      image: SanityImage;
-      text?: string;
-      alignment?: string;
-    }
-  | {
-      _type: "textImage";
-      image: SanityImage;
-      text: PortableTextBlock;
-      align?: "left" | "right";
-    }
-  | {
-      _type: "quoteBlock";
-      quote: string;
-      attribution?: string;
-    }
-  | {
-      _type: "textBlock";
-      body: PortableTextBlock;
-    }
-  | {
-      _type: "videoEmbed";
-      url: string;
-      caption?: string;
-    }
-  | {
-      _type: "ctaBlock";
-      headline: string;
-      subtext: string;
-      buttonText?: string;
-      link?: string;
-      backgroundColor?: { hex: string };
-      buttonColor?: { hex: string };
-      buttonBackground?: { hex: string };
-    }
-  | {
-      _type: "mapBlock";
-      mapUrl: string;
-    }
-  | {
-      _type: "zohoForm";
-      iframeUrl: string;
-      height?: number;
-    }
-  | {
-      _type: "galleryBlock";
-      images: SanityImage[];
-    }
-  | {
-      _type: "smartCarousel";
-      slides: {
-        image: SanityImage;
-        caption?: string;
-        buttonText?: string;
-        buttonLink?: string;
-      }[];
-    };
+  | HeroImageBlock
+  | TextImageBlock
+  | QuoteBlock
+  | TextBlock
+  | VideoEmbedBlock
+  | CtaBlock
+  | MapBlock
+  | ZohoFormBlock
+  | GalleryBlock
+  | SmartCarouselBlock;

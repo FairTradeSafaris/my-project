@@ -34,6 +34,7 @@ import smartCarousel from './schemas/blocks/smartCarousel'
 import author from './schemas/author'
 import teamMember from '../.sanity/schemas/teamMember'
 import foundersPromise from '../.sanity/schemas/founderPromise'
+import dest_slug from '../.sanity/schemas/dest_slug'
 
 export const schemaTypes = [
   blog,
@@ -52,6 +53,7 @@ export const schemaTypes = [
   featuredJourney,
   whyChoose,
   destination,
+  dest_slug,
   privacyPolicy,
   megamenu,
   sitePages,

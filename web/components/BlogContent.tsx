@@ -5,13 +5,48 @@ import { PortableText } from "@portabletext/react";
 import { urlFor } from "../lib/sanityImage";
 import type { Block, SanityImage } from "../types/block";
 import { useState } from "react";
-import Modal from "react-modal"; // ensure installed via: npm install react-modal
+import Modal from "react-modal";
+
+import { PortableTextReactComponents } from "@portabletext/react";
+
+const portableComponents: Partial<PortableTextReactComponents> = {
+  types: {
+    image: ({ value }: { value: SanityImage }) => (
+      <Image
+        src={urlFor(value).url()}
+        alt={value.alt || "Image"}
+        width={800}
+        height={600}
+        className="my-4 rounded"
+      />
+    ),
+  },
+  block: {
+    h1: ({ children }) => (
+      <h1 className="text-3xl sm:text-4xl font-bold my-4">{children}</h1>
+    ),
+    h2: ({ children }) => (
+      <h2 className="text-2xl sm:text-3xl font-semibold my-4">{children}</h2>
+    ),
+    h3: ({ children }) => (
+      <h3 className="text-xl sm:text-2xl font-semibold my-3">{children}</h3>
+    ),
+    normal: ({ children }) => (
+      <p className="text-base sm:text-lg leading-relaxed mb-4">{children}</p>
+    ),
+  },
+  marks: {
+    strong: ({ children }) => (
+      <strong className="font-semibold text-black">{children}</strong>
+    ),
+  },
+};
 
 export default function BlogContent({ blocks }: { blocks: Block[] }) {
-  const [openVideoIndex, setOpenVideoIndex] = useState<number | null>(null); // ✅ Correct placement
+  const [openVideoIndex, setOpenVideoIndex] = useState<number | null>(null);
 
   return (
-    <div className="space-y-0 font-sans text-lg text-gray-800 leading-relaxed">
+    <div className="space-y-0 font-sans text-base sm:text-lg text-gray-800 leading-relaxed">
       {blocks?.map((block, index) => {
         switch (block._type) {
           case "heroImage": {
@@ -28,16 +63,18 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                     alt={block.text || "Hero Image"}
                     width={1600}
                     height={320}
-                    className="w-full h-[320px] object-cover rounded"
+                    className="w-full h-[300px] sm:h-[400px] object-cover rounded"
                   />
                 )}
                 {block.text && (
                   <div
                     className={`absolute inset-0 flex items-center justify-${block.alignment || "center"} px-4`}
                   >
-                    <h2 className="text-5xl font-bold text-white bg-black/50 px-6 py-4 rounded-lg">
-                      {block.text}
-                    </h2>
+                    <div className="max-w-sm mx-auto">
+                      <h2 className="text-2xl sm:text-4xl font-bold text-white bg-black/60 px-4 py-3 rounded-lg leading-snug">
+                        {block.text}
+                      </h2>
+                    </div>
                   </div>
                 )}
               </section>
@@ -49,13 +86,11 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               block.image?.asset?.url ??
               (block.image ? urlFor(block.image).url() : null);
 
-            // ✅ Moved inside the case block, after block is available
             const imageSize = (block.imageSize || "md") as
               | "sm"
               | "md"
               | "lg"
               | "full";
-
             const imageSizeClass: Record<typeof imageSize, string> = {
               sm: "md:w-1/4",
               md: "md:w-1/3",
@@ -68,7 +103,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
             return (
               <section
                 key={index}
-                className={`max-w-7xl mx-auto px-6 flex flex-col md:flex-row ${
+                className={`max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row ${
                   block.align === "right" ? "md:flex-row-reverse" : ""
                 } items-stretch gap-8 py-2`}
               >
@@ -87,7 +122,10 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 )}
                 <div className="w-full flex items-center">
                   <div className="prose max-w-none text-justify">
-                    <PortableText value={block.text} />
+                    <PortableText
+                      value={block.text}
+                      components={portableComponents}
+                    />
                   </div>
                 </div>
               </section>
@@ -96,9 +134,15 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
           case "textBlock":
             return (
-              <section key={index} className="max-w-7xl mx-auto px-6 pt-0">
+              <section
+                key={index}
+                className="max-w-7xl mx-auto px-4 sm:px-6 pt-0"
+              >
                 <div className="prose max-w-none text-justify">
-                  <PortableText value={block.body} />
+                  <PortableText
+                    value={block.body}
+                    components={portableComponents}
+                  />
                 </div>
               </section>
             );
@@ -107,7 +151,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
             return (
               <blockquote
                 key={index}
-                className="text-xl font-semibold italic text-center text-gray-700"
+                className="text-lg sm:text-xl font-medium italic text-center text-gray-700 px-4"
               >
                 “{block.quote}”
                 {block.attribution && (
@@ -120,16 +164,13 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
           case "videoEmbed": {
             const isOpen = openVideoIndex === index;
-
             return (
               <div key={index} className="max-w-4xl mx-auto my-12 px-4">
-                {/* Optional caption below the preview */}
                 {block.caption && (
-                  <p className="text-center text-m text-gray-600 mt-3 italic">
+                  <p className="text-center text-sm sm:text-base text-gray-600 mt-3 italic">
                     {block.caption}
                   </p>
                 )}
-                {/* Video preview with overlay play button */}
                 <div
                   className="relative aspect-video rounded-lg overflow-hidden shadow-md group cursor-pointer"
                   onClick={() => setOpenVideoIndex(index)}
@@ -140,13 +181,12 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                     allowFullScreen
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition flex items-center justify-center">
-                    <button className="text-white text-6xl opacity-80 group-hover:opacity-100">
+                    <button className="text-white text-4xl sm:text-6xl opacity-80 group-hover:opacity-100">
                       ▶
                     </button>
                   </div>
                 </div>
 
-                {/* Modal full-size video */}
                 <Modal
                   isOpen={isOpen}
                   onRequestClose={() => setOpenVideoIndex(null)}
@@ -171,10 +211,11 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               </div>
             );
           }
+
           case "ctaBlock": {
-            const background = block.backgroundColor?.hex || "#f97316"; // default: orange-500
-            const buttonTextColor = block.buttonColor?.hex || "#f97316"; // default: orange-600
-            const buttonBg = block.buttonBackground?.hex || "#ffffff"; // default: white
+            const background = block.backgroundColor?.hex || "#f97316";
+            const buttonTextColor = block.buttonColor?.hex || "#f97316";
+            const buttonBg = block.buttonBackground?.hex || "#ffffff";
 
             return (
               <div
@@ -182,12 +223,14 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 className="p-6 rounded text-center space-y-2"
                 style={{ backgroundColor: background, color: "#ffffff" }}
               >
-                <h3 className="text-xl font-bold">{block.headline}</h3>
-                <p>{block.subtext}</p>
+                <h3 className="text-lg sm:text-xl font-bold">
+                  {block.headline}
+                </h3>
+                <p className="text-sm sm:text-base">{block.subtext}</p>
                 {block.buttonText && block.link && (
                   <a
                     href={block.link}
-                    className="inline-block px-4 py-2 rounded font-semibold"
+                    className="inline-block mt-2 px-4 py-2 w-full sm:w-auto rounded font-semibold text-center"
                     style={{
                       color: buttonTextColor,
                       backgroundColor: buttonBg,
@@ -202,7 +245,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
           case "mapBlock":
             return (
-              <div key={index} className="w-full h-[400px]">
+              <div key={index} className="w-full h-[300px] sm:h-[400px]">
                 <iframe
                   src={block.mapUrl}
                   className="w-full h-full rounded"
@@ -214,7 +257,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
           case "zohoForm":
             return (
-              <div key={index} className="w-full">
+              <div key={index} className="w-full px-4">
                 <iframe
                   src={block.iframeUrl}
                   height={block.height || 600}
@@ -225,7 +268,10 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
           case "galleryBlock":
             return (
-              <section key={index} className="max-w-7xl mx-auto px-6 my-12">
+              <section
+                key={index}
+                className="max-w-7xl mx-auto px-4 sm:px-6 my-12"
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {block.images?.map((img: SanityImage, i: number) => (
                     <Image
@@ -243,15 +289,16 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
           case "smartCarousel":
             return (
-              <section key={index} className="max-w-7xl mx-auto px-6 my-12">
+              <section
+                key={index}
+                className="max-w-7xl mx-auto px-4 sm:px-6 my-12"
+              >
                 <div className="relative w-full overflow-hidden rounded">
                   <div className="flex gap-4 snap-x overflow-x-auto scroll-smooth pb-4">
                     {block.slides?.map((slide, i) => {
                       const imageUrl = slide.image?.asset?.url
                         ? slide.image.asset.url
-                        : slide.image?.asset?._ref
-                          ? urlFor(slide.image).width(1200).height(600).url()
-                          : null;
+                        : urlFor(slide.image).width(1200).height(600).url();
 
                       return (
                         <div

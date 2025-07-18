@@ -2,25 +2,32 @@
 
 /* 🌗 Theme Variables */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #e6d8c7;
+  --background-rgb: 230, 216, 199;
+  --foreground: #2c2c2c;
+  --accent: #5a3e2b;
+  --surface: #f4eee7;
+  --border: #d9cfc4;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #1f1b17;
+  --background-rgb: 31, 27, 23;
+  --foreground: #ededed;
+  --accent: #755d45;
+  --surface: #2a2420;
+  --border: #3a332e; /* 🛠 softened to reduce visual border impact */
 }
 
-/* 🧍 Base Body Styles */
+/* Apply theme globally */
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-}
-html,
-body {
   height: 100%;
   margin: 0;
   padding: 0;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
 }

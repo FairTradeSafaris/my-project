@@ -19,8 +19,8 @@ type ConnectLink = {
 
 export default function SafariFactFooter() {
   const [fact, setFact] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState<string>(""); // Rhino
-  const [logoUrl, setLogoUrl] = useState<string>(""); // Main Logo
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [logoUrl, setLogoUrl] = useState<string>("");
   const [exploreLinks, setExploreLinks] = useState<
     { label: string; href: string }[]
   >([]);
@@ -67,9 +67,9 @@ export default function SafariFactFooter() {
   return (
     <>
       {/* As Seen On Section */}
-      <section className="bg-[#e9e0d1] py-12">
+      <section className="bg-[#e9e0d1] dark:bg-[#1b1b1b] py-12">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <h2 className="text-xs md:text-sm tracking-widest uppercase text-[#5f5241] mb-6">
+          <h2 className="text-xs md:text-sm tracking-widest uppercase text-[#5f5241] dark:text-neutral-400 mb-6">
             As Seen On
           </h2>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-6 opacity-90">
@@ -77,29 +77,21 @@ export default function SafariFactFooter() {
               src="/logos/nbc.svg"
               alt="NBC"
               className="h-8 md:h-10 object-contain"
-              width={100}
-              height={40}
             />
             <img
               src="/logos/usa-today.svg"
               alt="USA Today"
               className="h-8 md:h-10 object-contain"
-              width={120}
-              height={40}
             />
             <img
               src="/logos/fox.svg"
               alt="FOX"
               className="h-8 md:h-10 object-contain"
-              width={90}
-              height={40}
             />
             <img
               src="/logos/CBS_logo.svg"
               alt="CBS"
               className="h-8 md:h-10 object-contain"
-              width={110}
-              height={40}
             />
           </div>
         </div>
@@ -110,23 +102,21 @@ export default function SafariFactFooter() {
         <svg
           viewBox="0 0 500 50"
           preserveAspectRatio="none"
-          className="w-full h-10 fill-[#e9e0d1] rotate-180"
+          className="w-full h-10 fill-[#e9e0d1] dark:fill-[#1b1b1b] rotate-180"
         >
           <path d="M0,0 C150,50 350,0 500,50 L500,0 L0,0 Z" />
         </svg>
       </div>
 
       {/* Footer */}
-      <footer
-        className="relative text-[#3f2e1f] text-sm z-0"
-        style={{
-          backgroundImage: "url('/images/footer-texture.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-[#e9e0d1] via-[#e9e0d1]/80 to-transparent z-10 pointer-events-none" />
+      <footer className="relative text-[#3f2e1f] dark:text-neutral-300 text-sm z-0 bg-[#f5f0e7] dark:bg-[#121212]">
+        {/* Light mode texture only */}
+        <div className="absolute inset-0 bg-[url('/images/footer-texture.webp')] bg-cover bg-center dark:hidden" />
 
+        {/* Top overlay gradient */}
+        <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-[#e9e0d1] via-[#e9e0d1]/80 to-transparent dark:from-black dark:via-black/70 dark:to-transparent z-10 pointer-events-none" />
+
+        {/* Content Grid */}
         <div className="relative z-20 max-w-6xl mx-auto px-6 py-6 grid md:grid-cols-3 gap-10 items-start">
           <div className="flex justify-center">
             {logoUrl && (
@@ -135,6 +125,7 @@ export default function SafariFactFooter() {
                 alt="Fair Trade Safaris Logo"
                 width={260}
                 height={60}
+                className="dark:invert"
               />
             )}
           </div>
@@ -173,7 +164,7 @@ export default function SafariFactFooter() {
                 alt="Rhino Illustration"
                 width={380}
                 height={80}
-                className="opacity-70"
+                className="opacity-70 dark:invert"
               />
             )}
           </div>
@@ -181,7 +172,7 @@ export default function SafariFactFooter() {
 
         {fact && (
           <div className="relative z-20 mt-2 mb-4 flex justify-center">
-            <div className="bg-[#e4d7c3] text-[#7a4e1d] px-4 py-2 rounded-md italic max-w-xl text-center text-sm shadow-sm">
+            <div className="bg-[#e4d7c3] dark:bg-[#2b2b2b] text-[#7a4e1d] dark:text-neutral-300 px-4 py-2 rounded-md italic max-w-xl text-center text-sm shadow-sm">
               Did you know? {fact}
             </div>
           </div>
@@ -203,17 +194,18 @@ export default function SafariFactFooter() {
                     alt={social.platform}
                     width={50}
                     height={50}
-                    className="hover:opacity-80 transition-opacity duration-200"
+                    className="hover:opacity-80 transition-opacity duration-200 dark:invert"
                   />
                 )}
               </a>
             ))}
           </div>
         )}
-        <div className="relative z-20 text-xs py-2 mt-4 border-t border-[#d2c2a3] bg-[#e5d7be]/70 backdrop-blur-sm px-6 flex flex-col md:flex-row items-center justify-between text-[#3f2e1f]">
+
+        <div className="relative z-20 text-xs py-2 mt-4 border-t border-[#d2c2a3] dark:border-neutral-700 bg-[#e5d7be]/70 dark:bg-[#1b1b1b]/70 backdrop-blur-sm px-6 flex flex-col md:flex-row items-center justify-between text-[#3f2e1f] dark:text-neutral-400">
           <Link
             href="/privacy"
-            className="underline hover:text-black mb-1 md:mb-0"
+            className="underline hover:text-black dark:hover:text-white mb-1 md:mb-0"
           >
             Privacy Policy
           </Link>

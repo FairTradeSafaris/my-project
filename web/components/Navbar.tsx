@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Search, User, X } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
+import { useTheme } from "next-themes"; // Make sure this is already imported
 
 interface MenuItem {
   title: string;
@@ -38,161 +42,292 @@ export default function Navbar({
   featureCards = [],
   promoCard,
 }: Props) {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const desktopMenuRef = useRef<HTMLDivElement | null>(null);
+  const { theme, systemTheme } = useTheme();
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
+    const handleClickOutside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (
+        (mobileMenuRef.current && mobileMenuRef.current.contains(target)) ||
+        (desktopMenuRef.current && desktopMenuRef.current.contains(target))
+      ) {
+        return;
       }
+      setMenuOpen(false);
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handleClickOutside);
+    return () => {
+      document.removeEventListener("pointerdown", handleClickOutside);
+    };
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [menuOpen]);
+
+  const mobileMenuVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 },
+  };
+
+  const desktopMenuVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -10 },
+  };
 
   return (
     <>
       {/* Top Nav */}
-      <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-2xl flex items-center justify-between gap-6 w-[92vw] max-w-4xl bg-[#f2e7db]/90 shadow-md backdrop-blur transition-all duration-300">
+      <nav
+        className="fixed top-4 md:top-4 left-1/2 transform -translate-x-1/2 z-50 px-2 md:px-3 py-1 md:py-2 rounded-2xl flex items-center justify-between gap-6 w-[92vw] max-w-4xl shadow-md backdrop-blur transition-all duration-300"
+        style={{
+          backgroundColor: "rgba(var(--background-rgb), 0.95)",
+          color: "var(--foreground)",
+        }}
+      >
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logos/logo-top.png"
-            alt="Fair Trade Safaris"
-            width={240}
-            height={40}
-            className="object-contain"
-            priority
-          />
+          <>
+            <Image
+              src={
+                resolvedTheme === "dark"
+                  ? "/logos/logo-dark.png"
+                  : "/logos/logo-light.png"
+              }
+              alt="Fair Trade Safaris"
+              width={260}
+              height={50}
+              className="object-contain scale-[1.1]"
+              priority
+            />
+          </>
         </Link>
 
-        <div className="flex items-center gap-6 text-black">
+        <div
+          className="flex items-center gap-4 md:gap-6"
+          style={{ color: "var(--foreground)" }}
+        >
           <button title="Search">
             <Search size={20} />
           </button>
           <button title="My Journey">
             <User size={20} />
           </button>
-          <button
+          <ThemeToggle /> {/* 👈 Dark/Light Toggle */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             title={menuOpen ? "Close Menu" : "Open Menu"}
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-black transition-transform duration-200"
+            className="transition-transform duration-200"
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          </motion.button>
         </div>
       </nav>
 
-      {/* Mega Menu */}
-      {menuOpen && (
-        <div
-          ref={menuRef}
-          className="fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl bg-white/95 backdrop-blur-md shadow-xl border border-gray-200 rounded-3xl p-8 flex flex-col md:flex-row md:items-start gap-8"
-        >
-          {/* Left Column: Nav Sections */}
-          <div className="w-full md:w-1/3 flex-shrink-0 flex flex-col gap-6">
-            {navSections.map((section, sectionIdx) => (
-              <div key={sectionIdx}>
-                {section.heading && (
-                  <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                    {section.heading}
-                  </h3>
-                )}
-                <div className="flex flex-col gap-3">
-                  {section.links.map((item, idx) => (
-                    <Link
-                      key={idx}
-                      href={item.href}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between px-5 py-4 rounded-xl bg-white border hover:shadow-md transition group"
-                    >
-                      <span className="text-gray-800 group-hover:text-black text-sm font-medium">
-                        {item.title}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 text-gray-400 group-hover:text-black transition"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Middle Column: Feature Cards */}
-          <div className="w-full md:w-1/3 flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-              FEATURED
-            </h3>
-            {featureCards.map((card, idx) => (
-              <Link
-                key={idx}
-                href={card.link}
-                onClick={() => setMenuOpen(false)}
-                className="group flex gap-4 border rounded-xl overflow-hidden hover:shadow-lg transition"
-              >
-                <Image
-                  src={card.image.asset.url}
-                  alt={card.alt}
-                  width={120}
-                  height={80}
-                  className="w-[120px] h-[80px] object-cover rounded-l-xl"
-                />
-                <div className="py-2 pr-3">
-                  <h4 className="font-semibold text-sm text-gray-800 group-hover:text-[#5a3e2b]">
-                    {card.title}
-                  </h4>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {card.description}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Right Column: Promo Card */}
-          {promoCard?.link && (
-            <div className="w-full md:w-1/4">
-              <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                PROMOTIONS
+      {/* === MOBILE MENU === */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="mobile-menu"
+            ref={mobileMenuRef}
+            variants={mobileMenuVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed top-20 inset-x-4 mx-auto z-50 max-w-sm rounded-3xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700 p-4 space-y-5"
+          >
+            <div>
+              <h3 className="text-[11px] font-semibold text-gray-400 dark:text-gray-300 uppercase tracking-wider mb-2">
+                Explore
               </h3>
-              <Link
-                href={promoCard.link}
-                onClick={() => setMenuOpen(false)}
-                className="rounded-xl overflow-hidden hover:shadow-xl transition block"
-              >
-                <Image
-                  src={promoCard.image.asset.url}
-                  alt={promoCard.alt}
-                  width={400}
-                  height={200}
-                  className="w-full h-36 object-cover"
-                />
-                <div className="p-4 bg-white">
-                  <h4 className="font-semibold text-sm text-gray-800 group-hover:text-[#5a3e2b]">
-                    {promoCard.title}
-                  </h4>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {promoCard.description}
-                  </p>
-                </div>
-              </Link>
+              <ul className="space-y-2">
+                {navSections.map((section, sectionIdx) =>
+                  section.links.map((item, linkIdx) => (
+                    <li key={`nav-${sectionIdx}-${linkIdx}`}>
+                      <Link href={item.href}>
+                        <span
+                          onClick={() => setMenuOpen(false)}
+                          className={`block px-4 py-2 rounded-xl text-sm transition ${
+                            pathname === item.href
+                              ? "bg-gray-200 dark:bg-neutral-700 font-semibold"
+                              : "text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-neutral-700"
+                          }`}
+                        >
+                          {item.title}
+                        </span>
+                      </Link>
+                    </li>
+                  ))
+                )}
+              </ul>
             </div>
-          )}
-        </div>
-      )}
+
+            {featureCards.length > 0 && (
+              <div>
+                <h3 className="text-[11px] font-semibold text-gray-400 dark:text-gray-300 uppercase tracking-wider mb-2">
+                  Featured
+                </h3>
+                <ul className="space-y-2">
+                  {featureCards.slice(0, 2).map((card, idx) => (
+                    <li key={`feat-${card.title}-${idx}`}>
+                      <Link href={card.link}>
+                        <span
+                          onClick={() => setMenuOpen(false)}
+                          className="block px-4 py-2 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
+                        >
+                          {card.title}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {promoCard?.title && (
+              <div>
+                <h3 className="text-[11px] font-semibold text-gray-400 dark:text-gray-300 uppercase tracking-wider mb-2">
+                  Special Offer
+                </h3>
+                <Link href={promoCard.link}>
+                  <span
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-4 py-2 rounded-xl text-sm font-semibold text-[#5a3e2b] dark:text-orange-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
+                  >
+                    {promoCard.title}
+                  </span>
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* === DESKTOP MENU === */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="desktop-menu"
+            ref={desktopMenuRef}
+            variants={desktopMenuVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.2 }}
+            className="hidden md:flex fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl border border-gray-200 dark:border-neutral-700 rounded-3xl p-8 gap-8 max-h-[80vh] overflow-y-auto"
+          >
+            <div className="w-1/3 flex flex-col gap-4">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                Explore
+              </h3>
+              {navSections.map((section, sectionIdx) => (
+                <div key={`section-${sectionIdx}`}>
+                  {section.heading && (
+                    <p className="text-xs font-medium text-gray-500 mb-1">
+                      {section.heading}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    {section.links.map((item, linkIdx) => (
+                      <Link
+                        key={`desk-link-${sectionIdx}-${linkIdx}`}
+                        href={item.href}
+                      >
+                        <span
+                          onClick={() => setMenuOpen(false)}
+                          className={`text-sm px-3 py-2 rounded-md transition block ${
+                            pathname === item.href
+                              ? "bg-gray-200 dark:bg-neutral-700 font-semibold"
+                              : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700"
+                          }`}
+                        >
+                          {item.title}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {featureCards.length > 0 && (
+              <div className="w-1/3 flex flex-col gap-4">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  Featured
+                </h3>
+                {featureCards.slice(0, 2).map((card, idx) => (
+                  <Link
+                    key={`desk-feature-${card.title}-${idx}`}
+                    href={card.link}
+                    className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/70 dark:hover:bg-neutral-800 transition"
+                  >
+                    <Image
+                      src={card.image.asset.url}
+                      alt={card.alt}
+                      width={60}
+                      height={60}
+                      className="w-[60px] h-[60px] object-cover rounded-lg shadow-sm"
+                    />
+                    <div
+                      onClick={() => setMenuOpen(false)}
+                      className="flex flex-col cursor-pointer"
+                    >
+                      <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
+                        {card.title}
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                        {card.description}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {promoCard?.link && (
+              <div className="w-1/3 flex flex-col gap-3">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  Special Offer
+                </h3>
+                <Link
+                  href={promoCard.link}
+                  className="group block rounded-xl overflow-hidden hover:shadow-md transition border border-gray-200 dark:border-neutral-700"
+                >
+                  <div onClick={() => setMenuOpen(false)}>
+                    <Image
+                      src={promoCard.image.asset.url}
+                      alt={promoCard.alt}
+                      width={400}
+                      height={200}
+                      className="w-full h-36 object-cover"
+                    />
+                    <div className="p-4 bg-white dark:bg-neutral-900">
+                      <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
+                        {promoCard.title}
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                        {promoCard.description}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

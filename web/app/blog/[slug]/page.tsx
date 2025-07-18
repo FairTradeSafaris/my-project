@@ -9,13 +9,15 @@ import BlogContent from "@/components/BlogContent";
 import ShareButtons from "@/components/ShareButtons";
 import type { Block } from "@/types/block";
 
+export const revalidate = 0;
+
 type BlogPost = {
   _id: string;
   title: string;
   summary: string;
   publishedAt: string;
   coverImage?: string;
-  heroImage?: string; // ✅ Add this line
+  heroImage?: string;
   content: Block[];
   likes?: number;
   author?: {
@@ -33,6 +35,23 @@ type Comment = {
   _createdAt: string;
 };
 
+type Journey = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  region?: { title: string };
+  heroImage?: { asset: { url: string }; alt?: string };
+};
+
+type LikedBlog = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  coverImage?: string;
+  alt?: string;
+  likes?: number;
+};
+
 export async function generateStaticParams() {
   const slugs = await client.fetch(
     groq`*[_type == "blog" && defined(slug.current)]{ "slug": slug.current }`
@@ -42,26 +61,25 @@ export async function generateStaticParams() {
 
 async function getPost(slug: string): Promise<BlogPost | null> {
   const query = groq`*[_type == "blog" && slug.current == $slug][0] {
-  _id,
-  title,
-  publishedAt,
-  "coverImage": coverImage.asset->url,
-  "heroImage": heroImage.asset->url,
-  summary,
-  content[] {
-    ...,
-    image { ..., asset-> },
-    images[] { ..., asset-> }
-  },
-  likes,
-  author-> {
-    name,
-    "image": image.asset->url,
-    bio
-  },
-  tags
-}`;
-
+    _id,
+    title,
+    publishedAt,
+    "coverImage": coverImage.asset->url,
+    "heroImage": heroImage.asset->url,
+    summary,
+    content[] {
+      ...,
+      image { ..., asset-> },
+      images[] { ..., asset-> }
+    },
+    likes,
+    author-> {
+      name,
+      "image": image.asset->url,
+      bio
+    },
+    tags
+  }`;
   return await client.fetch(query, { slug });
 }
 
@@ -73,7 +91,32 @@ async function getApprovedComments(postId: string): Promise<Comment[]> {
       comment,
       _createdAt
     }`;
-  return await client.fetch(query, { postId });
+  return await client.fetch(query, { postId }, { cache: "no-store" });
+}
+
+async function getFeaturedJourneys(): Promise<Journey[]> {
+  return await client.fetch(
+    groq`*[_type == "journey" && featuredOnHome == true][0...3] {
+      _id,
+      title,
+      "slug": slug,
+      region->{ title },
+      heroImage { asset->{ url }, alt }
+    }`
+  );
+}
+
+async function getMostLikedBlogs(): Promise<LikedBlog[]> {
+  return await client.fetch(
+    groq`*[_type == "blog"] | order(likes desc, publishedAt desc)[0...3] {
+      _id,
+      title,
+      "slug": slug,
+      "coverImage": coverImage.asset->url,
+      "alt": coverImage.alt,
+      likes
+    }`
+  );
 }
 
 export async function generateMetadata({
@@ -85,7 +128,6 @@ export async function generateMetadata({
   const post = await getPost(slug);
 
   if (!post) return { title: "Not Found" };
-
   return {
     title: post.title,
     description: post.summary,
@@ -102,32 +144,28 @@ export default async function BlogPost({
   if (!post) return notFound();
 
   const comments = await getApprovedComments(post._id);
+  const featuredJourneys = await getFeaturedJourneys();
+  const mostLikedBlogs = await getMostLikedBlogs();
 
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen px-0">
-      {/* --- Cover Image --- */}
       {post.heroImage && (
         <div
-          className="relative w-full h-[400px] flex items-center"
+          className="relative w-full h-[300px] sm:h-[400px] flex items-center justify-center"
           style={{
             backgroundImage: `url(${post.heroImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="absolute inset-0" />
-          <div className="relative z-10 px-6 md:px-12 max-w-screen-xl mx-auto w-full">
-            <div className="max-w-2xl">
-              <h1 className="text-white text-4xl md:text-5xl font-bold mb-3">
-                {post.title}
-              </h1>
-            </div>
-          </div>
+          <div className="bg-black/50 w-full h-full absolute inset-0" />
+          <h1 className="relative z-10 text-3xl sm:text-5xl text-white font-bold px-4 text-center">
+            {post.title}
+          </h1>
         </div>
       )}
 
-      {/* --- Content + Sidebar --- */}
-      <div className="max-w-screen-2xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-12 mt-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-4 gap-10 mt-10">
         <div className="lg:col-span-3">
           <BlogContent blocks={post.content} />
           <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -136,25 +174,27 @@ export default async function BlogPost({
           </div>
         </div>
 
-        <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center space-y-4">
           {post.author?.image && (
-            <img
-              src={post.author.image}
-              alt={post.author.name}
-              className="w-24 h-24 rounded-full object-cover border mx-auto"
-            />
+            <div className="flex justify-center">
+              <img
+                src={post.author.image}
+                alt={post.author.name}
+                className="w-28 h-28 rounded-full object-cover shadow-md border-2 border-amber-600"
+              />
+            </div>
           )}
-          <h2 className="text-center text-lg font-semibold mt-4">
-            {post.author?.name || "Unknown Author"}
-          </h2>
-          {post.author?.bio && (
-            <p className="text-sm text-gray-600 text-center mt-2">
-              {post.author.bio}
-            </p>
-          )}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {post.author?.name || "Unknown Author"}
+            </h2>
+            {post.author?.bio && (
+              <p className="text-sm text-gray-600 mt-1">{post.author.bio}</p>
+            )}
+          </div>
           {Array.isArray(post.tags) && post.tags.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold mb-2 text-gray-800">Tags</h3>
+            <div className="bg-white shadow p-4 rounded-lg">
+              <h4 className="text-sm font-semibold mb-2 text-gray-800">Tags</h4>
               <ul className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <li
@@ -167,11 +207,80 @@ export default async function BlogPost({
               </ul>
             </div>
           )}
+
+          {featuredJourneys.length > 0 && (
+            <div className="bg-[#f5f3ef] p-4 rounded-lg">
+              <h4 className="text-lg font-semibold mb-3">
+                🌍 Featured Journeys
+              </h4>
+              <ul className="space-y-4">
+                {featuredJourneys.map((j) => (
+                  <li
+                    key={j._id}
+                    className="bg-white p-2 rounded shadow flex gap-3 items-center"
+                  >
+                    {j.heroImage?.asset?.url && (
+                      <img
+                        src={j.heroImage.asset.url}
+                        alt={j.heroImage.alt || j.title}
+                        width={60}
+                        height={60}
+                        className="rounded object-cover flex-shrink-0"
+                      />
+                    )}
+                    <div>
+                      <h5 className="text-sm font-bold text-gray-800">
+                        {j.title}
+                      </h5>
+                      {j.region?.title && (
+                        <p className="text-xs text-orange-600">
+                          {j.region.title}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {mostLikedBlogs.length > 0 && (
+            <div className="bg-[#f5f3ef] p-4 rounded-lg">
+              <h4 className="text-lg font-semibold mb-3">
+                🔥 Most Liked Blogs
+              </h4>
+              <ul className="space-y-4">
+                {mostLikedBlogs.map((b) => (
+                  <li
+                    key={b._id}
+                    className="bg-white p-2 rounded shadow flex gap-3 items-center"
+                  >
+                    {b.coverImage && (
+                      <img
+                        src={b.coverImage}
+                        alt={b.alt || b.title}
+                        width={60}
+                        height={60}
+                        className="rounded object-cover flex-shrink-0"
+                      />
+                    )}
+                    <div>
+                      <h5 className="text-sm font-bold text-gray-800">
+                        {b.title}
+                      </h5>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {b.likes ?? 0} likes
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </aside>
       </div>
 
-      {/* --- Comments --- */}
-      <div className="max-w-3xl mx-auto px-6 mt-16">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 mt-16">
         <section className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">
             Ready to share your thoughts?

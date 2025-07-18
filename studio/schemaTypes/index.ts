@@ -33,6 +33,7 @@ import zohoForm from '../.sanity/schemas/blocks/zohoForm'
 import smartCarousel from '../.sanity/schemas/blocks/smartCarousel'
 import teamMember from '../.sanity/schemas/teamMember'
 import foundersPromise from '../.sanity/schemas/founderPromise'
+import dest_slug from '../.sanity/schemas/dest_slug'
 
 export const schemaTypes = [
   blog,
@@ -54,7 +55,7 @@ export const schemaTypes = [
   sitePages,
   ambassador,
   globalsettings,
-
+  dest_slug,
   // 🧱 Register content blocks
   table,
   heroImage,

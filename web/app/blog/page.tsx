@@ -1,9 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { client } from "@/lib/sanity";
 import groq from "groq";
+import { useSearchParams, useRouter } from "next/navigation";
 
-// Define the blog post structure
+// Define types
 type BlogPostPreview = {
   _id: string;
   title: string;
@@ -32,65 +36,96 @@ type Journey = {
   };
 };
 
-export default async function BlogIndexPage() {
-  const filteredPosts: BlogPostPreview[] = await client.fetch(
-    groq`*[_type == "blog" && (!defined(isFeatured) || isFeatured == false)] | order(publishedAt desc) {
-    _id,
-    title,
-    summary,
-    publishedAt,
-    "slug": slug,
-    "coverImage": coverImage.asset->url,
-    "alt": coverImage.alt,
-    "author": author->{name},
-    tags,
-    likes
-  }`
-  );
+export default function BlogIndexPage() {
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const featuredPost: BlogPostPreview | null = await client.fetch(
-    groq`*[_type == "blog" && isFeatured == true][0] {
-    _id,
-    title,
-    summary,
-    publishedAt,
-    "slug": slug,
-    "coverImage": coverImage.asset->url,
-    "alt": coverImage.alt,
-    "author": author->{name},
-    tags,
-    likes
-  }`
-  );
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const featuredJourneys: Journey[] = await client.fetch(
-    groq`*[_type == "journey" && featuredOnHome == true][0...3]{
-      _id,
-      title,
-      "slug": slug,
-      summary,
-      price,
-      duration,
-      region->{title},
-      heroImage {
-        asset->{url},
-        alt
+  const tagFromURL = searchParams.get("tag") || "";
+  const [selectedTag, setSelectedTag] = useState(tagFromURL);
+
+  const [allTags, setAllTags] = useState<string[]>([]); // ✅ Needed to populate <select>
+
+  // 👈 Add this line
+  const [posts, setPosts] = useState<BlogPostPreview[]>([]);
+  const [featuredPost, setFeaturedPost] = useState<BlogPostPreview | null>(
+    null
+  );
+  const [featuredJourneys, setFeaturedJourneys] = useState<Journey[]>([]);
+  const [mostLikedBlogs, setMostLikedBlogs] = useState<BlogPostPreview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch =
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.summary.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesTag =
+      selectedTag === "" || (post.tags || []).includes(selectedTag);
+
+    return matchesSearch && matchesTag;
+  });
+  useEffect(() => {
+    const tagFromURL = searchParams.get("tag") || "";
+    setSelectedTag(tagFromURL);
+  }, [searchParams]);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [postsData, featuredData, journeysData, likedData] =
+          await Promise.all([
+            client.fetch(groq`*[_type == "blog" && (!defined(isFeatured) || isFeatured == false)] | order(publishedAt desc){
+            _id, title, summary, publishedAt, "slug": slug,
+            "coverImage": coverImage.asset->url, "alt": coverImage.alt,
+            "author": author->{name}, tags, likes
+          }`),
+            client.fetch(groq`*[_type == "blog" && isFeatured == true][0]{
+            _id, title, summary, publishedAt, "slug": slug,
+            "coverImage": coverImage.asset->url, "alt": coverImage.alt,
+            "author": author->{name}, tags, likes
+          }`),
+            client.fetch(groq`*[_type == "journey" && featuredOnHome == true][0...3]{
+            _id, title, "slug": slug, summary, price, duration,
+            region->{title}, heroImage { asset->{url}, alt }
+          }`),
+            client.fetch(groq`*[_type == "blog"] | order(likes desc, publishedAt desc)[0...3]{
+            _id, title, "slug": slug, "coverImage": coverImage.asset->url,
+            "alt": coverImage.alt, likes
+          }`),
+          ]);
+
+        setPosts(postsData);
+        console.log(
+          "Extracted tags:",
+          postsData.flatMap((post: BlogPostPreview) => post.tags || [])
+        );
+        setAllTags(
+          Array.from(
+            new Set(
+              postsData.flatMap((post: BlogPostPreview) => post.tags || [])
+            )
+          )
+        );
+
+        setFeaturedPost(featuredData);
+        setFeaturedJourneys(journeysData);
+        setMostLikedBlogs(likedData);
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load content.");
       }
-    }`
-  );
+      setLoading(false);
+    };
 
-  const mostLikedBlogs: BlogPostPreview[] = await client.fetch(
-    groq`*[_type == "blog"] | order(likes desc, publishedAt desc)[0...3] {
-      _id,
-      title,
-      "slug": slug,
-      "coverImage": coverImage.asset->url,
-      "alt": coverImage.alt,
-      likes
-    }`
-  );
+    fetchData();
+  }, []);
 
-  const paginatedPosts = filteredPosts;
+  if (loading) return <p className="p-8">Loading...</p>;
+  if (error) return <p className="p-8 text-red-600">{error}</p>;
 
   return (
     <main className="min-h-screen bg-[#fdf8f3] text-black">
@@ -107,6 +142,40 @@ export default async function BlogIndexPage() {
 
       <section className="flex px-6 py-12 max-w-7xl mx-auto gap-12">
         <div className="flex-1">
+          {/* FILTER CONTROLS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <input
+              type="text"
+              placeholder="Search blog posts..."
+              className="border border-gray-300 px-4 py-2 rounded w-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+
+            <select
+              className="border border-gray-300 px-4 py-2 rounded w-full"
+              value={selectedTag}
+              onChange={(e) => {
+                const newTag = e.target.value;
+                setSelectedTag(newTag);
+                const params = new URLSearchParams(searchParams.toString());
+                if (newTag) {
+                  params.set("tag", newTag);
+                } else {
+                  params.delete("tag");
+                }
+                router.push(`?${params.toString()}`);
+              }}
+            >
+              <option value="">All tags</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {featuredPost && (
             <Link
               href={`/blog/${featuredPost.slug.current}`}
@@ -137,7 +206,7 @@ export default async function BlogIndexPage() {
                       {featuredPost.summary}
                     </p>
                   </div>
-                  {Array.isArray(featuredPost.tags) &&
+                  {Array.isArray(featuredPost?.tags) &&
                     featuredPost.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {featuredPost.tags.map((tag, i) => (
@@ -156,53 +225,60 @@ export default async function BlogIndexPage() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedPosts.map((post) => (
-              <Link
+            {filteredPosts.map((post) => (
+              <div
                 key={post._id}
-                href={`/blog/${post.slug.current}`}
                 className="relative w-full overflow-visible pb-40 bg-transparent"
               >
-                <div className="relative">
-                  {post.coverImage && (
-                    <Image
-                      src={post.coverImage}
-                      alt={post.alt || post.title}
-                      width={400}
-                      height={256}
-                      className="w-full h-64 object-cover rounded-md"
-                    />
-                  )}
-                </div>
-                <div className="absolute top-48 left-4 right-4 bg-white p-4 shadow-lg border border-gray-200 rounded-md z-30 flex flex-col h-[220px]">
-                  <p className="text-xs text-orange-600 font-bold mb-1">
-                    {new Date(post.publishedAt).toLocaleDateString()} •{" "}
-                    {post.author?.name || "Fair Trade Team"}
-                  </p>
-                  <h3 className="text-lg font-bold text-gray-800 mb-1 leading-snug line-clamp-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-3">
-                    {post.summary}
-                  </p>
-                  {Array.isArray(post.tags) && post.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-auto">
-                      {post.tags.map((tag, i) => (
-                        <span
+                <Link href={`/blog/${post.slug.current}`} className="block">
+                  <div className="relative">
+                    {post.coverImage && (
+                      <Image
+                        src={post.coverImage}
+                        alt={post.alt || post.title}
+                        width={400}
+                        height={256}
+                        className="w-full h-64 object-cover rounded-md"
+                      />
+                    )}
+                  </div>
+                  <div className="absolute top-48 left-4 right-4 bg-white p-4 shadow-lg border border-gray-200 rounded-md z-30 flex flex-col h-[220px]">
+                    <p className="text-xs text-orange-600 font-bold mb-1">
+                      {new Date(post.publishedAt).toLocaleDateString()} •{" "}
+                      {post.author?.name || "Fair Trade Team"}
+                    </p>
+                    <h3 className="text-lg font-bold text-gray-800 mb-1 leading-snug line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-3">
+                      {post.summary}
+                    </p>
+                  </div>
+                </Link>
+
+                {/* Tag links rendered OUTSIDE the Link */}
+                {Array.isArray(featuredPost?.tags) &&
+                  featuredPost.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {featuredPost.tags.map((tag, i) => (
+                        <Link
                           key={i}
-                          className="bg-gray-100 text-xs text-gray-800 px-2 py-1 rounded-full"
+                          href={`/?tag=${encodeURIComponent(tag)}`}
+                          scroll={false}
                         >
-                          #{tag}
-                        </span>
+                          <span className="bg-gray-100 text-sm text-gray-800 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-200 transition">
+                            #{tag}
+                          </span>
+                        </Link>
                       ))}
                     </div>
                   )}
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Sidebar */}
+        {/* SIDEBAR */}
         <aside className="w-80 hidden lg:block">
           <div className="sticky top-24 space-y-8">
             {/* Newsletter Signup */}

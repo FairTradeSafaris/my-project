@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 import lineClamp from "@tailwindcss/line-clamp";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./lib/**/*.{js,ts,jsx,tsx}",
     "./app/**/*.{js,ts,jsx,tsx}",
@@ -12,17 +13,42 @@ const config: Config = {
       fontFamily: {
         sans: ["Poppins", "sans-serif"],
       },
+      backgroundColor: {
+        background: "var(--background)",
+      },
+      textColor: {
+        foreground: "var(--foreground)",
+      },
       colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        accent: "var(--accent)",
+        surface: "var(--surface)",
+        border: "var(--border)",
+      },
+      customTheme: {
         sand: {
           light: "#f5f1eb",
           DEFAULT: "#d8c3a5",
           dark: "#a1887f",
         },
+        surface: {
+          light: "#f4eee7",
+          dark: "#1a1a1a",
+        },
+        onSurface: {
+          light: "#2a2a2a",
+          dark: "#f5f1eb",
+        },
       },
       keyframes: {
         fadeIn: {
-          "0%": { opacity: "0", filter: "blur(8px)" },
-          "100%": { opacity: "1", filter: "blur(0)" },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        fadeInSlow: {
+          "0%": { opacity: "0", transform: "translateY(40px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         pulseOnce: {
           "0%": { transform: "scale(1)" },
@@ -41,7 +67,8 @@ const config: Config = {
         },
       },
       animation: {
-        fadeIn: "fadeIn 0.8s ease-in-out forwards",
+        fadeIn: "fadeIn 0.8s ease-out forwards",
+        fadeInSlow: "fadeInSlow 1.4s ease-out forwards",
         "pulse-once": "pulseOnce 0.5s ease",
         bounceSlow: "bounceSlow 1s ease-in-out infinite",
       },

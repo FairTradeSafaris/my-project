@@ -1,9 +1,9 @@
 import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
-import ScriptInjector from "@/components/ScriptInjector";
-import ClientLayout from "@/components/ClientLayout"; // 👈 new import
-import { client as sanity } from "@/lib/sanity";
+import ClientLayout from "@/components/ClientLayout";
 import { Poppins } from "next/font/google";
+import { ThemeProvider } from "next-themes";
+import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -11,10 +11,6 @@ const poppins = Poppins({
   display: "swap",
   variable: "--font-poppins",
 });
-
-const globalSettings = await sanity.fetch(
-  `*[_type == "globalSettings"][0]{ customHeaderScripts }`
-);
 
 export const metadata = {
   title: "Fair Trade Safaris",
@@ -27,17 +23,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={poppins.variable}>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"
           href="https://my-project-pi-five-35.vercel.app"
         />
       </head>
-      <body className="font-poppins min-h-screen flex flex-col">
-        <ScriptInjector scripts={globalSettings?.customHeaderScripts || []} />
-        <ClientLayout>{children}</ClientLayout>
-        <CookieConsent />
+      <body
+        className={`${poppins.variable} font-poppins min-h-screen flex flex-col bg-white text-black dark:bg-neutral-950 dark:text-white transition-colors duration-300`}
+      >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <GlobalScriptWrapper />
+          <ClientLayout>{children}</ClientLayout>
+          <CookieConsent />
+        </ThemeProvider>
       </body>
     </html>
   );

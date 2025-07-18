@@ -6,6 +6,7 @@ import { client as sanityClient } from "@/lib/sanity";
 import JourneyCard from "@/components/JourneyCard";
 
 // Types
+
 type Journey = {
   title: string;
   summary: string;
@@ -26,7 +27,7 @@ type Journey = {
 
 type Filters = {
   region: string;
-  country: string;
+  country: string[];
   star: string;
   types: string[];
 };
@@ -36,105 +37,82 @@ type FilterKey = keyof Filters;
 export default function JourneyFinderClient() {
   const [visibleCount, setVisibleCount] = useState(9);
   const [loadingMore, setLoadingMore] = useState(false);
-  const searchParams = useSearchParams();
-  const prefillQuery = searchParams.get("q") || "";
   const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
   const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
-  const [searchTerm, setSearchTerm] = useState(prefillQuery);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(
+    useSearchParams().get("q") || ""
+  );
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
     region: "",
-    country: "",
+    country: [],
     star: "",
     types: [],
   });
-
+  const [filterOptions, setFilterOptions] = useState({
+    regions: [] as string[],
+    countries: [] as string[],
+    styles: [] as string[],
+  });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !loadingMore) {
         setLoadingMore(true);
-        setVisibleCount((prev) => prev + 9); // Load 9 more
+        setVisibleCount((prev) => prev + 9);
       }
     });
 
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
+    if (loadMoreRef.current) observer.observe(loadMoreRef.current);
     return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
-      }
+      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
     };
   }, [loadingMore]);
-
-  const [filterOptions, setFilterOptions] = useState({
-    regions: [] as string[],
-    countries: [] as string[],
-    styles: [] as string[],
-  });
 
   const loadMoreJourneys = () => {
     setLoadingMore(true);
     setTimeout(() => {
       setVisibleCount((prev) => prev + 9);
       setLoadingMore(false);
-    }, 500); // Simulate loading delay
+    }, 500);
   };
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const queryTitle = searchParams.get("q");
-    const shouldOpen = searchParams.get("open") === "true";
+    const query = new URLSearchParams(window.location.search);
+    const queryTitle = query.get("q");
+    const shouldOpen = query.get("open") === "true";
 
     sanityClient
       .fetch(
-        `*[_type == "journey"][0...${visibleCount}]{
-    title,
-    summary,
-    slug,
-    duration,
-    price,
-    "heroUrl": heroImage.asset->url,
-    alt,
-    ctaText,
-    wetuLink,
-    region->{ title },
-    country->{ title, "flag": flag.asset->url },
-    star,
-    "starIcon": starIcon.asset->url,
-    travelStyle,
-    "featuredOnHome": featuredOnHome
-  }`
+        `*[_type == "journey"][0...${visibleCount}] {
+          title, summary, slug, duration, price,
+          "heroUrl": heroImage.asset->url,
+          alt, ctaText, wetuLink,
+          region->{ title }, country->{ title, "flag": flag.asset->url },
+          star, "starIcon": starIcon.asset->url,
+          travelStyle, "featuredOnHome": featuredOnHome
+        }`
       )
-
       .then((data: Journey[]) => {
-        setAllJourneys((prev) => {
-          const merged = [
-            ...prev,
-            ...data.filter(
-              (j) => !prev.some((p) => p.slug?.current === j.slug?.current)
-            ),
-          ];
-          return merged;
-        });
+        setAllJourneys((prev) => [
+          ...prev,
+          ...data.filter(
+            (j) => !prev.some((p) => p.slug?.current === j.slug?.current)
+          ),
+        ]);
 
-        // Only set filter options based on first load (optional)
         const regions = Array.from(
-          new Set(
-            data.map((j) => j.region?.title).filter((t): t is string => !!t)
-          )
-        );
+          new Set(data.map((j) => j.region?.title).filter(Boolean))
+        ) as string[];
         const countries = Array.from(
-          new Set(
-            data.map((j) => j.country?.title).filter((t): t is string => !!t)
-          )
-        );
+          new Set(data.map((j) => j.country?.title).filter(Boolean))
+        ) as string[];
         const styles = Array.from(
           new Set(data.flatMap((j) => j.travelStyle || []))
         );
+
         setFilterOptions({ regions, countries, styles });
 
         if (queryTitle && shouldOpen) {
@@ -143,8 +121,7 @@ export default function JourneyFinderClient() {
           );
           if (found) {
             setSelectedJourney(found);
-            setSearchTerm(""); // ✅ Clear the search input
-
+            setSearchTerm("");
             const url = new URL(window.location.href);
             url.searchParams.delete("open");
             window.history.replaceState({}, "", url.toString());
@@ -162,19 +139,17 @@ export default function JourneyFinderClient() {
   useEffect(() => {
     const filtered = allJourneys.filter((j) => {
       const text = `${j.title} ${j.summary}`.toLowerCase();
-
       const matchesSearch = text.includes(searchTerm.toLowerCase());
       const matchesRegion =
         !selectedFilters.region || j.region?.title === selectedFilters.region;
       const matchesCountry =
-        !selectedFilters.country ||
-        j.country?.title === selectedFilters.country;
+        selectedFilters.country.length === 0 ||
+        selectedFilters.country.includes(j.country?.title || "");
       const matchesStar =
         !selectedFilters.star || j.star === selectedFilters.star;
       const matchesType =
         selectedFilters.types.length === 0 ||
         selectedFilters.types.some((type) => j.travelStyle?.includes(type));
-
       return (
         matchesSearch &&
         matchesRegion &&
@@ -183,7 +158,6 @@ export default function JourneyFinderClient() {
         matchesType
       );
     });
-
     setFilteredJourneys(filtered);
   }, [searchTerm, selectedFilters, allJourneys]);
 
@@ -196,8 +170,117 @@ export default function JourneyFinderClient() {
     }));
   };
 
+  const toggleCountry = (country: string) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      country: prev.country.includes(country)
+        ? prev.country.filter((c) => c !== country)
+        : [...prev.country, country],
+    }));
+  };
+
+  const renderFilterGroups = () => {
+    const groups = [
+      { label: "Regions", items: filterOptions.regions, filterKey: "region" },
+      {
+        label: "Countries",
+        items: filterOptions.countries,
+        filterKey: "country",
+        multi: true,
+      },
+      {
+        label: "Travel Style",
+        items: filterOptions.styles,
+        filterKey: "types",
+        multi: true,
+      },
+    ];
+
+    return groups.map((group) => (
+      <div key={group.label} className="mb-6">
+        <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase border-b pb-1">
+          {group.label}
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {group.items.map((item) => {
+            const isActive =
+              group.filterKey === "country"
+                ? selectedFilters.country.includes(item)
+                : group.multi
+                  ? selectedFilters.types.includes(item)
+                  : selectedFilters[group.filterKey as FilterKey] === item;
+
+            return (
+              <button
+                key={item}
+                onClick={() => {
+                  const key = group.filterKey as FilterKey;
+                  if (key === "country") toggleCountry(item);
+                  else if (group.multi) toggleType(item);
+                  else {
+                    setSelectedFilters((prev) => ({
+                      ...prev,
+                      [key]: prev[key] === item ? "" : item,
+                    }));
+                  }
+                }}
+                className={`px-3 py-1 rounded-full border text-sm transition-all ${
+                  isActive
+                    ? "bg-black text-white border-black"
+                    : "bg-white text-black border-gray-300"
+                }`}
+              >
+                {item}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ));
+  };
+
+  const renderSelectedFiltersSummary = () => {
+    const countryText = selectedFilters.country.join(", ");
+    const typeText = selectedFilters.types.join(", ");
+    const regionText = selectedFilters.region;
+    const parts = [];
+    if (countryText) parts.push(`in ${countryText}`);
+    if (regionText) parts.push(`within ${regionText}`);
+    if (typeText) parts.push(`with experiences like ${typeText}`);
+    if (parts.length === 0) return null;
+    return (
+      <p className="mb-6 text-gray-700 text-sm italic">
+        You are viewing journeys {parts.join(", ")}.
+      </p>
+    );
+  };
+
   return (
     <main className="min-h-screen text-black bg-[#fdf8f3]">
+      {/* Mobile Filter Drawer */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex justify-end lg:hidden">
+          <div className="w-[85vw] bg-white h-full p-6 overflow-y-auto relative">
+            <button
+              onClick={() => setShowMobileFilters(false)}
+              className="absolute top-4 right-4 text-3xl font-bold text-gray-700"
+            >
+              &times;
+            </button>
+            <h2 className="text-lg font-semibold mb-4">
+              Filter your adventure
+            </h2>
+            {renderFilterGroups()}
+            <button
+              onClick={() => setShowMobileFilters(false)}
+              className="mt-6 w-full py-3 bg-black text-white rounded-md"
+            >
+              Show Results
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
       <section
         className="relative h-[400px] bg-cover bg-center text-white"
@@ -219,9 +302,18 @@ export default function JourneyFinderClient() {
         </div>
       </section>
 
-      {/* Filters & Grid */}
+      {/* Mobile Button */}
+      <div className="lg:hidden p-4 flex justify-end">
+        <button
+          onClick={() => setShowMobileFilters(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-[#a35c2d] text-white rounded-md font-medium"
+        >
+          Refine Results <span className="text-xl">🔍</span>
+        </button>
+      </div>
+
+      {/* Layout */}
       <section className="relative flex">
-        {/* Sidebar Filters */}
         <aside className="w-72 p-6 border-r bg-[#f5f3ef] hidden lg:block relative z-10">
           <div className="mb-6 flex justify-between items-center">
             <h2 className="text-md font-semibold text-gray-800">Filters</h2>
@@ -229,7 +321,7 @@ export default function JourneyFinderClient() {
               onClick={() =>
                 setSelectedFilters({
                   region: "",
-                  country: "",
+                  country: [],
                   star: "",
                   types: [],
                 })
@@ -239,61 +331,12 @@ export default function JourneyFinderClient() {
               Clear All
             </button>
           </div>
-
-          {[
-            {
-              label: "Regions",
-              items: filterOptions.regions,
-              filterKey: "region",
-            },
-            {
-              label: "Countries",
-              items: filterOptions.countries,
-              filterKey: "country",
-            },
-            {
-              label: "Travel Style",
-              items: filterOptions.styles,
-              filterKey: "types",
-              multi: true,
-            },
-          ].map((group) => (
-            <div key={group.label} className="mb-6">
-              <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase border-b pb-1">
-                {group.label}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {group.items.map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => {
-                      const key = group.filterKey as FilterKey;
-                      if (group.multi) toggleType(item);
-                      else {
-                        setSelectedFilters((prev) => ({
-                          ...prev,
-                          [key]: prev[key] === item ? "" : item,
-                        }));
-                      }
-                    }}
-                    className={`px-3 py-1 rounded-full border text-sm transition-all ${
-                      group.multi
-                        ? selectedFilters.types.includes(item)
-                        : selectedFilters[group.filterKey as FilterKey] === item
-                          ? "bg-black text-white border-black"
-                          : "bg-white text-black border-gray-300"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+          {renderFilterGroups()}
         </aside>
 
-        {/* Grid */}
         <section className="flex-1 p-6 lg:ml-12">
+          {renderSelectedFiltersSummary()}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJourneys.length > 0 ? (
               filteredJourneys.map((j, index) => (
@@ -308,7 +351,7 @@ export default function JourneyFinderClient() {
                     star={j.star ? parseInt(j.star) : 0}
                     starIcon={j.starIcon}
                     region={j.region?.title || ""}
-                    isFeatured={j.featuredOnHome === true} // ✅ THIS LINE GOES HERE
+                    isFeatured={j.featuredOnHome === true}
                   />
                 </div>
               ))
@@ -316,6 +359,7 @@ export default function JourneyFinderClient() {
               <p className="text-gray-600">No journeys found.</p>
             )}
           </div>
+
           {allJourneys.length >= visibleCount && (
             <div className="mt-8 text-center">
               <button
@@ -339,22 +383,72 @@ export default function JourneyFinderClient() {
             className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[80vw] lg:w-[70vw] bg-white shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={() => setSelectedJourney(null)}
-              className="absolute top-4 right-6 text-3xl font-bold text-gray-800 z-10"
-              aria-label="Close"
-            >
-              &times;
-            </button>
-
             {selectedJourney.wetuLink ? (
-              <iframe
-                src={selectedJourney.wetuLink}
-                className="w-full h-full"
-                style={{ border: "none" }}
-                allowFullScreen
-                loading="lazy"
-              />
+              <>
+                {/* Unified Header */}
+                <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md relative px-4 pt-4 pb-6">
+                  {/* Close Button */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setSelectedJourney(null)}
+                      className="text-2xl font-bold text-gray-800 hover:text-black z-10"
+                      aria-label="Close"
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:pr-10">
+                    {/* Logo + Title/Info */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <img
+                        src="/logos/logo-top.png"
+                        alt="Fair Trade Safaris"
+                        className="h-10 w-auto"
+                      />
+                      <div>
+                        <h2 className="text-base sm:text-lg font-semibold text-gray-800">
+                          {selectedJourney.title}
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                          {selectedJourney.duration} •{" "}
+                          {selectedJourney.region?.title}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stars */}
+                    {selectedJourney.star && (
+                      <div className="flex items-center gap-1 sm:justify-end justify-center">
+                        {[...Array(5)].map((_, i) => (
+                          <img
+                            key={i}
+                            src={
+                              selectedJourney.starIcon || "/default-star.svg"
+                            }
+                            alt="star"
+                            className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                              i >= parseInt(selectedJourney.star || "0")
+                                ? "opacity-30"
+                                : ""
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Wetu Iframe */}
+                <iframe
+                  src={selectedJourney.wetuLink}
+                  className="w-full h-[calc(100%-80px)]"
+                  style={{ border: "none" }}
+                  allowFullScreen
+                  loading="lazy"
+                />
+              </>
             ) : (
               <div className="h-full w-full flex items-center justify-center text-gray-600 text-lg">
                 No itinerary available.

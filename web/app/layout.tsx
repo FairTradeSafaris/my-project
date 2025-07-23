@@ -36,10 +36,6 @@ export default function RootLayout({
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
-        <link
-          rel="preconnect"
-          href="https://my-project-pi-five-35.vercel.app"
-        />
       </head>
 
       <body

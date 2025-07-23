@@ -15,6 +15,10 @@ const poppins = Poppins({
 export const metadata = {
   title: "Fair Trade Safaris",
   description: "Explore ethical luxury safaris in Africa",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png", // if you have it
+  },
 };
 
 export default function RootLayout({
@@ -25,11 +29,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
         <link
           rel="preconnect"
           href="https://my-project-pi-five-35.vercel.app"
         />
       </head>
+
       <body
         className={`${poppins.variable} font-poppins min-h-screen flex flex-col bg-white text-black dark:bg-neutral-950 dark:text-white transition-colors duration-300`}
       >

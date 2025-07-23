@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AppInstaller
+	Uri="https://downloads.zohocdn.com/trident/windows/Trident.appinstaller"
+	Version="1.28.7.0" xmlns="http://schemas.microsoft.com/appx/appinstaller/2017/2">
+	<MainBundle
+		Name="Zoho.Trident.Sideload"
+		Version="1.28.7.0"
+		Publisher="CN=ZOHO Corporation Private Limited, O=ZOHO Corporation Private Limited, L=Chennai, S=Tamil Nadu, C=IN"
+		Uri="https://downloads.zohocdn.com/trident/windows/ZohoWinMailPackage_1.28.7.0_Test/Trident_1.28.7.0_x64.msixbundle" />
+	<Dependencies>
+		<Package
+			Name="Microsoft.UI.Xaml.2.8"
+			Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+			ProcessorArchitecture="x64"
+			Uri="https://downloads.zohocdn.com/trident/windows/ZohoWinMailPackage_1.28.7.0_Test/Dependencies/x64/Microsoft.UI.Xaml.2.8.appx"
+			Version="8.2501.31001.0" />
+		<Package
+			Name="Microsoft.NET.CoreRuntime.2.2"
+			Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+			ProcessorArchitecture="x64"
+			Uri="https://downloads.zohocdn.com/trident/windows/ZohoWinMailPackage_1.28.7.0_Test/Dependencies/x64/Microsoft.NET.CoreRuntime.2.2.appx"
+			Version="2.2.31331.1" />
+		<Package
+			Name="Microsoft.NET.CoreFramework.Debug.2.2"
+			Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+			ProcessorArchitecture="x64"
+			Uri="https://downloads.zohocdn.com/trident/windows/ZohoWinMailPackage_1.28.7.0_Test/Dependencies/x64/Microsoft.NET.CoreFramework.Debug.2.2.appx"
+			Version="2.2.31327.1" />
+		<Package
+			Name="Microsoft.VCLibs.140.00"
+			Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+			ProcessorArchitecture="x64"
+			Uri="https://downloads.zohocdn.com/trident/windows/ZohoWinMailPackage_1.28.7.0_Test/Dependencies/x64/Microsoft.VCLibs.x64.14.00.appx"
+			Version="14.0.33519.0" />
+		<Package
+			Name="Microsoft.VCLibs.140.00.UWPDesktop"
+			Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+			ProcessorArchitecture="x64"
+			Uri="https://downloads.zohocdn.com/trident/windows/ZohoWinMailPackage_1.28.7.0_Test/Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx"
+			Version="14.0.33728.0" />
+	</Dependencies>
+	<UpdateSettings>
+		<OnLaunch
+			HoursBetweenUpdateChecks="255" /> <AutomaticBackgroundTask/>
+	</UpdateSettings>
+</AppInstaller>

@@ -4,6 +4,7 @@ export default defineType({
   name: 'ambassador',
   title: 'Ambassadors & Collaborators',
   type: 'document',
+  __experimental_group: 'people',
   fields: [
     defineField({
       name: 'name',
@@ -90,4 +91,4 @@ export default defineType({
       ],
     }),
   ],
-})
+} as any) // allows __experimental_group without TS error

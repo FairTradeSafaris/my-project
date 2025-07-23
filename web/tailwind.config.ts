@@ -12,6 +12,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["Poppins", "sans-serif"],
+        script: ["'Dancing Script'", "cursive"],
       },
       backgroundColor: {
         background: "var(--background)",
@@ -20,11 +21,12 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        accent: "var(--accent)",
-        surface: "var(--surface)",
-        border: "var(--border)",
+        background: "#f5efe6", // Soft light beige
+        foreground: "#000000", // Black for text
+        accent: "#5d4037", // Safari brown
+        surface: "#d7ccc8", // Light brown / surface
+        border: "#bcae9e", // Muted outline
+        "onSurface-light": "#2a2a2a", // Contrast for light bg
       },
       customTheme: {
         sand: {

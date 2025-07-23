@@ -61,5 +61,45 @@ export default {
       title: 'Discovery Call Link',
       type: 'url',
     },
+    {
+      name: 'flagImage',
+      title: 'Country Flag',
+      type: 'image',
+      options: {hotspot: false},
+    },
+    {
+      name: 'region',
+      title: 'Region',
+      type: 'string',
+    },
+    {
+      name: 'ranking',
+      title: 'Ranking Position',
+      type: 'number',
+    },
+    {
+      name: 'featured',
+      title: 'Feature on Homepage?',
+      type: 'boolean',
+    },
+    {
+      name: 'mapLocation',
+      title: 'Google Map Location (Optional)',
+      type: 'string',
+      description: 'Used to link to Google Maps (e.g. Tanzania National Parks)',
+    },
+    {
+      name: 'tags',
+      title: 'Highlights / Tags',
+      type: 'array',
+      of: [{type: 'string'}],
+      description: 'Used for short labels like "Big 5", "Migration", "Luxury", etc.',
+    },
+    {
+      name: 'gallery',
+      title: 'Photo Gallery',
+      type: 'array',
+      of: [{type: 'image', options: {hotspot: true}}],
+    },
   ],
 }

@@ -1,10 +1,10 @@
-// Updated Sanity Blog Schema with Modular Content
 import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'blog',
   title: 'Blog Post',
   type: 'document',
+  __experimental_group: 'content',
   fields: [
     defineField({
       name: 'title',
@@ -32,19 +32,15 @@ export default defineType({
         },
       ],
     }),
-
     defineField({name: 'publishedAt', title: 'Published At', type: 'datetime'}),
     defineField({
       name: 'coverImage',
       title: 'Cover Image',
       type: 'image',
       options: {hotspot: true},
-      fields: [
-        {name: 'alt', title: 'Alt Text', type: 'string'}, // ✅ This is the alt field
-      ],
+      fields: [{name: 'alt', title: 'Alt Text', type: 'string'}],
     }),
     defineField({name: 'summary', title: 'Summary', type: 'text'}),
-
     defineField({
       name: 'content',
       title: 'Content Blocks',
@@ -70,7 +66,6 @@ export default defineType({
       to: [{type: 'author'}],
       validation: (Rule) => Rule.required(),
     }),
-
     defineField({
       name: 'tags',
       title: 'Tags',
@@ -97,4 +92,4 @@ export default defineType({
       initialValue: 0,
     }),
   ],
-})
+} as any) // 👈 allows __experimental_group to be accepted by TypeScript

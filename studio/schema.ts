@@ -9,14 +9,14 @@ import journey from './schemas/journey'
 import blockContent from './schemas/blockContent'
 import region from './schemas/region'
 import country from './schemas/country'
-import featuredJourney from '../.sanity/schemas/featuredJourney'
+import featuredJourney from './schemas/featuredJourney'
 import whyChoose from './schemas/whyChoose'
 import destination from './schemas/destination'
-import megamenu from '../.sanity/schemas/megaMenu'
-import sitePages from '../.sanity/schemas/sitePages'
-import ambassador from '../.sanity/schemas/ambassador'
-import globalsettings from '../.sanity/schemas/globalSettings'
-import comments from '../.sanity/schemas/comments'
+import megamenu from './schemas/megaMenu'
+import sitePages from './schemas/sitePages'
+import ambassador from './schemas/ambassador'
+import globalsettings from './schemas/globalSettings'
+import comments from './schemas/comments'
 import privacyPolicy from './schemas/privacyPolicy'
 import table from './schemas/objects/table'
 
@@ -32,9 +32,9 @@ import mapBlock from './schemas/blocks/mapBlock'
 import zohoForm from './schemas/blocks/zohoForm'
 import smartCarousel from './schemas/blocks/smartCarousel'
 import author from './schemas/author'
-import teamMember from '../.sanity/schemas/teamMember'
-import foundersPromise from '../.sanity/schemas/founderPromise'
-import dest_slug from '../.sanity/schemas/dest_slug'
+import teamMember from './schemas/teamMember'
+import foundersPromise from './schemas/founderPromise'
+import dest_slug from './schemas/dest_slug'
 
 const schemaTypes = [
   blog,
@@ -75,6 +75,5 @@ const schemaTypes = [
   foundersPromise,
 ]
 
-export default {
-  types: schemaTypes,
-}
+// ✅ This is the only change:
+export default schemaTypes

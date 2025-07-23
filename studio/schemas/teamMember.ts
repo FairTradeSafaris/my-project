@@ -1,10 +1,10 @@
-// /schemas/teamMember.ts
 import {defineType, defineField} from 'sanity'
 
 export default defineType({
   name: 'teamMember',
   title: 'Team Member',
   type: 'document',
+  __experimental_group: 'people',
   fields: [
     defineField({
       name: 'name',
@@ -40,4 +40,4 @@ export default defineType({
       type: 'url',
     }),
   ],
-})
+} as any)

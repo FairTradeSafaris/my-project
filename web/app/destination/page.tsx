@@ -1,98 +1,79 @@
 "use client";
-
+import { Binoculars, PhoneCall, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Star, Calendar, DollarSign } from "lucide-react";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const destinations = [
-  {
-    slug: "botswana",
-    name: "Botswana",
-    rating: 4.7,
-    reviews: 1320,
-    image: "/destinations/botswana.jpg",
-    subtitle: "#2 of 8 Major Safari Countries",
-    description:
-      "Botswana offers pristine wilderness, luxury safaris, and excellent wildlife density.",
-    bestTime: "May to October",
-    highSeason: "June to October",
-    price: "$300 to $1000/day",
-  },
-  {
-    slug: "tanzania",
-    name: "Tanzania",
-    rating: 4.6,
-    reviews: 980,
-    image: "/destinations/tanzania.jpg",
-    subtitle: "#3 of 8 Major Safari Countries",
-    description:
-      "Tanzania offers the Serengeti and Mount Kilimanjaro with epic views.",
-    bestTime: "June to October",
-    highSeason: "July to September",
-    price: "$250 to $900/day",
-  },
-  {
-    slug: "kenya",
-    name: "Kenya",
-    rating: 4.5,
-    reviews: 1050,
-    image: "/destinations/kenia.jpg",
-    subtitle: "#4 of 8 Major Safari Countries",
-    description:
-      "Kenya is home to the Great Migration and beautiful savannahs.",
-    bestTime: "July to October",
-    highSeason: "August to September",
-    price: "$200 to $800/day",
-  },
-  {
-    slug: "botswana1",
-    name: "Botswana",
-    rating: 4.7,
-    reviews: 1320,
-    image: "/destinations/botswana.jpg",
-    subtitle: "#2 of 8 Major Safari Countries",
-    description:
-      "Botswana offers pristine wilderness, luxury safaris, and excellent wildlife density.",
-    bestTime: "May to October",
-    highSeason: "June to October",
-    price: "$300 to $1000/day",
-  },
-  {
-    slug: "tanzania1",
-    name: "Tanzania",
-    rating: 4.6,
-    reviews: 980,
-    image: "/destinations/tanzania.jpg",
-    subtitle: "#3 of 8 Major Safari Countries",
-    description:
-      "Tanzania offers the Serengeti and Mount Kilimanjaro with epic views.",
-    bestTime: "June to October",
-    highSeason: "July to September",
-    price: "$250 to $900/day",
-  },
-  {
-    slug: "kenya1",
-    name: "Kenya",
-    rating: 4.5,
-    reviews: 1050,
-    image: "/destinations/kenia.jpg",
-    subtitle: "#4 of 8 Major Safari Countries",
-    description:
-      "Kenya is home to the Great Migration and beautiful savannahs.",
-    bestTime: "July to October",
-    highSeason: "August to September",
-    price: "$200 to $800/day",
-  },
-];
+import { serverClient } from "@/lib/sanity.server";
+import { Dancing_Script } from "next/font/google";
+const dancingScript = Dancing_Script({
+  subsets: ["latin"],
+  weight: ["700"], // Add more weights if needed
+});
+type Destination = {
+  slug: { current: string };
+  title: string;
+  image: string;
+  subtitle?: string;
+  description?: string;
+  price?: string;
+  bestTime?: string;
+  highSeason?: string;
+  rating?: number;
+  reviews?: number;
+  flagImage?: string;
+  region?: string;
+  tags?: string[];
+  ranking?: number;
+  featured?: boolean;
+  mapLocation?: string;
+  gallery?: string[]; // ✅ new field for image URLs
+};
 
 export default function DestinationPage() {
-  const [selected, setSelected] = useState(destinations[0]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [selected, setSelected] = useState<Destination | null>(null);
   const [formattedReviews, setFormattedReviews] = useState("");
 
   useEffect(() => {
-    setFormattedReviews(selected.reviews.toLocaleString());
+    async function fetchData() {
+      const data = await serverClient.fetch(
+        `*[_type == "destination"]{
+    _id,
+    slug,
+    title,
+    "image": heroImage.asset->url,
+    subtitle,
+    description,
+    price,
+    bestTime,
+    highSeason,
+    rating,
+    reviews,
+    "flagImage": flagImage.asset->url,
+    region,
+    tags,
+    ranking,
+    featured,
+    mapLocation,
+    "gallery": gallery[].asset->url // ✅ added
+  }`
+      );
+
+      setDestinations(data);
+      setSelected(data[0] || null);
+    }
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (selected?.reviews) {
+      setFormattedReviews(selected.reviews.toLocaleString());
+    }
   }, [selected]);
+
+  if (!selected) return <div className="p-10 text-white">Loading...</div>;
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -101,21 +82,18 @@ export default function DestinationPage() {
         className="relative h-[400px] bg-cover bg-center text-white"
         style={{ backgroundImage: `url('/sunset-safari.webp')` }}
       >
+        <div className="absolute inset-0 bg-black/50 z-0" />
         <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 max-w-xl">
-            Experience the untamed wilderness.
+          <h1 className="text-4xl sm:text-5xl md:text-6xl leading-tight drop-shadow-xl font-bold">
+            Safari. Reimagined.
           </h1>
-          <div className="bg-white/20 backdrop-blur-sm p-4 sm:p-6 rounded-xl w-full max-w-2xl shadow-md">
-            <input
-              type="text"
-              placeholder="Search journeys..."
-              className="w-full px-4 py-3 rounded border text-white placeholder-white bg-transparent"
-            />
-          </div>
+          <p className="mt-4 text-lg text-white/80 max-w-xl">
+            Travel with purpose. Explore Africa with heart.
+          </p>
         </div>
       </section>
 
-      {/* Content */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row min-h-[calc(100vh-400px)]">
         {/* Sidebar */}
         <nav className="w-full md:w-72 bg-[var(--surface-dark)] border-b md:border-b-0 md:border-r border-[var(--border)]">
@@ -125,132 +103,199 @@ export default function DestinationPage() {
           <ul className="overflow-x-auto flex md:block whitespace-nowrap md:whitespace-normal no-scrollbar">
             {destinations.map((dest, i) => (
               <li
-                key={dest.slug}
+                key={dest.slug.current}
                 onClick={() => setSelected(dest)}
                 className={`cursor-pointer px-4 sm:px-6 py-3 border-b border-[var(--border)] flex items-center select-none transition-all duration-200 ${
-                  selected.slug === dest.slug
+                  selected.slug.current === dest.slug.current
                     ? "bg-[var(--accent)] text-[var(--background)] font-semibold"
                     : "text-[var(--onSurface-light)] hover:bg-[var(--accent)] hover:text-[var(--background)]"
                 }`}
               >
                 <span className="mr-2 text-[var(--background)]">#{i + 1}</span>
-                {dest.name}
+                {dest.flagImage && (
+                  <img
+                    src={dest.flagImage}
+                    alt={`${dest.title} flag`}
+                    className="w-6 h-auto mr-2 object-contain inline-block"
+                  />
+                )}
+                {dest.title}
               </li>
             ))}
           </ul>
         </nav>
 
-        {/* Detail Panel */}
-        <section className="relative flex-1 p-4 sm:p-6 md:p-10 text-white min-h-[calc(100vh-400px)]">
+        {/* Detail Content */}
+        <section className="relative flex-1 p-6 md:p-10 text-white min-h-[calc(100vh-400px)]">
+          {/* Background image */}
           <div className="absolute inset-0 w-full h-full">
-            <Image
-              src={selected.image}
-              alt={`${selected.name} background`}
-              fill
-              className="object-cover object-center"
-              priority
-            />
+            {selected.image && (
+              <Image
+                src={selected.image}
+                alt={`${selected.title} background`}
+                fill
+                className="object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-black/40" />
           </div>
 
-          <div className="relative">
-            {/* Smaller badge top-right with margin */}
-            <div className="absolute top-2 right-2 p-2 border border-yellow-400 rounded bg-black/70 text-yellow-400 text-xs font-bold text-center w-16 z-20">
-              TOP
-              <br />
-              RATED
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mx-auto my-1"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
+          {/* Foreground */}
+          <div className="relative z-10 space-y-6">
+            {/* Country Name & Badge */}
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <h2
+                className={`text-5xl leading-tight drop-shadow-md ${dancingScript.className}`}
               >
-                <circle cx="12" cy="8" r="7"></circle>
-                <path d="M8 21l4-4 4 4"></path>
-              </svg>
-              #{selected.subtitle.match(/\d+/)}
+                {selected.title}
+              </h2>
+              <div className="bg-black/50 p-2 rounded-xl w-fit">
+                <Image
+                  src="/badges/fair-trade-paw.png" // path relative to /public
+                  alt="Fair Trade Approved"
+                  width={120}
+                  height={120}
+                  className="object-contain"
+                />
+              </div>
             </div>
 
-            <div className="flex flex-col lg:flex-row justify-between items-start gap-4 mt-4">
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold underline mb-2">
-                  {selected.name}
-                </h1>
+            {/* Subtitle / Description */}
+            {selected.subtitle && (
+              <p className="italic text-lg text-white/80">
+                {selected.subtitle}
+              </p>
+            )}
 
-                <div className="flex items-center flex-wrap space-x-1 mb-2 text-yellow-400">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={20}
-                      fill={
-                        i < Math.floor(selected.rating)
-                          ? "currentColor"
-                          : "#4b5563"
-                      }
-                      stroke="currentColor"
-                    />
-                  ))}
-                  <span className="ml-3 font-semibold">
-                    {selected.rating.toFixed(1)}/5
+            {selected.description && (
+              <p className="text-white leading-relaxed">
+                {selected.description}
+              </p>
+            )}
+
+            {/* Tags */}
+            {selected.tags && selected.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selected.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="bg-white/10 border border-white/20 px-3 py-1 rounded-full text-xs font-medium"
+                  >
+                    {tag}
                   </span>
-                  <span className="ml-2 underline cursor-pointer text-white">
-                    {formattedReviews} Reviews
+                ))}
+              </div>
+            )}
+
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm mt-6 text-white/90">
+              {selected.bestTime && (
+                <div className="bg-white/10 p-4 rounded-lg border border-white/10">
+                  <strong className="block text-white mb-1">
+                    Best Time to Go
+                  </strong>
+                  {selected.bestTime}
+                </div>
+              )}
+              {selected.highSeason && (
+                <div className="bg-white/10 p-4 rounded-lg border border-white/10">
+                  <strong className="block text-white mb-1">High Season</strong>
+                  {selected.highSeason}
+                </div>
+              )}
+              {selected.mapLocation && (
+                <div className="bg-white/10 p-4 rounded-lg border border-white/10">
+                  <strong className="block text-white mb-1">Location</strong>
+                  <a
+                    href={selected.mapLocation}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-sm text-blue-200 hover:text-blue-300"
+                  >
+                    📍 View on Map
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Rating */}
+            {selected.rating && (
+              <div className="flex items-center space-x-2 text-yellow-300 mt-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    size={18}
+                    fill={
+                      i < Math.floor(selected.rating ?? 0)
+                        ? "currentColor"
+                        : "#4b5563"
+                    }
+                    stroke="currentColor"
+                  />
+                ))}
+                <span>{selected.rating.toFixed(1)}/5</span>
+                {selected.reviews && (
+                  <span className="ml-2 text-white/80">
+                    {formattedReviews} reviews
                   </span>
-                </div>
-
-                <p className="mb-3 italic font-semibold text-white">
-                  {selected.subtitle}
-                </p>
-
-                <div className="leading-relaxed text-white">
-                  {selected.description}
-                </div>
+                )}
               </div>
-            </div>
+            )}
 
-            <div className="mt-8 flex flex-wrap gap-6 text-sm font-semibold text-white">
-              <div className="flex items-center space-x-2">
-                <DollarSign size={20} />
-                <div>
-                  <div>Rates (USD)</div>
-                  <div className="font-semibold">{selected.price}</div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Calendar size={20} />
-                <div>
-                  <div>Best Time to Go</div>
-                  <div className="font-semibold">{selected.bestTime}</div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Calendar size={20} />
-                <div>
-                  <div>High Season</div>
-                  <div className="font-semibold">{selected.highSeason}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Button className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
-                {selected.name} Safaris &gt;
+            {/* Buttons */}
+            {/* Call-to-Action Buttons */}
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <Button className="bg-[#E5D5B8] hover:bg-[#d4c3a3] text-black font-semibold text-base px-6 py-3 flex items-center gap-2">
+                <Binoculars size={18} />
+                Explore {selected.title} Itineraries
               </Button>
+
               <Button
                 variant="outline"
-                className="w-full sm:w-auto border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black font-bold"
+                className="border-[#E5D5B8] text-[#E5D5B8] hover:bg-[#E5D5B8] hover:text-black font-semibold text-base px-6 py-3 flex items-center gap-2"
               >
-                {selected.name} Operators &gt;
+                <Info size={18} />
+                More About {selected.title}
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="text-white hover:underline text-base px-6 py-3 flex items-center gap-2"
+              >
+                <PhoneCall size={18} />
+                Book a Discovery Call
               </Button>
             </div>
+
+            {/* Gallery */}
+            {Array.isArray(selected?.gallery) &&
+              selected.gallery.length > 0 && (
+                <section className="mt-41">
+                  <div className="mb-4">
+                    <span className="text-2xl">📸</span>
+                    <h3 className="text-xl font-semibold inline-block ml-2 align-middle">
+                      Photo Highlights
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {selected.gallery.map((img, i) => (
+                      <div
+                        key={i}
+                        className="overflow-hidden rounded-lg border border-white/5 shadow-sm"
+                      >
+                        <Image
+                          src={img}
+                          alt={`Gallery image ${i + 1}`}
+                          width={200}
+                          height={150}
+                          className="w-full h-[100px] sm:h-[120px] object-cover transition-transform hover:scale-105 rounded-lg"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
           </div>
         </section>
       </div>

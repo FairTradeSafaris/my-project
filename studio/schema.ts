@@ -19,6 +19,7 @@ import globalsettings from './schemas/globalSettings'
 import comments from './schemas/comments'
 import privacyPolicy from './schemas/privacyPolicy'
 import table from './schemas/objects/table'
+import {galleryImage} from './schemas/galleryImages'
 
 // 🆕 Modular Content Blocks
 import heroImage from './schemas/blocks/heroImage'
@@ -73,6 +74,7 @@ const schemaTypes = [
   author,
   teamMember,
   foundersPromise,
+  galleryImage,
 ]
 
 // ✅ This is the only change:

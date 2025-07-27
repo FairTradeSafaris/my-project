@@ -20,6 +20,17 @@ export default function BulkGalleryUploadTool() {
         continue
       }
 
+      // 🧠 Check for duplicate filename via originalFilename field
+      const existing = await client.fetch(
+        `*[_type == "galleryImage" && image.asset->originalFilename == $filename][0]`,
+        {filename: file.name},
+      )
+
+      if (existing) {
+        newLogs.push(`⚠️ Skipped ${file.name} (already uploaded)`)
+        continue
+      }
+
       try {
         const asset = await client.assets.upload('image', file, {
           filename: file.name,

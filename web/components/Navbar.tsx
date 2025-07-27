@@ -120,8 +120,13 @@ export default function Navbar({
       </div>
 
       {/* Mobile Badge */}
+      {/* Mobile Badge */}
       <div
-        className={`fixed z-[60] top-[230px] left-0 px-2 py-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
+        className={`fixed ${
+          menuOpen
+            ? "translate-x-[-100%] opacity-0 z-[30]"
+            : "translate-x-0 opacity-100 z-[60]"
+        } top-[230px] left-0 px-2 py-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
           scrolled ? "w-[60px] h-[60px]" : "w-[90px] h-[90px]"
         } rounded-r-2xl rounded-l-none flex md:hidden items-center justify-center`}
         style={{
@@ -183,7 +188,10 @@ export default function Navbar({
           <motion.button
             whileTap={{ scale: 0.9 }}
             title={menuOpen ? "Close Menu" : "Open Menu"}
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={(e) => {
+              e.stopPropagation(); // 🔐 Prevent click from bubbling
+              setMenuOpen((prev) => !prev);
+            }}
             className="transition-transform duration-200"
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -201,7 +209,7 @@ export default function Navbar({
             animate="visible"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="md:hidden fixed top-20 inset-x-4 mx-auto z-50 max-w-sm rounded-3xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700 p-4 space-y-5"
+            className="md:hidden fixed top-20 inset-x-4 mx-auto z-[70] max-w-sm rounded-3xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg shadow-xl ring-1 ring-gray-200 dark:ring-neutral-700 p-4 space-y-5"
           >
             <div>
               <h3 className="text-[11px] font-semibold text-gray-400 dark:text-gray-300 uppercase tracking-wider mb-2">

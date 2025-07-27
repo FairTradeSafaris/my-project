@@ -1,4 +1,5 @@
 // /schemas/ctaBanner.ts
+import type {Rule} from 'sanity'
 
 export default {
   name: 'ctaBanner',
@@ -23,8 +24,10 @@ export default {
     {
       name: 'buttonLink',
       title: 'Button Link',
-      type: 'url',
+      type: 'string',
+      description: 'Can be a relative path like /journey or a full URL',
     },
+
     {
       name: 'sideImage',
       title: 'Side Image (line art or illustration)',

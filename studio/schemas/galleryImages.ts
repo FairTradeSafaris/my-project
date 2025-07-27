@@ -1,5 +1,3 @@
-// /schemas/galleryImage.ts
-
 import {defineType} from 'sanity'
 
 export const galleryImage = defineType({
@@ -16,7 +14,7 @@ export const galleryImage = defineType({
         Rule.custom((image) => {
           if (!image || typeof image !== 'object' || !('asset' in image)) return true
           const ref = (image.asset as {_ref?: string})._ref
-          const isWebp = ref?.includes('.webp')
+          const isWebp = ref?.includes('-webp')
           return isWebp || 'Only .webp images are allowed'
         }),
     },
@@ -47,4 +45,13 @@ export const galleryImage = defineType({
       },
     },
   ],
+
+  // 👇 Add this to customize how each item appears in the list
+  preview: {
+    select: {
+      title: 'alt', // shown as main title
+      media: 'image', // thumbnail
+      subtitle: 'category', // shown below the title
+    },
+  },
 })

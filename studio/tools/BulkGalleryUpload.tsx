@@ -37,10 +37,14 @@ export default function BulkGalleryUploadTool() {
           contentType: 'image/webp',
         })
 
+        // Get alt text from filename (remove extension, replace dashes/underscores)
+        const baseName = file.name.replace(/\.[^/.]+$/, '') // strip extension
+        const readableAlt = baseName.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim()
+
         const doc = {
           _type: 'galleryImage',
           image: {asset: {_type: 'reference', _ref: asset._id}},
-          alt: '',
+          alt: readableAlt.charAt(0).toUpperCase() + readableAlt.slice(1), // Capitalize
           caption: '',
           category: '',
         }

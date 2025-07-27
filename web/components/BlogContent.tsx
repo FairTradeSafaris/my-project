@@ -71,13 +71,14 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 className="relative text-center max-w-7xl mx-auto mb-6"
               >
                 {block.image && (
-                  <Image
-                    src={imageUrl}
-                    alt={block.text || "Hero Image"}
-                    width={1600}
-                    height={320}
-                    className="w-full h-[300px] sm:h-[400px] object-cover rounded"
-                  />
+                  <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] lg:aspect-[5/2] max-h-[600px] rounded overflow-hidden">
+                    <Image
+                      src={imageUrl}
+                      alt={block.text || "Hero Image"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 )}
                 {block.text && (
                   <div
@@ -134,7 +135,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                   </div>
                 )}
                 <div className="w-full flex items-center">
-                  <div className="prose max-w-none text-justify">
+                  <div className="prose max-w-none text-left sm:text-justify">
                     <PortableText
                       value={block.text}
                       components={portableComponents}
@@ -151,7 +152,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 key={index}
                 className="max-w-7xl mx-auto px-4 sm:px-6 pt-0"
               >
-                <div className="prose max-w-none text-justify">
+                <div className="prose max-w-none text-left sm:text-justify">
                   <PortableText
                     value={block.body}
                     components={portableComponents}

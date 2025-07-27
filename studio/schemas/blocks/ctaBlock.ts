@@ -46,7 +46,17 @@ export default defineType({
     defineField({
       name: 'link',
       title: 'Button Link',
-      type: 'url',
+      type: 'string',
+      description: 'Can be a relative path like /journey or a full URL',
+      validation: (Rule) =>
+        Rule.custom((value) => {
+          if (!value || typeof value !== 'string') return true
+
+          const isRelative = value.startsWith('/')
+          const isAbsolute = /^(https?:\/\/|mailto:|tel:)/.test(value)
+
+          return isRelative || isAbsolute || 'Must be a valid URL or start with "/"'
+        }),
     }),
   ],
 })

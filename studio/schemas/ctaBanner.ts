@@ -1,6 +1,3 @@
-// /schemas/ctaBanner.ts
-import type {Rule} from 'sanity'
-
 export default {
   name: 'ctaBanner',
   title: 'CTA Banner',
@@ -11,6 +8,7 @@ export default {
       title: 'Headline',
       type: 'string',
     },
+
     {
       name: 'subheadline',
       title: 'Subheadline',

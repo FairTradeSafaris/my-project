@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Search, User, X } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
 import { useTheme } from "next-themes"; // Make sure this is already imported
 
 interface MenuItem {
@@ -48,7 +47,15 @@ export default function Navbar({
   const desktopMenuRef = useRef<HTMLDivElement | null>(null);
   const { theme, systemTheme } = useTheme();
   const resolvedTheme = theme === "system" ? systemTheme : theme;
+  const [scrolled, setScrolled] = useState(false);
 
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   useEffect(() => {
     const handleClickOutside = (event: PointerEvent) => {
       const target = event.target as Node;
@@ -88,15 +95,63 @@ export default function Navbar({
 
   return (
     <>
-      {/* Top Nav */}
-      <nav
-        className="fixed top-4 md:top-4 left-1/2 transform -translate-x-1/2 z-50 px-2 md:px-3 py-1 md:py-2 rounded-2xl flex items-center justify-between gap-6 w-[92vw] max-w-4xl shadow-md backdrop-blur transition-all duration-300"
+      {/* Top-Left Badge Logo */}
+
+      {/* Desktop Badge */}
+      <div
+        className={`fixed z-[60] top-0 left-4 px-2 pt-2 pb-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
+          scrolled ? "w-[96px] h-[96px]" : "w-[150px] h-[150px]"
+        } rounded-b-2xl rounded-t-none hidden md:flex items-center justify-center`}
         style={{
           backgroundColor: "rgba(var(--background-rgb), 0.95)",
           color: "var(--foreground)",
         }}
       >
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/">
+          <Image
+            src="/fts-logo.png"
+            alt="FTS Badge Logo"
+            width={scrolled ? 76 : 125}
+            height={scrolled ? 76 : 125}
+            className="object-contain transition-all duration-300 ease-in-out"
+            priority
+          />
+        </Link>
+      </div>
+
+      {/* Mobile Badge */}
+      <div
+        className={`fixed z-[60] top-[230px] left-0 px-2 py-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
+          scrolled ? "w-[60px] h-[60px]" : "w-[90px] h-[90px]"
+        } rounded-r-2xl rounded-l-none flex md:hidden items-center justify-center`}
+        style={{
+          backgroundColor: "rgba(var(--background-rgb), 0.95)",
+          color: "var(--foreground)",
+        }}
+      >
+        <Link href="/">
+          <Image
+            src="/fts-logo.png"
+            alt="FTS Badge Logo"
+            width={scrolled ? 50 : 75}
+            height={scrolled ? 50 : 75}
+            className="object-contain transition-all duration-300 ease-in-out"
+            priority
+          />
+        </Link>
+      </div>
+
+      {/* Top Nav */}
+      <nav
+        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[92vw] max-w-4xl px-3 flex items-center justify-between gap-6 rounded-2xl shadow-md backdrop-blur transition-all duration-300 ${
+          scrolled ? "py-1" : "py-3"
+        }`}
+        style={{
+          backgroundColor: "rgba(var(--background-rgb), 0.95)",
+          color: "var(--foreground)",
+        }}
+      >
+        <Link href="/" className="flex items-center gap-2 pl-4">
           <>
             <Image
               src={
@@ -105,9 +160,11 @@ export default function Navbar({
                   : "/logos/logo-light.png"
               }
               alt="Fair Trade Safaris"
-              width={260}
-              height={50}
-              className="object-contain scale-[1.1]"
+              width={scrolled ? 180 : 260}
+              height={scrolled ? 40 : 60}
+              className={`object-contain transition-all duration-300 ease-in-out ${
+                scrolled ? "scale-100" : "scale-105"
+              }`}
               priority
             />
           </>
@@ -123,7 +180,6 @@ export default function Navbar({
           <button title="My Journey">
             <User size={20} />
           </button>
-          <ThemeToggle /> {/* 👈 Dark/Light Toggle */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             title={menuOpen ? "Close Menu" : "Open Menu"}
@@ -134,7 +190,6 @@ export default function Navbar({
           </motion.button>
         </div>
       </nav>
-
       {/* === MOBILE MENU === */}
       <AnimatePresence>
         {menuOpen && (
@@ -214,7 +269,6 @@ export default function Navbar({
           </motion.div>
         )}
       </AnimatePresence>
-
       {/* === DESKTOP MENU === */}
       <AnimatePresence>
         {menuOpen && (

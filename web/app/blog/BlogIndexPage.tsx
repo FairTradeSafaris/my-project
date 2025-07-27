@@ -194,7 +194,7 @@ export default function BlogIndexPage() {
                     <h2 className="text-3xl font-bold mt-2 mb-4">
                       {featuredPost.title}
                     </h2>
-                    <p className="text-gray-700 mb-4 line-clamp-3">
+                    <p className="text-gray-700 mb-4 line-clamp-15">
                       {featuredPost.summary}
                     </p>
                   </div>

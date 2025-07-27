@@ -32,9 +32,22 @@ const portableComponents: Partial<PortableTextReactComponents> = {
       <h3 className="text-xl sm:text-2xl font-semibold my-3">{children}</h3>
     ),
     normal: ({ children }) => (
-      <p className="text-base sm:text-lg leading-relaxed mb-4">{children}</p>
+      <p className="text-sm sm:text-base leading-snug mb-4">{children}</p>
     ),
   },
+  list: {
+    bullet: ({ children }) => (
+      <ul className="list-disc pl-6 mb-2 space-y-1">{children}</ul>
+    ),
+    number: ({ children }) => (
+      <ol className="list-decimal pl-6 mb-2 space-y-1">{children}</ol>
+    ),
+  },
+  listItem: {
+    bullet: ({ children }) => <li className="mb-0 leading-snug">{children}</li>,
+    number: ({ children }) => <li className="mb-0 leading-snug">{children}</li>,
+  },
+
   marks: {
     strong: ({ children }) => (
       <strong className="font-semibold text-black">{children}</strong>

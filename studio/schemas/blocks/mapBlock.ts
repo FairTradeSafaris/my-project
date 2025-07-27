@@ -9,7 +9,10 @@ export default defineType({
       name: 'mapUrl',
       title: 'Map Embed URL',
       type: 'url',
-      validation: (Rule) => Rule.uri({scheme: ['http', 'https']}).required(),
+      validation: (Rule) =>
+        Rule.uri({scheme: ['http', 'https']})
+          .required()
+          .error('A valid HTTPS URL is required.'),
     }),
     defineField({
       name: 'caption',

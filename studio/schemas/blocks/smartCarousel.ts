@@ -1,5 +1,12 @@
 import {defineType, defineField} from 'sanity'
 
+// 🔁 Shared helper type for image asset validation
+type SanityImageValue = {
+  asset?: {
+    _ref?: string
+  }
+}
+
 export default defineType({
   name: 'smartCarousel',
   title: 'Smart Carousel',
@@ -19,6 +26,23 @@ export default defineType({
               title: 'Image',
               type: 'image',
               options: {hotspot: true},
+              fields: [
+                {
+                  name: 'alt',
+                  title: 'Alt Text',
+                  type: 'string',
+                  validation: (Rule) =>
+                    Rule.required().error('Alt text is required for every slide image.'),
+                },
+              ],
+              validation: (Rule) =>
+                Rule.custom((image: SanityImageValue | undefined) => {
+                  const ref = image?.asset?._ref || ''
+                  if (ref && !ref.endsWith('.webp')) {
+                    return 'Please upload images in WebP format.'
+                  }
+                  return true
+                }),
             },
             {
               name: 'caption',
@@ -34,6 +58,8 @@ export default defineType({
               name: 'buttonLink',
               title: 'Button Link',
               type: 'url',
+              validation: (Rule) =>
+                Rule.uri({scheme: ['http', 'https']}).error('Must be a valid URL'),
             },
           ],
         },

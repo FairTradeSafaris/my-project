@@ -29,6 +29,7 @@ export default defineType({
           name: 'alt',
           title: 'Alt Text',
           type: 'string',
+          validation: (Rule) => Rule.required().error('Alt text is required for accessibility.'),
         },
       ],
     }),

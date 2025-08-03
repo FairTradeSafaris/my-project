@@ -254,6 +254,9 @@ export default function JourneyFinderClient() {
       </p>
     );
   };
+  if (!allJourneys.length && !filterOptions.regions.length) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <main className="min-h-screen text-black bg-[#fdf8f3]">

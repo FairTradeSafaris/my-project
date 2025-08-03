@@ -103,7 +103,7 @@ export default function ClientLayout({
     fetchData();
   }, []);
 
-  if (!navSections.length && !featureCards.length && !promoCard) {
+  if (!navSections.length && !featureCards.length && promoCard === undefined) {
     return null; // or a loader/spinner if you prefer
   }
 

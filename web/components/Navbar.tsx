@@ -383,12 +383,13 @@ export default function Navbar({
                 >
                   <div onClick={() => setMenuOpen(false)}>
                     <Image
-                      src={promoCard.image.asset.url}
-                      alt={promoCard.alt}
+                      src={promoCard?.image?.asset?.url || "/fallback.jpg"}
+                      alt={promoCard?.alt || "Special Offer"}
                       width={400}
                       height={200}
                       className="w-full h-36 object-cover"
                     />
+
                     <div className="p-4 bg-white dark:bg-neutral-900">
                       <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
                         {promoCard.title}

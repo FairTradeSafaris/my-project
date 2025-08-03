@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import ClientHomeContent from "./ClientHomeContent";
-import { sanityClient } from "./../../../studio/lib/client";
+import { sanityClient } from "../../lib/client";
 
 export default async function ClientHomePage() {
   const { userId } = await auth();

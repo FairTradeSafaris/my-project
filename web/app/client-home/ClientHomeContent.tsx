@@ -1,7 +1,7 @@
 "use client";
 
 import { SignedIn, SignedOut, UserButton, SignOutButton } from "@clerk/nextjs";
-import { sanityClient } from "./../../../studio/lib/client";
+import { sanityClient } from "@/lib/client";
 //import { v4 as uuidv4 } from "uuid";
 
 type Trip = {

@@ -389,7 +389,6 @@ export default function Navbar({
                       height={200}
                       className="w-full h-36 object-cover"
                     />
-
                     <div className="p-4 bg-white dark:bg-neutral-900">
                       <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
                         {promoCard.title}

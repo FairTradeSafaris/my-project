@@ -1,6 +1,5 @@
 import {defineType, defineField} from 'sanity'
 
-// 🔁 Reusable helper type
 type SanityImageValue = {
   asset?: {
     _ref?: string
@@ -14,7 +13,7 @@ export default defineType({
   fields: [
     defineField({
       name: 'image',
-      title: 'Image',
+      title: 'Upload Image',
       type: 'image',
       options: {hotspot: true},
       fields: [
@@ -33,6 +32,12 @@ export default defineType({
           }
           return true
         }),
+    }),
+    defineField({
+      name: 'galleryImage',
+      title: 'Or Select from Gallery',
+      type: 'reference',
+      to: [{type: 'galleryImage'}],
     }),
     defineField({
       name: 'text',
@@ -55,4 +60,16 @@ export default defineType({
       initialValue: 'center',
     }),
   ],
+  validation: (Rule) =>
+    Rule.custom((fields) => {
+      const hasUpload = !!fields?.image
+      const hasGallery = !!fields?.galleryImage
+      if (hasUpload && hasGallery) {
+        return 'Choose either an upload or a gallery image — not both.'
+      }
+      if (!hasUpload && !hasGallery) {
+        return 'Please provide a hero image.'
+      }
+      return true
+    }),
 })

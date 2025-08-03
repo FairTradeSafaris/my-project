@@ -20,9 +20,12 @@ import comments from './schemas/comments'
 import privacyPolicy from './schemas/privacyPolicy'
 import table from './schemas/objects/table'
 import {galleryImage} from './schemas/galleryImages'
+import videoTestimonial from './schemas/videoTestimonial'
 
 // 🆕 Modular Content Blocks
 import heroImage from './schemas/blocks/heroImage'
+import heroBlock from './schemas/blocks/heroBlock'
+
 import textImage from './schemas/blocks/textImage'
 import quoteBlock from './schemas/blocks/quoteBlock'
 import galleryBlock from './schemas/blocks/galleryBlock'
@@ -36,7 +39,7 @@ import author from './schemas/author'
 import teamMember from './schemas/teamMember'
 import foundersPromise from './schemas/founderPromise'
 import dest_slug from './schemas/dest_slug'
-
+import trip from './schemas/trip'
 const schemaTypes = [
   blog,
   comments,
@@ -75,6 +78,9 @@ const schemaTypes = [
   teamMember,
   foundersPromise,
   galleryImage,
+  heroBlock,
+  trip,
+  videoTestimonial,
 ]
 
 // ✅ This is the only change:

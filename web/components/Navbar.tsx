@@ -7,7 +7,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Search, User, X } from "lucide-react";
 import { useTheme } from "next-themes"; // Make sure this is already imported
-
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 interface MenuItem {
   title: string;
   href: string;
@@ -48,7 +48,7 @@ export default function Navbar({
   const { theme, systemTheme } = useTheme();
   const resolvedTheme = theme === "system" ? systemTheme : theme;
   const [scrolled, setScrolled] = useState(false);
-
+  const toggleButtonRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -59,19 +59,24 @@ export default function Navbar({
   useEffect(() => {
     const handleClickOutside = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (
-        (mobileMenuRef.current && mobileMenuRef.current.contains(target)) ||
-        (desktopMenuRef.current && desktopMenuRef.current.contains(target))
-      ) {
+
+      const clickedInsideMobile =
+        mobileMenuRef.current && mobileMenuRef.current.contains(target);
+      const clickedInsideDesktop =
+        desktopMenuRef.current && desktopMenuRef.current.contains(target);
+      const clickedToggle =
+        toggleButtonRef.current && toggleButtonRef.current.contains(target);
+
+      if (clickedInsideMobile || clickedInsideDesktop || clickedToggle) {
         return;
       }
+
       setMenuOpen(false);
     };
 
     document.addEventListener("pointerdown", handleClickOutside);
-    return () => {
+    return () =>
       document.removeEventListener("pointerdown", handleClickOutside);
-    };
   }, []);
 
   useEffect(() => {
@@ -183,13 +188,22 @@ export default function Navbar({
             <Search size={20} />
           </button>
           <button title="My Journey">
-            <User size={20} />
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+            <SignedOut>
+              <Link href="/sign-in">
+                <User size={20} />
+              </Link>
+            </SignedOut>
           </button>
+
           <motion.button
+            ref={toggleButtonRef} // ✅ Add this line
             whileTap={{ scale: 0.9 }}
             title={menuOpen ? "Close Menu" : "Open Menu"}
             onClick={(e) => {
-              e.stopPropagation(); // 🔐 Prevent click from bubbling
+              e.stopPropagation();
               setMenuOpen((prev) => !prev);
             }}
             className="transition-transform duration-200"

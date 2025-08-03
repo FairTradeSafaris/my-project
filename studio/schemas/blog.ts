@@ -19,9 +19,19 @@ export default defineType({
       options: {source: 'title', maxLength: 96},
       validation: (Rule) => Rule.required(),
     }),
+
+    // ✅ Reuse the existing heroBlock schema
     defineField({
       name: 'heroImage',
-      title: 'Hero Image (Banner)',
+      title: 'Hero Banner',
+      type: 'heroBlock', // reference the named object type
+    }),
+
+    defineField({name: 'publishedAt', title: 'Published At', type: 'datetime'}),
+
+    defineField({
+      name: 'coverImage',
+      title: 'Cover Image',
       type: 'image',
       options: {hotspot: true},
       fields: [
@@ -29,25 +39,18 @@ export default defineType({
           name: 'alt',
           title: 'Alt Text',
           type: 'string',
-          validation: (Rule) => Rule.required().error('Alt text is required for accessibility.'),
         },
       ],
     }),
-    defineField({name: 'publishedAt', title: 'Published At', type: 'datetime'}),
-    defineField({
-      name: 'coverImage',
-      title: 'Cover Image',
-      type: 'image',
-      options: {hotspot: true},
-      fields: [{name: 'alt', title: 'Alt Text', type: 'string'}],
-    }),
+
     defineField({name: 'summary', title: 'Summary', type: 'text'}),
+
     defineField({
       name: 'content',
       title: 'Content Blocks',
       type: 'array',
       of: [
-        {type: 'heroImage'},
+        {type: 'heroImage'}, // ✅ block used inside content
         {type: 'textImage'},
         {type: 'quoteBlock'},
         {type: 'galleryBlock'},
@@ -60,6 +63,7 @@ export default defineType({
         {type: 'smartCarousel'},
       ],
     }),
+
     defineField({
       name: 'author',
       title: 'Author',
@@ -67,18 +71,21 @@ export default defineType({
       to: [{type: 'author'}],
       validation: (Rule) => Rule.required(),
     }),
+
     defineField({
       name: 'tags',
       title: 'Tags',
       type: 'array',
       of: [{type: 'string'}],
     }),
+
     defineField({
       name: 'isFeatured',
       title: 'Feature this post',
       type: 'boolean',
       description: 'Mark this post to highlight it on the blog landing page',
     }),
+
     defineField({
       name: 'views',
       title: 'Views',
@@ -86,6 +93,7 @@ export default defineType({
       initialValue: 0,
       readOnly: true,
     }),
+
     defineField({
       name: 'likes',
       title: 'Likes',
@@ -93,4 +101,4 @@ export default defineType({
       initialValue: 0,
     }),
   ],
-} as any) // 👈 allows __experimental_group to be accepted by TypeScript
+} as any)

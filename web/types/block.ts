@@ -28,14 +28,23 @@ export type ImageSize = "sm" | "md" | "lg" | "full";
 // All block types individually
 export type HeroImageBlock = {
   _type: "heroImage";
-  image: SanityImage;
+  image?: SanityImage;
+  galleryImage?: {
+    image: SanityImage;
+    alt?: string;
+  };
   text?: string;
   alignment?: string;
 };
 
 export type TextImageBlock = {
   _type: "textImage";
-  image: SanityImage;
+  image?: SanityImage; // uploaded image (optional)
+  galleryImage?: {
+    image: SanityImage;
+    alt?: string;
+    imageUrl?: string; // ✅ this line fixes the TS error
+  };
   text: PortableTextBlock;
   align?: "left" | "right";
   imageSize?: ImageSize;

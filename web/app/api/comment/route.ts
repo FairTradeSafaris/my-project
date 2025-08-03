@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { serverClient } from "@/lib/sanity.server";
 import { Resend } from "resend";
 
+console.log("🔐 SANITY TOKEN:", process.env.SANITY_API_TOKEN);
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {

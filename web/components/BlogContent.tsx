@@ -63,8 +63,16 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
       {blocks?.map((block, index) => {
         switch (block._type) {
           case "heroImage": {
-            const imageUrl =
-              block.image?.asset?.url || urlFor(block.image).url();
+            let imageUrl: string = "";
+
+            if (block.image) {
+              imageUrl = block.image.asset?.url || urlFor(block.image).url();
+            } else if (block.galleryImage?.image) {
+              imageUrl =
+                block.galleryImage.image.asset?.url ||
+                urlFor(block.galleryImage.image).url();
+            }
+
             return (
               <section
                 key={index}
@@ -76,7 +84,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                       src={imageUrl}
                       alt={block.text || "Hero Image"}
                       fill
-                      className="object-cover"
+                      className="object-contain"
                     />
                   </div>
                 )}
@@ -98,44 +106,46 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
           case "textImage": {
             const imageUrl =
               block.image?.asset?.url ??
-              (block.image ? urlFor(block.image).url() : null);
+              block.galleryImage?.image?.asset?.url ??
+              null;
+
+            const altText =
+              block.image?.alt || block.galleryImage?.alt || "Image";
 
             const imageSize = (block.imageSize || "md") as
               | "sm"
               | "md"
               | "lg"
               | "full";
-            const imageSizeClass: Record<typeof imageSize, string> = {
-              sm: "md:w-1/4",
-              md: "md:w-1/3",
-              lg: "md:w-1/2",
-              full: "md:w-full",
-            };
 
-            const selectedSizeClass = imageSizeClass[imageSize];
+            const imageSizeClass: Record<"sm" | "md" | "lg" | "full", string> =
+              {
+                sm: "md:w-1/4",
+                md: "md:w-1/3",
+                lg: "md:w-1/2",
+                full: "md:w-full",
+              };
 
             return (
               <section
                 key={index}
-                className={`max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row ${
+                className={`max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row ${
                   block.align === "right" ? "md:flex-row-reverse" : ""
-                } items-stretch gap-8 py-2`}
+                } gap-8 items-stretch`}
               >
                 {imageUrl && (
-                  <div
-                    className={`w-full ${selectedSizeClass} overflow-hidden rounded`}
-                  >
-                    <Image
+                  <div className={`w-full ${imageSizeClass[imageSize]}`}>
+                    <img
                       src={imageUrl}
-                      alt={block.image?.alt || "Image"}
-                      width={600}
-                      height={400}
-                      className="w-full h-full object-cover"
+                      alt={altText}
+                      className="w-full h-full object-cover rounded"
+                      style={{ height: "100%" }}
                     />
                   </div>
                 )}
+
                 <div className="w-full flex items-center">
-                  <div className="prose max-w-none text-left sm:text-justify">
+                  <div className="prose max-w-none text-left sm:text-justify w-full">
                     <PortableText
                       value={block.text}
                       components={portableComponents}

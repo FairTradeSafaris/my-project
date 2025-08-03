@@ -8,6 +8,7 @@ import { LikeButton } from "@/components/LikeButton";
 import BlogContent from "@/components/BlogContent";
 import ShareButtons from "@/components/ShareButtons";
 import type { Block } from "@/types/block";
+import Link from "next/link"; // Make sure this is at the top
 
 export const revalidate = 0;
 
@@ -17,7 +18,18 @@ type BlogPost = {
   summary: string;
   publishedAt: string;
   coverImage?: string;
-  heroImage?: string;
+  heroImage?: {
+    alt?: string;
+    asset?: {
+      url: string;
+      _id: string;
+    };
+  };
+  heroGalleryImage?: {
+    alt?: string;
+    imageUrl?: string;
+    imageId?: string;
+  };
   content: Block[];
   likes?: number;
   author?: {
@@ -61,25 +73,47 @@ export async function generateStaticParams() {
 
 async function getPost(slug: string): Promise<BlogPost | null> {
   const query = groq`*[_type == "blog" && slug.current == $slug][0] {
-    _id,
-    title,
-    publishedAt,
-    "coverImage": coverImage.asset->url,
-    "heroImage": heroImage.asset->url,
-    summary,
-    content[] {
-      ...,
-      image { ..., asset-> },
-      images[] { ..., asset-> }
+  ...,
+  content[] {
+    ...,
+    image {
+      alt,
+      asset->{
+        _id,
+        url
+      }
     },
-    likes,
-    author-> {
-      name,
-      "image": image.asset->url,
-      bio
-    },
-    tags
-  }`;
+    "galleryImage": galleryImage->{
+      alt,
+      "imageUrl": image.asset->url,
+      "imageId": image.asset->_id
+    }
+  },
+ heroImage {
+  text,
+  alignment,
+  image {
+    alt,
+    asset->{
+      _id,
+      url
+    }
+  },
+  galleryImage->{
+    alt,
+    "imageUrl": image.asset->url,
+    "imageId": image.asset->_id
+  }
+},
+
+  "heroGalleryImage": heroGalleryImage->{
+    alt,
+    "imageUrl": image.asset->url,
+    "imageId": image.asset->_id
+  }
+}
+`;
+
   return await client.fetch(query, { slug });
 }
 
@@ -149,11 +183,13 @@ export default async function BlogPost({
 
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen px-0">
-      {post.heroImage && (
+      {(post.heroImage?.asset?.url || post.heroGalleryImage?.imageUrl) && (
         <div
           className="relative w-full h-[300px] sm:h-[400px] flex items-center justify-center"
           style={{
-            backgroundImage: `url(${post.heroImage})`,
+            backgroundImage: `url(${
+              post.heroImage?.asset?.url || post.heroGalleryImage?.imageUrl
+            })`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -195,19 +231,21 @@ export default async function BlogPost({
           {Array.isArray(post.tags) && post.tags.length > 0 && (
             <div className="bg-white shadow p-4 rounded-lg">
               <h4 className="text-sm font-semibold mb-2 text-gray-800">Tags</h4>
+
               <ul className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
-                  <li
-                    key={tag}
-                    className="bg-amber-600 text-white text-xs px-2 py-1 rounded-full"
-                  >
-                    {tag}
+                  <li key={tag}>
+                    <Link
+                      href={`/blog?tag=${encodeURIComponent(tag)}`}
+                      className="bg-amber-600 text-white text-xs px-2 py-1 rounded-full hover:bg-amber-700 transition"
+                    >
+                      #{tag}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-
           {featuredJourneys.length > 0 && (
             <div className="bg-[#f5f3ef] p-4 rounded-lg">
               <h4 className="text-lg font-semibold mb-3">
@@ -215,29 +253,31 @@ export default async function BlogPost({
               </h4>
               <ul className="space-y-4">
                 {featuredJourneys.map((j) => (
-                  <li
-                    key={j._id}
-                    className="bg-white p-2 rounded shadow flex gap-3 items-center"
-                  >
-                    {j.heroImage?.asset?.url && (
-                      <img
-                        src={j.heroImage.asset.url}
-                        alt={j.heroImage.alt || j.title}
-                        width={60}
-                        height={60}
-                        className="rounded object-cover flex-shrink-0"
-                      />
-                    )}
-                    <div>
-                      <h5 className="text-sm font-bold text-gray-800">
-                        {j.title}
-                      </h5>
-                      {j.region?.title && (
-                        <p className="text-xs text-orange-600">
-                          {j.region.title}
-                        </p>
+                  <li key={j._id}>
+                    <Link
+                      href={`/journey?q=${j.title}&open=true`}
+                      className="bg-white p-2 rounded shadow flex gap-3 items-center hover:bg-gray-50 transition"
+                    >
+                      {j.heroImage?.asset?.url && (
+                        <img
+                          src={j.heroImage.asset.url}
+                          alt={j.heroImage.alt || j.title}
+                          width={60}
+                          height={60}
+                          className="rounded object-cover flex-shrink-0"
+                        />
                       )}
-                    </div>
+                      <div>
+                        <h5 className="text-sm font-bold text-gray-800">
+                          {j.title}
+                        </h5>
+                        {j.region?.title && (
+                          <p className="text-xs text-orange-600">
+                            {j.region.title}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -251,27 +291,29 @@ export default async function BlogPost({
               </h4>
               <ul className="space-y-4">
                 {mostLikedBlogs.map((b) => (
-                  <li
-                    key={b._id}
-                    className="bg-white p-2 rounded shadow flex gap-3 items-center"
-                  >
-                    {b.coverImage && (
-                      <img
-                        src={b.coverImage}
-                        alt={b.alt || b.title}
-                        width={60}
-                        height={60}
-                        className="rounded object-cover flex-shrink-0"
-                      />
-                    )}
-                    <div>
-                      <h5 className="text-sm font-bold text-gray-800">
-                        {b.title}
-                      </h5>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {b.likes ?? 0} likes
-                      </p>
-                    </div>
+                  <li key={b._id}>
+                    <Link
+                      href={`/blog/${b.slug.current}`}
+                      className="bg-white p-2 rounded shadow flex gap-3 items-center hover:bg-gray-50 transition"
+                    >
+                      {b.coverImage && (
+                        <img
+                          src={b.coverImage}
+                          alt={b.alt || b.title}
+                          width={60}
+                          height={60}
+                          className="rounded object-cover flex-shrink-0"
+                        />
+                      )}
+                      <div>
+                        <h5 className="text-sm font-bold text-gray-800">
+                          {b.title}
+                        </h5>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {b.likes ?? 0} likes
+                        </p>
+                      </div>
+                    </Link>
                   </li>
                 ))}
               </ul>

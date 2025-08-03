@@ -17,3 +17,4 @@ build/
 
 # Redundant node_modules folder (still good to keep)
 web/node_modules/
+.vercel

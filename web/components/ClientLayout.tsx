@@ -109,13 +109,14 @@ export default function ClientLayout({
 
   return (
     <>
-      {!hideUI && (
+      {navSections.length > 0 && (
         <Navbar
           navSections={navSections}
           featureCards={featureCards}
           promoCard={promoCard}
         />
       )}
+
       <main>{children}</main>
       {!hideUI && <SafariFactFooter />}
     </>

@@ -103,6 +103,10 @@ export default function ClientLayout({
     fetchData();
   }, []);
 
+  if (!navSections.length && !featureCards.length && !promoCard) {
+    return null; // or a loader/spinner if you prefer
+  }
+
   return (
     <>
       {!hideUI && (

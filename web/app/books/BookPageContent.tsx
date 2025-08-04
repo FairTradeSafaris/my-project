@@ -8,21 +8,50 @@ type Book = {
   title: string;
   previewUrl: string;
   description?: string;
+  previewImage?: {
+    asset: {
+      url: string;
+    };
+  };
+  buyLink?: string;
+};
+
+type Claim = {
+  bookTitle: string;
+  bookUrl: string;
 };
 
 export default function BookPageContent({ userId }: { userId: string | null }) {
   const [books, setBooks] = useState<Book[]>([]);
+  const [claimed, setClaimed] = useState<Claim | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      const res = await fetch("/api/books");
-      const data = await res.json();
-      setBooks(data.books || []);
-      setLoading(false);
+    const load = async () => {
+      try {
+        const bookRes = await fetch("/api/books");
+        const bookData = await bookRes.json();
+        console.log("📚 Book API response:", bookData);
+
+        setBooks(bookData.books || []);
+        console.log("✅ Books set:", bookData.books?.length);
+
+        if (userId) {
+          const claimRes = await fetch(`/api/claim-status?userId=${userId}`);
+          const claimData = await claimRes.json();
+          console.log("🎟️ Claim data:", claimData);
+
+          setClaimed(claimData.claim || null);
+        }
+      } catch (error) {
+        console.error("❌ Failed to load books or claim:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchBooks();
-  }, []);
+
+    load();
+  }, [userId]);
 
   const handleClaim = async (book: Book) => {
     const res = await fetch("/api/claim-book", {
@@ -31,8 +60,12 @@ export default function BookPageContent({ userId }: { userId: string | null }) {
       body: JSON.stringify({ book, userId }),
     });
     const data = await res.json();
-    if (res.ok) alert("Book claim recorded! Enjoy your read.");
-    else alert("Something went wrong: " + data.error);
+    if (res.ok) {
+      alert("Book claim recorded! Refresh to see update.");
+      setClaimed({ bookTitle: book.title, bookUrl: book.previewUrl });
+    } else {
+      alert("Something went wrong: " + data.error);
+    }
   };
 
   return (
@@ -51,32 +84,67 @@ export default function BookPageContent({ userId }: { userId: string | null }) {
 
       {loading ? (
         <p>Loading books...</p>
+      ) : books.length === 0 ? (
+        <p className="text-red-600">No books found.</p>
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
-          {books.map((book) => (
-            <div
-              key={book._id}
-              className="border rounded-lg p-4 shadow bg-white"
-            >
-              <h2 className="text-xl font-semibold mb-2">{book.title}</h2>
-              <a
-                href={book.previewUrl}
-                target="_blank"
-                className="text-blue-600 underline mb-3 inline-block"
-                rel="noopener noreferrer"
+          {books.map((book) => {
+            const isClaimed = claimed && claimed.bookTitle === book.title;
+
+            return (
+              <div
+                key={book._id}
+                className="border rounded-lg p-4 shadow bg-white space-y-3"
               >
-                Preview on Issuu
-              </a>
-              <SignedIn>
-                <button
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                  onClick={() => handleClaim(book)}
-                >
-                  Claim This Guide
-                </button>
-              </SignedIn>
-            </div>
-          ))}
+                {book.previewImage?.asset?.url ? (
+                  <img
+                    src={book.previewImage.asset.url}
+                    alt={book.title}
+                    className="w-full h-48 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-sm">
+                    No image
+                  </div>
+                )}
+
+                <h2 className="text-xl font-semibold">{book.title}</h2>
+
+                <SignedIn>
+                  {claimed ? (
+                    isClaimed ? (
+                      <p className="text-green-700 text-sm font-medium">
+                        ✅ You downloaded this book
+                      </p>
+                    ) : (
+                      <p className="text-gray-500 text-sm italic">
+                        You’ve already claimed a free guide.
+                      </p>
+                    )
+                  ) : (
+                    <button
+                      className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                      onClick={() => handleClaim(book)}
+                    >
+                      Claim This Guide
+                    </button>
+                  )}
+
+                  {/* Show Buy on Amazon for ALL books once claimed */}
+                  {claimed && book.buyLink && (
+                    <a
+                      href={book.buyLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                    >
+                      Buy on Amazon
+                    </a>
+                  )}
+                </SignedIn>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

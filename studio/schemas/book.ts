@@ -25,11 +25,27 @@ const book = {
       title: 'Sort Order',
       type: 'number',
     },
+    {
+      name: 'buyLink',
+      title: 'Buy Link (Amazon)',
+      type: 'url',
+      description: 'Optional link to purchase this book on Amazon or other store',
+      validation: (Rule: any) => Rule.uri({scheme: ['http', 'https']}),
+    },
+    {
+      name: 'previewImage',
+      title: 'Preview Image',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+    },
   ],
   preview: {
     select: {
       title: 'title',
       subtitle: 'previewUrl',
+      media: 'previewImage',
     },
   },
 }

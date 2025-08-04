@@ -41,6 +41,12 @@ export default function JourneyCard({
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
 
+  // helper
+  const openExternal = (url: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="w-full max-w-sm bg-transparent">
       {/* Image with price tag */}
@@ -79,14 +85,14 @@ export default function JourneyCard({
             <p className="text-sm text-gray-600 line-clamp-3 group-hover:line-clamp-none transition-all duration-200 ease-in-out">
               {summary}
             </p>
-            <a
-              href="https://bookings.fairtradesafaris.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1 inline-block text-xs text-[#a35c2d] font-semibold underline"
+            <span
+              onClick={(e) =>
+                openExternal("https://bookings.fairtradesafaris.com", e)
+              }
+              className="mt-1 inline-block text-xs text-[#a35c2d] font-semibold underline cursor-pointer"
             >
               Read More →
-            </a>
+            </span>
           </div>
         )}
 
@@ -148,14 +154,14 @@ export default function JourneyCard({
           </div>
         )}
 
-        <a
-          href="https://bookings.fairtradesafaris.com"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={(e) =>
+            openExternal("https://bookings.fairtradesafaris.com", e)
+          }
           className="mt-auto text-center bg-black text-white text-sm font-semibold py-2 rounded-md shadow-md hover:bg-neutral-800 transition-colors"
         >
           Start Planning →
-        </a>
+        </button>
       </div>
     </div>
   );

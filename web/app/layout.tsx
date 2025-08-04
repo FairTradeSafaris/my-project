@@ -1,16 +1,13 @@
+// app/layout.tsx
 import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
 import ClientLayout from "@/components/ClientLayout";
 import { Poppins } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
-import { ClerkProvider } from "@clerk/nextjs"; // ✅ NEW LINE
+import { ClerkProvider } from "@clerk/nextjs";
+import LeadMagnetWrapper from "@/components/LeadMagnetWrapper";
 
-console.log(
-  "Clerk PUBLISHABLE:",
-  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-);
-console.log("Clerk SECRET:", process.env.CLERK_SECRET_KEY);
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -50,10 +47,10 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
             <ClientLayout>{children}</ClientLayout>
+            <LeadMagnetWrapper />
             <CookieConsent />
           </ThemeProvider>
         </ClerkProvider>
-        {/* Testimonials */}
       </body>
     </html>
   );

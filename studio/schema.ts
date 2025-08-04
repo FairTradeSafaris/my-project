@@ -41,6 +41,7 @@ import foundersPromise from './schemas/founderPromise'
 import dest_slug from './schemas/dest_slug'
 import trip from './schemas/trip'
 import book from './schemas/book'
+import leadMagnetClaim from './schemas/leadMagnetClaim'
 
 const schemaTypes = [
   blog,
@@ -84,6 +85,7 @@ const schemaTypes = [
   trip,
   videoTestimonial,
   book,
+  leadMagnetClaim,
 ]
 
 // ✅ This is the only change:

@@ -28,21 +28,6 @@ const config: Config = {
         border: "#bcae9e", // Muted outline
         "onSurface-light": "#2a2a2a", // Contrast for light bg
       },
-      customTheme: {
-        sand: {
-          light: "#f5f1eb",
-          DEFAULT: "#d8c3a5",
-          dark: "#a1887f",
-        },
-        surface: {
-          light: "#f4eee7",
-          dark: "#1a1a1a",
-        },
-        onSurface: {
-          light: "#2a2a2a",
-          dark: "#f5f1eb",
-        },
-      },
       keyframes: {
         fadeIn: {
           "0%": { opacity: "0", transform: "translateY(20px)" },
@@ -67,12 +52,20 @@ const config: Config = {
             animationTimingFunction: "ease-in-out",
           },
         },
+        cornerWiggle: {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "50%": { transform: "rotate(-2deg)" },
+        },
       },
       animation: {
         fadeIn: "fadeIn 0.8s ease-out forwards",
         fadeInSlow: "fadeInSlow 1.4s ease-out forwards",
         "pulse-once": "pulseOnce 0.5s ease",
-        bounceSlow: "bounceSlow 1s ease-in-out infinite",
+        bounceSlow: "bounceSlow 15s ease-in-out infinite",
+        cornerWiggle: "cornerWiggle 1.8s ease-in-out infinite",
+      },
+      clipPath: {
+        triangle: "polygon(0% 100%, 0% 0%, 100% 100%)",
       },
     },
   },

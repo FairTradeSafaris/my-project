@@ -76,7 +76,7 @@ export default function TestimonialCarousel() {
   };
 
   return (
-    <section className="bg-white pt-24 pb-16 px-4 font-sans relative overflow-visible">
+    <section className="bg-white pt-10 pb-6 px-4 font-sans relative overflow-visible">
       <div className="max-w-7xl mx-auto text-center">
         <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-16">
           {settings?.heading || "Client Feedback"}{" "}
@@ -113,6 +113,16 @@ export default function TestimonialCarousel() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Video Testimonials Link */}
+      <div className="mt-8 flex justify-center">
+        <a
+          href="/video-testimonials"
+          className="text-[#b49a7f] text-base font-semibold underline hover:text-[#a5835e] transition"
+        >
+          Look at our video testimonials
+        </a>
       </div>
     </section>
   );

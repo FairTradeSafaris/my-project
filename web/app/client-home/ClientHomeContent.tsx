@@ -1,6 +1,12 @@
 "use client";
 
-import { SignedIn, SignedOut, UserButton, SignOutButton } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignOutButton,
+  useUser,
+} from "@clerk/nextjs";
 import { sanityClient } from "@/lib/client";
 //import { v4 as uuidv4 } from "uuid";
 
@@ -45,13 +51,8 @@ type Trip = {
   }[];
 };
 
-export default function ClientHomeContent({
-  userId,
-  trips,
-}: {
-  userId: string | null;
-  trips: Trip[];
-}) {
+export default function ClientHomeContent({ trips }: { trips: Trip[] }) {
+  const { user } = useUser(); // <-- ADD THIS LINE RIGHT HERE!
   return (
     <>
       <section
@@ -70,20 +71,32 @@ export default function ClientHomeContent({
 
       <div className="p-8 text-xl">
         <SignedIn>
-          <p>Welcome to your client portal!</p>
-          <p>
-            Your Clerk user ID is: <strong>{userId}</strong>
-          </p>
-
-          <div className="flex items-center gap-4 mt-6">
-            <UserButton afterSignOutUrl="/" />
-            <SignOutButton>
-              <button className="bg-red-600 text-white px-4 py-2 rounded">
-                Sign Out
-              </button>
-            </SignOutButton>
+          <div className="mt-8">
+            <div className="flex items-center gap-6 p-6 rounded-2xl shadow-lg bg-white/90 max-w-lg">
+              {/* Avatar */}
+              <div className="shrink-0">
+                <UserButton afterSignOutUrl="/" />
+              </div>
+              {/* Personalized welcome */}
+              <div className="flex-1">
+                <p className="text-lg font-semibold text-amber-900 mb-1">
+                  Welcome{user?.firstName ? `, ${user.firstName}` : "!"}
+                </p>
+                <p className="text-sm text-gray-700">
+                  {user?.emailAddresses?.[0]?.emailAddress &&
+                    `Logged in as: ${user.emailAddresses[0].emailAddress}`}
+                </p>
+              </div>
+              {/* Sign Out Button */}
+              <div className="shrink-0">
+                <SignOutButton>
+                  <button className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-semibold shadow-sm transition">
+                    Sign Out
+                  </button>
+                </SignOutButton>
+              </div>
+            </div>
           </div>
-
           <div className="mt-10">
             <h2 className="text-2xl font-bold mb-4">Your Trips</h2>
             {trips.length === 0 ? (

@@ -100,8 +100,8 @@ export default function DestinationClient({
           </ul>
         </nav>
 
-        {/* Detail Content */}
-        <section className="relative flex-1 p-6 md:p-10 text-white min-h-[calc(100vh-400px)]">
+        {/* Detail Content - Sticky footer inside! */}
+        <section className="relative flex-1 p-6 md:p-10 text-white min-h-[calc(100vh-400px)] flex flex-col">
           {/* Background image */}
           <div className="absolute inset-0 w-full h-full">
             {selected.image && (
@@ -116,160 +116,143 @@ export default function DestinationClient({
           </div>
 
           {/* Foreground */}
-          <div className="relative z-10 space-y-6">
-            {/* Country Name & Badge */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <h2
-                className={`text-5xl leading-tight drop-shadow-md ${dancingScript.className}`}
-              >
-                {selected.title}
-              </h2>
-              <div className="bg-black/50 p-2 rounded-xl w-fit">
-                <Image
-                  src="/badges/fair-trade-paw.png"
-                  alt="Fair Trade Approved"
-                  width={120}
-                  height={120}
-                  className="object-contain"
-                />
-              </div>
-            </div>
-
-            {/* Subtitle / Description */}
-            {selected.subtitle && (
-              <p className="italic text-lg text-white/80">
-                {selected.subtitle}
-              </p>
-            )}
-
-            {selected.description && (
-              <p className="text-white leading-relaxed">
-                {selected.description}
-              </p>
-            )}
-
-            {/* Tags */}
-            {selected.tags && selected.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selected.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-white/10 border border-white/20 px-3 py-1 rounded-full text-xs font-medium"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Info Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm mt-6 text-white/90">
-              {selected.bestTime && (
-                <div className="bg-white/10 p-4 rounded-lg border border-white/10">
-                  <strong className="block text-white mb-1">
-                    Best Time to Go
-                  </strong>
-                  {selected.bestTime}
-                </div>
-              )}
-              {selected.highSeason && (
-                <div className="bg-white/10 p-4 rounded-lg border border-white/10">
-                  <strong className="block text-white mb-1">High Season</strong>
-                  {selected.highSeason}
-                </div>
-              )}
-              {selected.mapLocation && (
-                <div className="bg-white/10 p-4 rounded-lg border border-white/10">
-                  <strong className="block text-white mb-1">Location</strong>
-                  <a
-                    href={selected.mapLocation}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block text-sm text-blue-200 hover:text-blue-300"
-                  >
-                    📍 View on Map
-                  </a>
-                </div>
-              )}
-            </div>
-
-            {/* Rating */}
-            {selected.rating && (
-              <div className="flex items-center space-x-2 text-yellow-300 mt-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={18}
-                    fill={
-                      i < Math.floor(selected.rating ?? 0)
-                        ? "currentColor"
-                        : "#4b5563"
-                    }
-                    stroke="currentColor"
+          <div className="relative z-10 flex flex-col h-full min-h-[450px]">
+            {/* Everything above the gallery/buttons */}
+            <div className="flex-1 space-y-6">
+              {/* Country Name & Badge */}
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <h2
+                  className={`text-5xl leading-tight drop-shadow-md ${dancingScript.className}`}
+                >
+                  {selected.title}
+                </h2>
+                <div className="bg-black/50 p-2 rounded-xl w-fit">
+                  <Image
+                    src="/badges/fair-trade-paw.png"
+                    alt="Fair Trade Approved"
+                    width={120}
+                    height={120}
+                    className="object-contain"
                   />
-                ))}
-                <span>{selected.rating.toFixed(1)}/5</span>
-                {selected.reviews && (
-                  <span className="ml-2 text-white/80">
-                    {formattedReviews} reviews
-                  </span>
+                </div>
+              </div>
+
+              {/* Subtitle / Description */}
+              {selected.subtitle && (
+                <p className="italic text-lg text-white/80">
+                  {selected.subtitle}
+                </p>
+              )}
+
+              {selected.description && (
+                <p className="text-white leading-relaxed">
+                  {selected.description}
+                </p>
+              )}
+
+              {/* Info Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm mt-6 text-white/90">
+                {selected.bestTime && (
+                  <div className="bg-white/10 p-4 rounded-lg border border-white/10">
+                    <strong className="block text-white mb-1">
+                      Best Time to Go
+                    </strong>
+                    {selected.bestTime}
+                  </div>
+                )}
+                {selected.highSeason && (
+                  <div className="bg-white/10 p-4 rounded-lg border border-white/10">
+                    <strong className="block text-white mb-1">
+                      High Season
+                    </strong>
+                    {selected.highSeason}
+                  </div>
                 )}
               </div>
-            )}
 
-            {/* Buttons */}
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <Button className="bg-[#E5D5B8] hover:bg-[#d4c3a3] text-black font-semibold text-base px-6 py-3 flex items-center gap-2">
-                <Binoculars size={18} />
-                Explore {selected.title} Itineraries
-              </Button>
-
-              <Button
-                variant="outline"
-                className="border-[#E5D5B8] text-[#E5D5B8] hover:bg-[#E5D5B8] hover:text-black font-semibold text-base px-6 py-3 flex items-center gap-2"
-              >
-                <Info size={18} />
-                More About {selected.title}
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="text-white hover:underline text-base px-6 py-3 flex items-center gap-2"
-              >
-                <PhoneCall size={18} />
-                Book a Discovery Call
-              </Button>
-            </div>
-
-            {/* Gallery */}
-            {Array.isArray(selected?.gallery) &&
-              selected.gallery.length > 0 && (
-                <section className="mt-14">
-                  <div className="mb-4">
-                    <span className="text-2xl">📸</span>
-                    <h3 className="text-xl font-semibold inline-block ml-2 align-middle">
-                      Photo Highlights
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {selected.gallery.map((img, i) => (
-                      <div
-                        key={i}
-                        className="overflow-hidden rounded-lg border border-white/5 shadow-sm"
-                      >
-                        <Image
-                          src={img}
-                          alt={`Gallery image ${i + 1}`}
-                          width={200}
-                          height={150}
-                          className="w-full h-[100px] sm:h-[120px] object-cover transition-transform hover:scale-105 rounded-lg"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </section>
+              {/* Rating */}
+              {selected.rating && (
+                <div className="flex items-center space-x-2 text-yellow-300 mt-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      size={18}
+                      fill={
+                        i < Math.floor(selected.rating ?? 0)
+                          ? "currentColor"
+                          : "#4b5563"
+                      }
+                      stroke="currentColor"
+                    />
+                  ))}
+                  <span>{selected.rating.toFixed(1)}/5</span>
+                  {selected.reviews && (
+                    <span className="ml-2 text-white/80">
+                      {formattedReviews} reviews
+                    </span>
+                  )}
+                </div>
               )}
+
+              {/* Tags */}
+            </div>
+            {/* Sticky footer: Gallery and Buttons */}
+            <div>
+              {Array.isArray(selected?.gallery) &&
+                selected.gallery.length > 0 && (
+                  <section className="mt-14">
+                    <div className="mb-4">
+                      <span className="text-2xl">📸</span>
+                      <h3 className="text-xl font-semibold inline-block ml-2 align-middle">
+                        Photo Highlights
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {selected.gallery.map((img, i) => (
+                        <div
+                          key={i}
+                          className="overflow-hidden rounded-lg border border-white/5 shadow-sm"
+                        >
+                          <Image
+                            src={img}
+                            alt={`Gallery image ${i + 1}`}
+                            width={200}
+                            height={150}
+                            className="w-full h-[100px] sm:h-[120px] object-cover transition-transform hover:scale-105 rounded-lg"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              <div className="mt-10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <Button className="bg-[#E5D5B8] hover:bg-[#d4c3a3] text-black font-semibold text-base px-6 py-3 flex items-center gap-2">
+                  <Binoculars size={18} />
+                  Explore {selected.title} Itineraries
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-[#E5D5B8] text-[#E5D5B8] hover:bg-[#E5D5B8] hover:text-black font-semibold text-base px-6 py-3 flex items-center gap-2"
+                >
+                  <Info size={18} />
+                  More About {selected.title}
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-white hover:underline text-base px-6 py-3 flex items-center gap-2"
+                >
+                  <a
+                    href="https://bookings.fairtradesafaris.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <PhoneCall size={18} />
+                    Book a Discovery Call
+                  </a>
+                </Button>
+              </div>
+            </div>
           </div>
         </section>
       </div>

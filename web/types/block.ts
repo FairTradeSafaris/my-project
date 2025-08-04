@@ -1,3 +1,5 @@
+// types/block.ts
+
 export type SanityImage = {
   asset: {
     _ref?: string;
@@ -25,7 +27,8 @@ export type PortableTextBlock = {
 // Optional: Enum for stricter typing
 export type ImageSize = "sm" | "md" | "lg" | "full";
 
-// All block types individually
+// ✅ Individual block types
+
 export type HeroImageBlock = {
   _type: "heroImage";
   image?: SanityImage;
@@ -39,11 +42,11 @@ export type HeroImageBlock = {
 
 export type TextImageBlock = {
   _type: "textImage";
-  image?: SanityImage; // uploaded image (optional)
+  image?: SanityImage;
   galleryImage?: {
     image: SanityImage;
     alt?: string;
-    imageUrl?: string; // ✅ this line fixes the TS error
+    imageUrl?: string;
   };
   text: PortableTextBlock;
   align?: "left" | "right";
@@ -104,7 +107,14 @@ export type SmartCarouselBlock = {
   }[];
 };
 
-// Unified Block type for rendering
+export type TableBlock = {
+  _type: "table";
+  rows: {
+    cells: string[];
+  }[];
+};
+
+// ✅ Unified Block type for rendering
 export type Block =
   | HeroImageBlock
   | TextImageBlock
@@ -115,4 +125,5 @@ export type Block =
   | MapBlock
   | ZohoFormBlock
   | GalleryBlock
-  | SmartCarouselBlock;
+  | SmartCarouselBlock
+  | TableBlock;

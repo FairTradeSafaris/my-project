@@ -31,9 +31,11 @@ type PromoCard = FeatureCard;
 const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 const SafariFactFooter = dynamic(
   () => import("@/components/SafariFactFooter"),
-  {
-    ssr: false,
-  }
+  { ssr: false }
+);
+const TestimonialCarousel = dynamic(
+  () => import("@/components/TestimonialCarousel"),
+  { ssr: false }
 );
 
 export default function ClientLayout({
@@ -52,47 +54,48 @@ export default function ClientLayout({
     const fetchData = async () => {
       const data = await client.fetch(
         `*[_type == "megaMenu"][0]{
-    navSections[] {
-      heading,
-      links[] {
-        title,
-        href
-      }
-    },
-    featureCards[] {
-      title,
-      description,
-      alt,
-      link,
-      image {
-        asset->{
-          _ref,
-          _type,
-          url
-        },
-        _type
-      }
-    },
-    promoCard {
-      title,
-      description,
-      alt,
-      link,
-      image {
-        asset->{
-          _ref,
-          _type,
-          url
-        },
-        _type
-      }
-    }
-  }`
+          navSections[] {
+            heading,
+            links[] {
+              title,
+              href
+            }
+          },
+          featureCards[] {
+            title,
+            description,
+            alt,
+            link,
+            image {
+              asset->{
+                _ref,
+                _type,
+                url
+              },
+              _type
+            }
+          },
+          promoCard {
+            title,
+            description,
+            alt,
+            link,
+            image {
+              asset->{
+                _ref,
+                _type,
+                url
+              },
+              _type
+            }
+          }
+        }`
       );
 
       setNavSections(data?.navSections || []);
       setFeatureCards(data?.featureCards || []);
-      setPromoCard(data?.promoCard || null); // ✅ Use `null` not `undefined`
+      setPromoCard(data?.promoCard || null);
+
       console.log("PROMO CARD CHECK", {
         title: data?.promoCard?.title,
         link: data?.promoCard?.link,
@@ -103,8 +106,8 @@ export default function ClientLayout({
     fetchData();
   }, []);
 
-  if (!navSections.length && !featureCards.length && promoCard === undefined) {
-    return null; // or a loader/spinner if you prefer
+  if (!navSections.length && !featureCards.length && promoCard === null) {
+    return null; // or a loader/spinner
   }
 
   return (
@@ -116,8 +119,8 @@ export default function ClientLayout({
           promoCard={promoCard}
         />
       )}
-
       <main>{children}</main>
+      {!hideUI && <TestimonialCarousel />} {/* ✅ Testimonial added here */}
       {!hideUI && <SafariFactFooter />}
     </>
   );

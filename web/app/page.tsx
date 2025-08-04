@@ -14,13 +14,6 @@ const WhyChoose = dynamic(() => import("@/components/WhyChoose"), {
   loading: () => <p>Loading section...</p>,
 });
 
-const TestimonialCarousel = dynamic(
-  () => import("@/components/TestimonialCarousel"),
-  {
-    loading: () => <p>Loading testimonials...</p>,
-  }
-);
-
 const foundersPromise: FoundersPromiseBlock | null = await sanity.fetch(
   `*[_type == "foundersPromise"][0]{
     headline,
@@ -319,9 +312,6 @@ export default async function Home() {
             </div>
           </section>
         )}
-
-        {/* Testimonials */}
-        <TestimonialCarousel />
       </main>
     </>
   );

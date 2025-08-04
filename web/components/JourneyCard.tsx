@@ -1,4 +1,6 @@
+"use client";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 type Props = {
   title: string;
@@ -12,7 +14,7 @@ type Props = {
   starIcon?: string;
   star?: number;
   metaIcons?: React.ReactNode;
-  isFeatured: boolean; // ✅ passed from Sanity
+  isFeatured: boolean;
 };
 
 export default function JourneyCard({
@@ -25,76 +27,135 @@ export default function JourneyCard({
   region,
   starIcon,
   star = 0,
-  metaIcons,
   isFeatured,
 }: Props) {
+  const [showMobileTooltip, setShowMobileTooltip] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    updateIsMobile();
+    window.addEventListener("resize", updateIsMobile);
+    return () => window.removeEventListener("resize", updateIsMobile);
+  }, []);
+
   return (
-    <div className="relative w-full max-w-sm overflow-visible pb-40 bg-transparent">
-      {/* Image container */}
-      <div className="relative">
+    <div className="w-full max-w-sm bg-transparent">
+      {/* Image with price tag */}
+      <div className="relative rounded-t-lg overflow-hidden">
         {imageUrl && (
           <Image
             src={imageUrl}
             alt={alt || "Journey image"}
             width={400}
             height={256}
-            className="w-full h-64 object-cover rounded-md"
+            className="w-full h-64 object-cover"
           />
         )}
-
-        {/* 🟧 Price Tag – Larger & Sand Brown */}
         {price && (
-          <div className="absolute -top-3 -right-3 bg-[#d2b48c] text-black text-sm font-bold px-4 py-2 rounded-md shadow-md z-20">
+          <div className="absolute top-2 right-2 bg-[#d2b48c] text-black text-sm font-bold px-4 py-1 rounded shadow-md z-10">
             {price.startsWith("$") ? price : `$${price}`} p/p sharing
           </div>
         )}
       </div>
 
-      {/* Text Box */}
-      <div className="absolute top-48 left-4 right-4 bg-white p-4 shadow-lg border border-gray-200 rounded-md z-30 flex flex-col h-[220px]">
+      {/* Card Body */}
+      <div className="-mt-10 bg-white border border-gray-100 rounded-xl shadow-lg p-5 mx-2 relative z-10 flex flex-col min-h-[250px]">
         {(duration || region) && (
-          <p className="text-xs uppercase text-orange-600 font-bold mb-1">
+          <p className="text-xs uppercase tracking-wide text-orange-700 font-semibold mb-1">
             {duration}
             {region && ` • ${region}`}
           </p>
         )}
 
-        <h3 className="text-lg font-bold text-gray-800 mb-1 leading-snug line-clamp-2">
+        <h3 className="text-base font-bold text-gray-800 mb-1 leading-snug">
           {title}
         </h3>
 
-        {summary && <p className="text-sm text-gray-600 mb-2">{summary}</p>}
+        {summary && (
+          <div className="mb-3">
+            <p className="text-sm text-gray-600 line-clamp-3 group-hover:line-clamp-none transition-all duration-200 ease-in-out">
+              {summary}
+            </p>
+            <a
+              href="https://bookings.fairtradesafaris.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block text-xs text-[#a35c2d] font-semibold underline"
+            >
+              Read More →
+            </a>
+          </div>
+        )}
 
-        {/* ⭐ Star Rating */}
         {star > 0 && (
-          <div className="flex items-center space-x-1 mb-2">
-            {[...Array(5)].map((_, i) => (
-              <img
-                key={i}
-                src={starIcon || "/default-star.svg"}
-                alt="Star"
-                className={`w-4 h-4 ${i >= star ? "opacity-30" : ""}`}
-              />
-            ))}
+          <div className="relative group flex flex-col mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                Luxury Level:
+                {isMobile && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMobileTooltip((prev) => !prev)}
+                    className="text-gray-400 hover:text-gray-600 text-xs"
+                    aria-label="Info about luxury levels"
+                  >
+                    ℹ️
+                  </button>
+                )}
+              </span>
+              <div className="flex items-center gap-1">
+                {[...Array(star)].map((_, i) => (
+                  <img
+                    key={i}
+                    src={starIcon || "/default-star.svg"}
+                    alt="Luxury Star"
+                    className="w-4 h-4"
+                  />
+                ))}
+              </div>
+            </div>
+
+            {!isMobile && (
+              <div className="absolute left-0 top-6 w-60 bg-white border border-gray-200 shadow-md rounded-md text-xs text-gray-700 p-3 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <p className="mb-1">
+                  <strong>4 stars</strong>: Premium amenities and experiences
+                </p>
+                <p>
+                  <strong>5 stars</strong>: Ultimate luxury and exclusivity
+                </p>
+              </div>
+            )}
+
+            {isMobile && showMobileTooltip && (
+              <div className="absolute left-0 top-6 w-60 bg-white border border-gray-200 shadow-md rounded-md text-xs text-gray-700 p-3 z-50">
+                <p className="mb-1">
+                  <strong>4 stars</strong>: Premium amenities and experiences
+                </p>
+                <p>
+                  <strong>5 stars</strong>: Ultimate luxury and exclusivity
+                </p>
+              </div>
+            )}
           </div>
         )}
 
         {isFeatured && (
-          <div
-            className="inline-block bg-[#d2b48c] text-black text-xs font-semibold px-3 py-1 rounded-full shadow animate-bounceSlow"
-            style={{
-              animationDelay: "5s",
-              animationIterationCount: "infinite",
-            }}
-          >
+          <div className="inline-block bg-[#d2b48c] text-black text-[10px] font-medium px-2 py-0.5 rounded-full shadow-sm mb-2">
             ★ Featured Journey
           </div>
         )}
 
-        {/* Optional Meta Icons */}
-        {metaIcons && (
-          <div className="flex items-center gap-4 mt-2">{metaIcons}</div>
-        )}
+        <a
+          href="https://bookings.fairtradesafaris.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-auto text-center bg-black text-white text-sm font-semibold py-2 rounded-md shadow-md hover:bg-neutral-800 transition-colors"
+        >
+          Start Planning →
+        </a>
       </div>
     </div>
   );

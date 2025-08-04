@@ -310,6 +310,57 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 </div>
               </section>
             );
+          case "table":
+            return (
+              <div
+                key={index}
+                className="overflow-x-auto my-8 rounded-lg border border-gray-300"
+              >
+                <table className="min-w-full table-auto text-sm text-left">
+                  <tbody>
+                    {block.rows.map((row, rowIndex) => (
+                      <tr
+                        key={rowIndex}
+                        className={
+                          rowIndex === 0
+                            ? "bg-gray-100 font-semibold"
+                            : "bg-white"
+                        }
+                      >
+                        {row.cells.map((cell, cellIndex) => (
+                          <td
+                            key={cellIndex}
+                            className="border px-4 py-3 align-top"
+                          >
+                            <PortableText
+                              value={
+                                typeof cell === "string"
+                                  ? [
+                                      {
+                                        _type: "block",
+                                        children: [
+                                          { _type: "span", text: cell },
+                                        ],
+                                      },
+                                    ]
+                                  : cell
+                              }
+                              components={{
+                                block: {
+                                  normal: ({ children }) => (
+                                    <p className="text-sm">{children}</p>
+                                  ),
+                                },
+                              }}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
 
           case "smartCarousel":
             return (

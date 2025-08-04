@@ -5,6 +5,7 @@ import { Poppins } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
 import { ClerkProvider } from "@clerk/nextjs"; // ✅ NEW LINE
+
 console.log(
   "Clerk PUBLISHABLE:",
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -52,6 +53,7 @@ export default function RootLayout({
             <CookieConsent />
           </ThemeProvider>
         </ClerkProvider>
+        {/* Testimonials */}
       </body>
     </html>
   );

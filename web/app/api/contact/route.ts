@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 let accessToken = process.env.ZOHO_ACCESS_TOKEN!;
 const refreshToken = process.env.ZOHO_REFRESH_TOKEN!;
 const clientId = process.env.ZOHO_CLIENT_ID!;
@@ -47,6 +45,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({ data: [lead] }),
   });
 
+  // Retry once if the token is expired
   if (response.status === 401) {
     await refreshAccessToken();
     response = await fetch("https://www.zohoapis.com/crm/v2/Leads", {
@@ -58,6 +57,9 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ data: [lead] }),
     });
   }
+
+  // ✅ Lazy load Resend to avoid build-time crash
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   await resend.emails.send({
     from: process.env.NOTIFY_EMAIL_FROM || "onboarding@resend.dev",

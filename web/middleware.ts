@@ -3,5 +3,5 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 export default clerkMiddleware();
 
 export const config = {
-  matcher: ["/client-home(.*)", "/books(.*)"],
+  matcher: ["/client-home/:path*", "/books/:path*"],
 };

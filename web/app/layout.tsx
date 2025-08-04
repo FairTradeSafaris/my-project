@@ -5,8 +5,8 @@ import ClientLayout from "@/components/ClientLayout";
 import { Poppins } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
-import { ClerkProvider } from "@clerk/nextjs";
 import LeadMagnetWrapper from "@/components/LeadMagnetWrapper";
+import { ClerkWrapper } from "@/components/ClerkWrapper"; // new wrapper component
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -43,14 +43,14 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} font-poppins min-h-screen flex flex-col bg-white text-black dark:bg-neutral-950 dark:text-white transition-colors duration-300`}
       >
-        <ClerkProvider>
+        <ClerkWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
             <ClientLayout>{children}</ClientLayout>
             <LeadMagnetWrapper />
             <CookieConsent />
           </ThemeProvider>
-        </ClerkProvider>
+        </ClerkWrapper>
       </body>
     </html>
   );

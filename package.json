@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@clerk/nextjs": "^6.28.1",
     "@tailwindcss/line-clamp": "^0.4.4",
     "next-sanity": "^10.0.6"
   },

@@ -6,8 +6,6 @@ import { Resend } from "resend";
 
 console.log("🔐 SANITY TOKEN:", process.env.SANITY_API_TOKEN);
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: Request) {
   console.log("✅ API /api/comment hit");
 
@@ -38,6 +36,7 @@ export async function POST(req: Request) {
     console.log("✅ Saved to Sanity:", result._id);
 
     console.log("📧 Sending email via Resend...");
+    const resend = new Resend(process.env.RESEND_API_KEY); // ✅ moved inside POST
     const emailRes = await resend.emails.send({
       from: process.env.NOTIFY_EMAIL_FROM || "onboarding@resend.dev",
       to: process.env.NOTIFY_EMAIL_TO || "devon@fairtradesafaris.com",

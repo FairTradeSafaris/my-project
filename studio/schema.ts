@@ -40,6 +40,8 @@ import teamMember from './schemas/teamMember'
 import foundersPromise from './schemas/founderPromise'
 import dest_slug from './schemas/dest_slug'
 import trip from './schemas/trip'
+import book from './schemas/book'
+
 const schemaTypes = [
   blog,
   comments,
@@ -81,6 +83,7 @@ const schemaTypes = [
   heroBlock,
   trip,
   videoTestimonial,
+  book,
 ]
 
 // ✅ This is the only change:

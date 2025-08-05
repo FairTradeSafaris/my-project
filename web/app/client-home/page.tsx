@@ -47,7 +47,7 @@ export default async function ClientHomePage() {
 
   return (
     <>
-      <div>Debug</div>
+      <div>Debug </div>
       <ClientHomeContent trips={trips} />
     </>
   );

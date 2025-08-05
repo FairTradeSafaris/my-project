@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
 type Book = {
@@ -21,7 +21,10 @@ type Claim = {
   bookUrl: string;
 };
 
-export default function BookPageContent({ userId }: { userId: string | null }) {
+export default function BookPageContent() {
+  const { user } = useUser();
+  const userId = user?.id ?? null;
+
   const [books, setBooks] = useState<Book[]>([]);
   const [claimed, setClaimed] = useState<Claim | null>(null);
   const [loading, setLoading] = useState(true);

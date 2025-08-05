@@ -45,5 +45,10 @@ export default async function ClientHomePage() {
     );
   }
 
-  return <ClientHomeContent trips={trips} />;
+  return (
+    <>
+      <div>Debug</div>
+      <ClientHomeContent trips={trips} />
+    </>
+  );
 }

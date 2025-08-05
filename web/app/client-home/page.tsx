@@ -5,48 +5,46 @@ import { sanityClient } from "../../lib/client";
 export default async function ClientHomePage() {
   const { userId } = await auth();
 
+  // Fetch ALL trips, ignoring clerkUserId, for debugging
   let trips = [];
 
-  if (userId) {
-    trips = await sanityClient.fetch(
-      `*[_type == "trip" && clerkUserId == $userId] {
-        ...,
-        destination-> {
-          name,
-          slug
-        },
-        documents[] {
-          _key,
-          label,
-          file {
-            asset-> {
-              url,
-              originalFilename,
-              mimeType
-            }
-          }
-        },
-        passportUploads[] {
-          asset-> {
-            url,
-            originalFilename,
-            mimeType
-          }
-        },
-        flightTicketUploads[] {
+  trips = await sanityClient.fetch(
+    `*[_type == "trip"] {
+      ...,
+      destination-> {
+        name,
+        slug
+      },
+      documents[] {
+        _key,
+        label,
+        file {
           asset-> {
             url,
             originalFilename,
             mimeType
           }
         }
-      }`,
-      { userId }
-    );
-  }
+      },
+      passportUploads[] {
+        asset-> {
+          url,
+          originalFilename,
+          mimeType
+        }
+      },
+      flightTicketUploads[] {
+        asset-> {
+          url,
+          originalFilename,
+          mimeType
+        }
+      }
+    }`
+  );
 
   // TEMPORARY DEBUG: Log to server console
-  console.log("TRIPS DEBUG:", trips);
+  console.log("ALL TRIPS DEBUG:", trips);
 
   return (
     <>
@@ -61,7 +59,7 @@ export default async function ClientHomePage() {
         }}
       >
         <div>
-          <strong>Trips array length:</strong> {trips.length}
+          <strong>Trips array length (ALL):</strong> {trips.length}
         </div>
         <pre
           style={{

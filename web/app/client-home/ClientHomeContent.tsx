@@ -86,6 +86,11 @@ export default function ClientHomeContent({ trips }: { trips: Trip[] }) {
                   {user?.emailAddresses?.[0]?.emailAddress &&
                     `Logged in as: ${user.emailAddresses[0].emailAddress}`}
                 </p>
+                {user?.id && (
+                  <p className="text-xs text-red-700 mt-1">
+                    Clerk User ID: <span className="font-mono">{user.id}</span>
+                  </p>
+                )}
               </div>
               {/* Sign Out Button */}
               <div className="shrink-0">

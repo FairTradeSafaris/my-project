@@ -10,41 +10,40 @@ export default async function ClientHomePage() {
   if (userId) {
     trips = await sanityClient.fetch(
       `*[_type == "trip" && clerkUserId == $userId] {
-  ...,
-  destination-> {
-    name,
-    slug
-  },
-  documents[] {
-    _key,
-    label,
-    file {
-      asset-> {
-        url,
-        originalFilename,
-        mimeType
-      }
-    }
-  },
-  passportUpload {
-  asset-> {
-    url,
-    originalFilename,
-    mimeType
-  }
-},
-flightTicketUpload {
-  asset-> {
-    url,
-    originalFilename,
-    mimeType
-  }
-}
-}
-`,
+        ...,
+        destination-> {
+          name,
+          slug
+        },
+        documents[] {
+          _key,
+          label,
+          file {
+            asset-> {
+              url,
+              originalFilename,
+              mimeType
+            }
+          }
+        },
+        passportUploads[] {
+          asset-> {
+            url,
+            originalFilename,
+            mimeType
+          }
+        },
+        flightTicketUploads[] {
+          asset-> {
+            url,
+            originalFilename,
+            mimeType
+          }
+        }
+      }`,
       { userId }
     );
   }
 
-  return <ClientHomeContent userId={userId} trips={trips} />;
+  return <ClientHomeContent trips={trips} />;
 }

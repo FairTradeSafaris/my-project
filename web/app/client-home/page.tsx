@@ -45,5 +45,35 @@ export default async function ClientHomePage() {
     );
   }
 
-  return <ClientHomeContent trips={trips} />;
+  // TEMPORARY DEBUG: Log to server console
+  console.log("TRIPS DEBUG:", trips);
+
+  return (
+    <>
+      {/* TEMPORARY DEBUG - Remove after troubleshooting */}
+      <div
+        style={{
+          background: "#fff3cd",
+          color: "#856404",
+          padding: "12px",
+          margin: "16px 0",
+          borderRadius: "8px",
+        }}
+      >
+        <div>
+          <strong>Trips array length:</strong> {trips.length}
+        </div>
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-all",
+            fontSize: "12px",
+          }}
+        >
+          {JSON.stringify(trips, null, 2)}
+        </pre>
+      </div>
+      <ClientHomeContent trips={trips} />
+    </>
+  );
 }

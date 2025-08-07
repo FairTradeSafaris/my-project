@@ -2,24 +2,11 @@ import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    // Check required environment variables upfront
-    const requiredEnvVars = [
-      "ZOHO_ACCESS_TOKEN",
-      "SANITY_API_TOKEN",
-      "SANITY_PROJECT_ID",
-      "SANITY_DATASET",
-    ];
-
-    const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
-
-    if (missingVars.length > 0) {
-      const msg = `Missing required environment variables: ${missingVars.join(", ")}`;
-      console.error(msg);
-      return new Response(JSON.stringify({ error: msg }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+    // Hardcoded for testing - replace with process.env in production!
+    const zohoAccessToken = process.env.ZOHO_ACCESS_TOKEN!;
+    const sanityToken = process.env.SANITY_API_TOKEN!;
+    const sanityProjectId = "jw971r14"; // Your project ID
+    const sanityDataset = "production"; // Your dataset
 
     // Parse incoming data from Zoho webhook
     const data = await request.json();
@@ -35,11 +22,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Retrieve env vars safely
-    const zohoAccessToken = process.env.ZOHO_ACCESS_TOKEN!;
-    const sanityToken = process.env.SANITY_API_TOKEN!;
-    const sanityProjectId = process.env.SANITY_PROJECT_ID!;
-    const sanityDataset = process.env.SANITY_DATASET!;
+    if (!zohoAccessToken || !sanityToken) {
+      return new Response(
+        JSON.stringify({ error: "Missing required environment variables." }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     // 1. Download the file from Zoho
     const fileResp = await fetch(file_url, {

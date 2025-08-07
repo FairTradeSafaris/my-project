@@ -2,11 +2,29 @@ import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
+    // Check required environment variables upfront
+    const requiredEnvVars = [
+      "ZOHO_ACCESS_TOKEN",
+      "SANITY_API_TOKEN",
+      "SANITY_PROJECT_ID",
+      "SANITY_DATASET",
+    ];
+
+    const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
+
+    if (missingVars.length > 0) {
+      const msg = `Missing required environment variables: ${missingVars.join(", ")}`;
+      console.error(msg);
+      return new Response(JSON.stringify({ error: msg }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Parse incoming data from Zoho webhook
     const data = await request.json();
     const { file_url } = data;
 
-    // Validate required fields
     if (!file_url) {
       return new Response(
         JSON.stringify({ error: "Missing file_url in request body." }),
@@ -17,30 +35,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check required environment variables
-    const zohoAccessToken = process.env.ZOHO_ACCESS_TOKEN;
-    const sanityToken = process.env.SANITY_API_TOKEN;
-    const sanityProjectId = process.env.SANITY_PROJECT_ID;
-    const sanityDataset = process.env.SANITY_DATASET;
+    // Retrieve env vars safely
+    const zohoAccessToken = process.env.ZOHO_ACCESS_TOKEN!;
+    const sanityToken = process.env.SANITY_API_TOKEN!;
+    const sanityProjectId = process.env.SANITY_PROJECT_ID!;
+    const sanityDataset = process.env.SANITY_DATASET!;
 
-    if (
-      !zohoAccessToken ||
-      !sanityToken ||
-      !sanityProjectId ||
-      !sanityDataset
-    ) {
-      return new Response(
-        JSON.stringify({
-          error: "Missing one or more required environment variables.",
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // 1. Download the file from Zoho (with your Zoho API token)
+    // 1. Download the file from Zoho
     const fileResp = await fetch(file_url, {
       headers: { Authorization: `Zoho-oauthtoken ${zohoAccessToken}` },
     });
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     const sanityUploadResult = await sanityUploadResp.json();
 
-    // Return a success response
+    // Return success response
     return new Response(
       JSON.stringify({ status: "ok", sanityFile: sanityUploadResult }),
       { status: 200, headers: { "Content-Type": "application/json" } }

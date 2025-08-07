@@ -56,6 +56,20 @@ const config: Config = {
           "0%, 100%": { transform: "rotate(0deg)" },
           "50%": { transform: "rotate(-2deg)" },
         },
+        leadMagnetPulse: {
+          "0%, 100%": {
+            boxShadow: "0 2px 8px 0 rgba(163, 120, 60, 0.15)",
+            transform: "scale(1)",
+          },
+          "20%": {
+            boxShadow: "0 0 0 10px #ff0, 0 0 30px 10px #f00",
+            transform: "scale(1.2)",
+          },
+          "50%": {
+            boxShadow: "0 2px 8px 0 rgba(163, 120, 60, 0.12)",
+            transform: "scale(1)",
+          },
+        },
       },
       animation: {
         fadeIn: "fadeIn 0.8s ease-out forwards",
@@ -63,6 +77,7 @@ const config: Config = {
         "pulse-once": "pulseOnce 0.5s ease",
         bounceSlow: "bounceSlow 15s ease-in-out infinite",
         cornerWiggle: "cornerWiggle 1.8s ease-in-out infinite",
+        leadMagnetPulse: "leadMagnetPulse 0.8s cubic-bezier(.4,0,.2,1)",
       },
       clipPath: {
         triangle: "polygon(0% 100%, 0% 0%, 100% 100%)",

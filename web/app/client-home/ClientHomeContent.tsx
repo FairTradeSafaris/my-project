@@ -9,6 +9,7 @@ import {
 } from "@clerk/nextjs";
 import { sanityClient } from "@/lib/client";
 //import { v4 as uuidv4 } from "uuid";
+import { useEffect, useState } from "react";
 
 type Trip = {
   _id: string;
@@ -51,8 +52,17 @@ type Trip = {
   }[];
 };
 
-export default function ClientHomeContent({ trips }: { trips: Trip[] }) {
+export default function ClientHomeContent() {
   const { user } = useUser(); // <-- ADD THIS LINE RIGHT HERE!
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const email = user?.emailAddresses?.[0]?.emailAddress;
+
+  useEffect(() => {
+    if (!email) return;
+    fetch(`/api/trips?email=${encodeURIComponent(email)}`)
+      .then((res) => res.json())
+      .then((data) => setTrips(data.trips));
+  }, [email]);
   return (
     <>
       <section
@@ -86,9 +96,12 @@ export default function ClientHomeContent({ trips }: { trips: Trip[] }) {
                   {user?.emailAddresses?.[0]?.emailAddress &&
                     `Logged in as: ${user.emailAddresses[0].emailAddress}`}
                 </p>
-                {user?.id && (
+                {user?.emailAddresses?.[0]?.emailAddress && (
                   <p className="text-xs text-red-700 mt-1">
-                    Clerk User ID: <span className="font-mono">{user.id}</span>
+                    Email:{" "}
+                    <span className="font-mono">
+                      {user.emailAddresses[0].emailAddress}
+                    </span>
                   </p>
                 )}
               </div>

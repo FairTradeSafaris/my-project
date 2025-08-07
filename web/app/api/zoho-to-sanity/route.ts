@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 let cachedAccessToken: string | null = null;
-let tokenExpiresAt: number = 0; // UNIX timestamp in ms
+let tokenExpiresAt: number = 0; // timestamp in ms
 
 async function refreshAccessToken() {
   const refreshToken = process.env.ZOHO_REFRESH_TOKEN!;
@@ -29,7 +29,7 @@ async function refreshAccessToken() {
 
   const json = await res.json();
   cachedAccessToken = json.access_token;
-  // Set expiry 5 minutes earlier than actual expiry as a buffer
+  // expire 5 minutes early to avoid edge cases
   tokenExpiresAt = Date.now() + (json.expires_in - 300) * 1000;
 
   return cachedAccessToken;
@@ -44,62 +44,90 @@ async function getAccessToken() {
 
 export async function POST(request: NextRequest) {
   try {
-    const requiredEnvVars = [
-      "ZOHO_REFRESH_TOKEN",
-      "ZOHO_CLIENT_ID",
-      "ZOHO_CLIENT_SECRET",
-      "SANITY_API_TOKEN",
-      "SANITY_PROJECT_ID",
-      "SANITY_DATASET",
-    ];
-    const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
-    if (missingVars.length > 0) {
-      const msg = `Missing required environment variables: ${missingVars.join(", ")}`;
-      console.error(msg);
-      return new Response(JSON.stringify({ error: msg }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
     const data = await request.json();
-    const { file_url } = data;
-    if (!file_url) {
+    const { email, file_url, file_name } = data;
+
+    if (!email || !file_url) {
       return new Response(
-        JSON.stringify({ error: "Missing file_url in request body." }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
+        JSON.stringify({
+          error: "Missing required fields: email and file_url",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Get fresh Zoho access token (auto-refresh if needed)
+    const sanityToken = process.env.SANITY_API_TOKEN!;
+    const sanityProjectId = process.env.SANITY_PROJECT_ID!;
+    const sanityDataset = process.env.SANITY_DATASET!;
+
+    // 1. Get Zoho Access Token (auto-refresh)
     const zohoAccessToken = await getAccessToken();
 
-    // Download the file from Zoho
+    // 2. Query Sanity for trip with matching email
+    const query = `*[_type == "trip" && clientEmail == $email][0]{_id}`;
+    const sanityQueryUrl = `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/query/${sanityDataset}?query=${encodeURIComponent(
+      query
+    )}&$email="${encodeURIComponent(email)}"`;
+
+    const sanityQueryResp = await fetch(sanityQueryUrl, {
+      headers: { Authorization: `Bearer ${sanityToken}` },
+    });
+
+    if (!sanityQueryResp.ok) {
+      const text = await sanityQueryResp.text();
+      throw new Error(`Sanity query failed: ${text}`);
+    }
+
+    const sanityQueryResult = await sanityQueryResp.json();
+    let tripId = sanityQueryResult.result?._id;
+
+    // 3. If no trip, create one
+    if (!tripId) {
+      const createDoc = {
+        _type: "trip",
+        clientEmail: email,
+        title: `Trip for ${email}`,
+        documents: [],
+      };
+
+      const createResp = await fetch(
+        `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${sanityToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mutations: [{ create: createDoc }],
+            returnIds: true,
+          }),
+        }
+      );
+
+      if (!createResp.ok) {
+        const text = await createResp.text();
+        throw new Error(`Failed to create Trip doc: ${text}`);
+      }
+
+      const createResult = await createResp.json();
+      tripId = createResult.results[0].id;
+    }
+
+    // 4. Download file from Zoho
     const fileResp = await fetch(file_url, {
       headers: { Authorization: `Zoho-oauthtoken ${zohoAccessToken}` },
     });
 
     if (!fileResp.ok) {
-      const zohoText = await fileResp.text().catch(() => "No body");
-      const zohoErr = `Failed to fetch file from Zoho (status ${fileResp.status}): ${zohoText}`;
-      console.error(zohoErr);
-      return new Response(JSON.stringify({ error: zohoErr }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+      const text = await fileResp.text().catch(() => "No body");
+      throw new Error(`Failed to fetch file from Zoho: ${text}`);
     }
 
     const fileBuffer = await fileResp.arrayBuffer();
 
-    // Upload file to Sanity
-    const sanityToken = process.env.SANITY_API_TOKEN!;
-    const sanityProjectId = process.env.SANITY_PROJECT_ID!;
-    const sanityDataset = process.env.SANITY_DATASET!;
-
-    const sanityUploadResp = await fetch(
+    // 5. Upload file to Sanity assets
+    const uploadResp = await fetch(
       `https://${sanityProjectId}.api.sanity.io/v2021-06-07/assets/files/${sanityDataset}`,
       {
         method: "POST",
@@ -110,29 +138,65 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    if (!sanityUploadResp.ok) {
-      const sanityText = await sanityUploadResp.text().catch(() => "No body");
-      const sanityErr = `Failed to upload file to Sanity (status ${sanityUploadResp.status}): ${sanityText}`;
-      console.error(sanityErr);
-      return new Response(JSON.stringify({ error: sanityErr }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+    if (!uploadResp.ok) {
+      const text = await uploadResp.text().catch(() => "No body");
+      throw new Error(`Failed to upload file to Sanity: ${text}`);
     }
 
-    const sanityUploadResult = await sanityUploadResp.json();
+    const uploadResult = await uploadResp.json();
+    const assetId = uploadResult.document._id;
 
-    return new Response(
-      JSON.stringify({ status: "ok", sanityFile: sanityUploadResult }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+    // 6. Patch Trip doc to add document reference
+    const patchResp = await fetch(
+      `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sanityToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mutations: [
+            {
+              patch: {
+                id: tripId,
+                setIfMissing: { documents: [] },
+                insert: {
+                  after: "documents[-1]",
+                  items: [
+                    {
+                      _type: "object",
+                      label: "other", // or pass label in webhook if you want
+                      file: {
+                        _type: "file",
+                        asset: {
+                          _type: "reference",
+                          _ref: assetId,
+                        },
+                      },
+                      originalFilename: file_name || "unknown.pdf",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        }),
+      }
     );
+
+    if (!patchResp.ok) {
+      const text = await patchResp.text();
+      throw new Error(`Failed to patch Trip doc: ${text}`);
+    }
+
+    return new Response(JSON.stringify({ status: "ok", tripId, assetId }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error("API error:", errorMsg);
-    return new Response(JSON.stringify({ error: errorMsg }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ error: errorMsg }), { status: 500 });
   }
 }
-//xxxx

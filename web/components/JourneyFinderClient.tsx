@@ -73,8 +73,22 @@ export default function JourneyFinderClient() {
 
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
     region: "",
-    country: [],
-    star: "",
+    country:
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("destination")
+        ? [
+            decodeURIComponent(
+              new URLSearchParams(window.location.search).get("destination")!
+            ),
+          ]
+        : [],
+    star:
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("luxury")
+        ? decodeURIComponent(
+            new URLSearchParams(window.location.search).get("luxury")!
+          )
+        : "",
     types: [],
     duration: [0, 100], // temporary default
   });
@@ -200,39 +214,74 @@ export default function JourneyFinderClient() {
   }, []);
 
   useEffect(() => {
-    const filtered = allJourneys.filter((j) => {
-      const text = `${j.title} ${j.summary}`.toLowerCase();
-      const matchesSearch = text.includes(searchTerm.toLowerCase());
-      const matchesRegion =
-        !selectedFilters.region || j.region?.title === selectedFilters.region;
-      const matchesCountry =
-        selectedFilters.country.length === 0 ||
-        selectedFilters.country.includes(j.country?.title || "");
-      const matchesStar =
-        !selectedFilters.star || j.star === selectedFilters.star;
-      const matchesType =
-        selectedFilters.types.length === 0 ||
-        selectedFilters.types.some((type) => j.travelStyle?.includes(type));
-      const journeyDuration = parseInt(
-        j.duration?.match(/^(\d+)/)?.[1] || "0",
-        10
+    // Build dynamic GROQ filter based on selectedFilters (except duration!)
+    const groqFilters = [];
+    if (selectedFilters.region)
+      groqFilters.push(`region->title == "${selectedFilters.region}"`);
+    if (selectedFilters.country.length > 0)
+      groqFilters.push(
+        `country->title in ${JSON.stringify(selectedFilters.country)}`
       );
-      const matchesDuration =
-        journeyDuration >= selectedFilters.duration[0] &&
-        journeyDuration <= selectedFilters.duration[1];
+    if (selectedFilters.star)
+      groqFilters.push(`star == "${selectedFilters.star}"`);
+    if (selectedFilters.types.length > 0) {
+      const styleFilters = selectedFilters.types
+        .map((style) => `"${style}" in travelStyle`)
+        .join(" || ");
+      groqFilters.push(`(${styleFilters})`);
+    }
 
-      return (
-        matchesSearch &&
-        matchesRegion &&
-        matchesCountry &&
-        matchesStar &&
-        matchesType &&
-        matchesDuration
-      );
-    });
+    // Don't add duration to GROQ - filter that on the client!
+    const groqWhere =
+      groqFilters.length > 0
+        ? `*[ _type == "journey" && ${groqFilters.join(" && ")} ]`
+        : '*[ _type == "journey" ]';
 
-    setFilteredJourneys(filtered);
-  }, [searchTerm, selectedFilters, allJourneys]);
+    sanityClient
+      .fetch(
+        `${groqWhere}{
+        title, summary, slug, duration, price,
+        "heroUrl": heroImage.asset->url,
+        alt, ctaText, wetuLink,
+        region->{ title }, country->{ title, "flag": flag.asset->url },
+        star, "starIcon": starIcon.asset->url,
+        travelStyle, "featuredOnHome": featuredOnHome
+      }`
+      )
+      .then((data: Journey[]) => {
+        // Filter by search term and duration on client
+        const filtered = data.filter((j) => {
+          const text = `${j.title} ${j.summary}`.toLowerCase();
+          const matchesSearch = text.includes(searchTerm.toLowerCase());
+          const journeyDuration = parseInt(
+            j.duration?.match(/^(\d+)/)?.[1] || "0",
+            10
+          );
+          const matchesDuration =
+            journeyDuration >= selectedFilters.duration[0] &&
+            journeyDuration <= selectedFilters.duration[1];
+          return matchesSearch && matchesDuration;
+        });
+        setFilteredJourneys(filtered);
+        setAllJourneys(data); // Also update allJourneys to match new data
+      });
+  }, [searchTerm, selectedFilters]);
+
+  useEffect(() => {
+    if (
+      filterOptions.countries.length === 0 &&
+      filterOptions.stars.length === 0
+    )
+      return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const country = urlParams.get("destination");
+    const star = urlParams.get("luxury");
+    setSelectedFilters((prev) => ({
+      ...prev,
+      country: country ? [decodeURIComponent(country)] : [],
+      star: star ? decodeURIComponent(star) : "",
+    }));
+  }, [filterOptions]);
 
   const toggleType = (type: string) => {
     setSelectedFilters((prev) => ({

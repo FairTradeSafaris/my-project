@@ -31,7 +31,7 @@ export default function JourneyCard({
 }: Props) {
   const [showMobileTooltip, setShowMobileTooltip] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [showFullSummary, setShowFullSummary] = useState(false);
   useEffect(() => {
     const updateIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -82,17 +82,22 @@ export default function JourneyCard({
 
         {summary && (
           <div className="mb-3">
-            <p className="text-sm text-gray-600 line-clamp-3 group-hover:line-clamp-none transition-all duration-200 ease-in-out">
+            <p
+              className={`text-sm text-gray-600 transition-all duration-200 ease-in-out ${showFullSummary ? "" : "line-clamp-3"}`}
+            >
               {summary}
             </p>
-            <span
-              onClick={(e) =>
-                openExternal("https://bookings.fairtradesafaris.com", e)
-              }
-              className="mt-1 inline-block text-xs text-[#a35c2d] font-semibold underline cursor-pointer"
-            >
-              Read More →
-            </span>
+            {summary.length > 120 && (
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowFullSummary((prev) => !prev);
+                }}
+                className="mt-1 inline-block text-xs text-[#a35c2d] font-semibold underline cursor-pointer"
+              >
+                {showFullSummary ? "Show Less" : "Read More →"}
+              </span>
+            )}
           </div>
         )}
 

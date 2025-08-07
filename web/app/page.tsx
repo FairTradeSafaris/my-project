@@ -1,4 +1,4 @@
-﻿export const revalidate = 60;
+﻿﻿export const revalidate = 60;
 
 import { client as sanity } from "@/lib/sanity";
 import Link from "next/link";

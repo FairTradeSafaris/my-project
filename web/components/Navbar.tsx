@@ -7,7 +7,9 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Search, User, X } from "lucide-react";
 import { useTheme } from "next-themes"; // Make sure this is already imported
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import CustomUserMenu from "@/components/CustomUserMenu";
+
 interface MenuItem {
   title: string;
   href: string;
@@ -131,7 +133,7 @@ export default function Navbar({
           menuOpen
             ? "translate-x-[-100%] opacity-0 z-[30]"
             : "translate-x-0 opacity-100 z-[60]"
-        } top-[230px] left-0 px-2 py-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
+        } top-[280px] left-0 px-2 py-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
           scrolled ? "w-[60px] h-[60px]" : "w-[90px] h-[90px]"
         } rounded-r-2xl rounded-l-none flex md:hidden items-center justify-center`}
         style={{
@@ -161,7 +163,7 @@ export default function Navbar({
           color: "var(--foreground)",
         }}
       >
-        <Link href="/" className="flex items-center gap-2 pl-4">
+        <Link href="/" className="flex items-center gap-2 pl-4 pt-2 md:pt-0">
           <>
             <Image
               src={
@@ -184,19 +186,19 @@ export default function Navbar({
           className="flex items-center gap-4 md:gap-6"
           style={{ color: "var(--foreground)" }}
         >
-          <button title="Search">
+          <Link href="/journey" title="Search">
             <Search size={20} />
-          </button>
-          <button title="My Journey">
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-            <SignedOut>
-              <Link href="/sign-in">
-                <User size={20} />
-              </Link>
-            </SignedOut>
-          </button>
+          </Link>
+
+          <SignedIn>
+            <CustomUserMenu />
+          </SignedIn>
+
+          <SignedOut>
+            <Link href="/sign-in" title="My Journey">
+              <User size={20} />
+            </Link>
+          </SignedOut>
 
           <motion.button
             ref={toggleButtonRef} // ✅ Add this line

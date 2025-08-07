@@ -118,7 +118,7 @@ export default function TestimonialCarousel() {
       {/* Video Testimonials Link */}
       <div className="mt-8 flex justify-center">
         <a
-          href="/video-testimonials"
+          href="/videoTestimonial"
           className="text-[#b49a7f] text-base font-semibold underline hover:text-[#a5835e] transition"
         >
           Look at our video testimonials

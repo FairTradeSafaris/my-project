@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SocialIcon } from "react-social-icons";
 import { PortableText } from "@portabletext/react";
 import type { Ambassador } from "@/types/ambassador";
+import { urlFor } from "../lib/sanity";
 
 interface Props {
   amb: Ambassador;
@@ -17,6 +18,14 @@ export default function AmbassadorCard({ amb }: Props) {
   // Safely check image
   const isImageString = typeof amb.image === "string";
 
+  // ✅ SAFELY generate image URL (for modal <img>)
+  const imageUrl =
+    typeof amb.image === "string"
+      ? amb.image
+      : amb.image?.asset
+        ? urlFor(amb.image).url()
+        : undefined;
+
   return (
     <>
       {/* Card */}
@@ -27,7 +36,11 @@ export default function AmbassadorCard({ amb }: Props) {
         <div
           className="rounded-3xl overflow-hidden shadow-xl border border-white/10 backdrop-blur-md"
           style={{
-            backgroundImage: isImageString ? `url(${amb.image})` : undefined,
+            backgroundImage: isImageString
+              ? `url(${amb.image})`
+              : amb.image?.asset
+                ? `url(${urlFor(amb.image).url()})`
+                : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
             aspectRatio: "3/4",
@@ -61,9 +74,9 @@ export default function AmbassadorCard({ amb }: Props) {
 
             {/* Modal Content */}
             <div className="mb-4">
-              {isImageString && (
+              {imageUrl && (
                 <img
-                  src={amb.image}
+                  src={imageUrl}
                   alt={amb.name}
                   className="rounded-xl w-full object-cover aspect-[3/2] mb-4"
                 />

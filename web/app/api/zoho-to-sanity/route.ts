@@ -1,4 +1,3 @@
-// /app/api/zoho-to-sanity/route.js
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -7,14 +6,24 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     // Extract fields (adjust if your Zoho payload differs)
-    const { email, file_url, file_name } = data;
+    const { file_url } = data;
 
     // 1. Download the file from Zoho (with your Zoho API token)
     const zohoAccessToken = process.env.ZOHO_ACCESS_TOKEN; // Store in Vercel env vars!
     const fileResp = await fetch(file_url, {
       headers: { Authorization: `Zoho-oauthtoken ${zohoAccessToken}` },
     });
-    if (!fileResp.ok) throw new Error("Failed to fetch file from Zoho");
+
+    if (!fileResp.ok) {
+      const zohoText = await fileResp.text().catch(() => "No body");
+      const zohoErr = `Failed to fetch file from Zoho (status ${fileResp.status}): ${zohoText}`;
+      console.error(zohoErr);
+      return new Response(JSON.stringify({ error: zohoErr }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const fileBuffer = await fileResp.arrayBuffer();
 
     // 2. Upload the file to Sanity
@@ -31,9 +40,18 @@ export async function POST(request: NextRequest) {
         body: fileBuffer,
       }
     );
-    const sanityUploadResult = await sanityUploadResp.json();
 
-    // 3. (Optional) Create/Update your Trip document here with Sanity API
+    if (!sanityUploadResp.ok) {
+      const sanityText = await sanityUploadResp.text().catch(() => "No body");
+      const sanityErr = `Failed to upload file to Sanity (status ${sanityUploadResp.status}): ${sanityText}`;
+      console.error(sanityErr);
+      return new Response(JSON.stringify({ error: sanityErr }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const sanityUploadResult = await sanityUploadResp.json();
 
     // Return a success response
     return new Response(
@@ -43,6 +61,9 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error("API error:", errorMsg);
-    return new Response(JSON.stringify({ error: errorMsg }), { status: 500 });
+    return new Response(JSON.stringify({ error: errorMsg }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

@@ -1,17 +1,69 @@
 import { NextRequest } from "next/server";
 
+let cachedAccessToken: string | null = null;
+let tokenExpiresAt: number = 0; // UNIX timestamp in ms
+
+async function refreshAccessToken() {
+  const refreshToken = process.env.ZOHO_REFRESH_TOKEN!;
+  const clientId = process.env.ZOHO_CLIENT_ID!;
+  const clientSecret = process.env.ZOHO_CLIENT_SECRET!;
+
+  const params = new URLSearchParams({
+    refresh_token: refreshToken,
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: "refresh_token",
+  });
+
+  const res = await fetch(
+    `https://accounts.zoho.com/oauth/v2/token?${params.toString()}`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to refresh Zoho token: ${text}`);
+  }
+
+  const json = await res.json();
+  cachedAccessToken = json.access_token;
+  // Set expiry 5 minutes earlier than actual expiry as a buffer
+  tokenExpiresAt = Date.now() + (json.expires_in - 300) * 1000;
+
+  return cachedAccessToken;
+}
+
+async function getAccessToken() {
+  if (!cachedAccessToken || Date.now() > tokenExpiresAt) {
+    return await refreshAccessToken();
+  }
+  return cachedAccessToken;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // Hardcoded for testing - replace with process.env in production!
-    const zohoAccessToken = process.env.ZOHO_ACCESS_TOKEN!;
-    const sanityToken = process.env.SANITY_API_TOKEN!;
-    const sanityProjectId = "jw971r14"; // Your project ID
-    const sanityDataset = "production"; // Your dataset
+    const requiredEnvVars = [
+      "ZOHO_REFRESH_TOKEN",
+      "ZOHO_CLIENT_ID",
+      "ZOHO_CLIENT_SECRET",
+      "SANITY_API_TOKEN",
+      "SANITY_PROJECT_ID",
+      "SANITY_DATASET",
+    ];
+    const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
+    if (missingVars.length > 0) {
+      const msg = `Missing required environment variables: ${missingVars.join(", ")}`;
+      console.error(msg);
+      return new Response(JSON.stringify({ error: msg }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    // Parse incoming data from Zoho webhook
     const data = await request.json();
     const { file_url } = data;
-
     if (!file_url) {
       return new Response(
         JSON.stringify({ error: "Missing file_url in request body." }),
@@ -22,14 +74,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!zohoAccessToken || !sanityToken) {
-      return new Response(
-        JSON.stringify({ error: "Missing required environment variables." }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    // Get fresh Zoho access token (auto-refresh if needed)
+    const zohoAccessToken = await getAccessToken();
 
-    // 1. Download the file from Zoho
+    // Download the file from Zoho
     const fileResp = await fetch(file_url, {
       headers: { Authorization: `Zoho-oauthtoken ${zohoAccessToken}` },
     });
@@ -46,7 +94,11 @@ export async function POST(request: NextRequest) {
 
     const fileBuffer = await fileResp.arrayBuffer();
 
-    // 2. Upload the file to Sanity
+    // Upload file to Sanity
+    const sanityToken = process.env.SANITY_API_TOKEN!;
+    const sanityProjectId = process.env.SANITY_PROJECT_ID!;
+    const sanityDataset = process.env.SANITY_DATASET!;
+
     const sanityUploadResp = await fetch(
       `https://${sanityProjectId}.api.sanity.io/v2021-06-07/assets/files/${sanityDataset}`,
       {
@@ -70,7 +122,6 @@ export async function POST(request: NextRequest) {
 
     const sanityUploadResult = await sanityUploadResp.json();
 
-    // Return success response
     return new Response(
       JSON.stringify({ status: "ok", sanityFile: sanityUploadResult }),
       { status: 200, headers: { "Content-Type": "application/json" } }
@@ -84,3 +135,4 @@ export async function POST(request: NextRequest) {
     });
   }
 }
+//xxxx

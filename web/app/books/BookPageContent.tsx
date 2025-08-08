@@ -1,7 +1,8 @@
 "use client";
 
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import useSWR from "swr";
+import Image from "next/image";
 
 type Book = {
   _id: string;
@@ -21,35 +22,23 @@ type Claim = {
   bookUrl: string;
 };
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function BookPageContent() {
   const { user } = useUser();
   const userId = user?.id ?? null;
 
-  const [books, setBooks] = useState<Book[]>([]);
-  const [claimed, setClaimed] = useState<Claim | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: bookData, isLoading: booksLoading } = useSWR(
+    "/api/books",
+    fetcher
+  );
+  const { data: claimData } = useSWR(
+    userId ? `/api/claim-status?userId=${userId}` : null,
+    fetcher
+  );
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const bookRes = await fetch("/api/books");
-        const bookData = await bookRes.json();
-        setBooks(bookData.books || []);
-
-        if (userId) {
-          const claimRes = await fetch(`/api/claim-status?userId=${userId}`);
-          const claimData = await claimRes.json();
-          setClaimed(claimData.claim || null);
-        }
-      } catch (error) {
-        console.error("Failed to load books or claim:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [userId]);
+  const books: Book[] = bookData?.books || [];
+  const claimed: Claim | null = claimData?.claim || null;
 
   const handleClaim = async (book: Book) => {
     const res = await fetch("/api/claim-book", {
@@ -60,7 +49,6 @@ export default function BookPageContent() {
     const data = await res.json();
     if (res.ok) {
       alert("Book claim recorded! Refresh to see update.");
-      setClaimed({ bookTitle: book.title, bookUrl: book.previewUrl });
     } else {
       alert("Something went wrong: " + data.error);
     }
@@ -68,13 +56,12 @@ export default function BookPageContent() {
 
   return (
     <>
-      {/* HERO SECTION AT THE TOP */}
+      {/* HERO SECTION */}
       <section
         className="relative h-[400px] bg-cover bg-center text-white"
         style={{ backgroundImage: `url('/sunset-safari.webp')` }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-30" />{" "}
-        {/* dark overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-30" />
         <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 max-w-xl drop-shadow">
             Welcome to your personal travel portal.
@@ -93,40 +80,61 @@ export default function BookPageContent() {
             <UserButton />
           </SignedIn>
         </div>
+
         <p className="mb-4 text-lg text-gray-700">
           Our expertly curated travel guides are available to preview. Sign up
           to claim one for free.
         </p>
+
         <SignedOut>
           <p className="text-red-600 font-medium mb-6">
             Sign up or log in to claim your free book.
           </p>
         </SignedOut>
-        {loading ? (
-          <p>Loading books...</p>
+
+        {booksLoading ? (
+          <div className="grid md:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <div
+                key={i}
+                className="border rounded-lg p-4 shadow bg-white space-y-3 animate-pulse"
+              >
+                <div className="w-full h-48 bg-gray-200 rounded" />
+                <div className="h-6 bg-gray-200 rounded w-3/4" />
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
         ) : books.length === 0 ? (
           <p className="text-red-600">No books found.</p>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {books.map((book) => {
-              const isClaimed = claimed && claimed.bookTitle === book.title;
+              const isClaimed = claimed?.bookTitle === book.title;
+
               return (
                 <div
                   key={book._id}
                   className="border rounded-lg p-4 shadow bg-white space-y-3"
                 >
                   {book.previewImage?.asset?.url ? (
-                    <img
-                      src={book.previewImage.asset.url}
-                      alt={book.title}
-                      className="w-full h-48 object-cover rounded"
-                    />
+                    <div className="relative w-full h-48">
+                      <Image
+                        src={book.previewImage.asset.url}
+                        alt={book.title}
+                        fill
+                        className="object-cover rounded"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
                   ) : (
                     <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-sm">
                       No image
                     </div>
                   )}
+
                   <h3 className="text-xl font-semibold">{book.title}</h3>
+
                   <SignedIn>
                     {claimed ? (
                       isClaimed ? (
@@ -146,7 +154,7 @@ export default function BookPageContent() {
                         Claim This Guide
                       </button>
                     )}
-                    {/* Show Buy on Amazon for ALL books once claimed */}
+
                     {claimed && book.buyLink && (
                       <a
                         href={book.buyLink}

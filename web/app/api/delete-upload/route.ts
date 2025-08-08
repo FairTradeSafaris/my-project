@@ -2,10 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@sanity/client";
 
 // TEMP TEST: log sanity token to verify it's being picked up
-console.log(
-  "🧪 Sanity Token Check:",
-  process.env.SANITY_API_TOKEN?.slice(0, 10)
-);
 
 const serverClient = createClient({
   projectId: "jw971r14",

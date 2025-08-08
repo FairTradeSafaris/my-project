@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { MapPin, Star, Calendar, Search } from "lucide-react";
+import { MapPin, Star, Search } from "lucide-react";
 import imageUrlBuilder from "@sanity/image-url";
 import { client as sanityClient } from "../lib/sanity";
 import { SanityImageSource } from "@sanity/image-url/lib/types/types";
@@ -23,20 +23,16 @@ export default function HeroWithSearch({
   };
 }) {
   const { headline, subheadline, imageUrl } = data;
-
   const sanityImage = imageUrl ? urlFor(imageUrl) : null;
 
   const [showForm, setShowForm] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-
   const [destinations, setDestinations] = useState<string[]>([]);
   const [luxuryLevels, setLuxuryLevels] = useState<string[]>([]);
 
   const [selectedDestination, setSelectedDestination] = useState("");
   const [selectedLuxury, setSelectedLuxury] = useState("");
-  const [selectedSeason, setSelectedSeason] = useState("");
 
-  // Responsive check
   useEffect(() => {
     const checkScreen = () => setIsDesktop(window.innerWidth >= 768);
     checkScreen();
@@ -44,7 +40,6 @@ export default function HeroWithSearch({
     return () => window.removeEventListener("resize", checkScreen);
   }, []);
 
-  // Fetch dropdown data from Sanity
   useEffect(() => {
     sanityClient
       .fetch(
@@ -65,41 +60,36 @@ export default function HeroWithSearch({
       });
   }, []);
 
-  const seasonOptions = ["Any", "High Season", "Mid Season", "Low Season"];
-
   const sharedFormProps = {
     destinations,
     luxuryLevels,
-    seasonOptions,
     selectedDestination,
     setSelectedDestination,
     selectedLuxury,
     setSelectedLuxury,
-    selectedSeason,
-    setSelectedSeason,
   };
 
   return (
-    <section className="relative h-[30vh] md:min-h-[90vh] w-full pt-24 md:pt-28 overflow-hidden bg-[var(--background)] text-[var(--text)]">
+    <section className="relative h-[45vh] md:h-[90vh] max-h-[600px] w-full pt-24 md:pt-28 overflow-hidden bg-[var(--background)] text-[var(--text)]">
       {/* Background Image */}
       <Image
         src={sanityImage || "/hero.webp"}
         alt="Safari background"
         fill
-        className="object-[center_35%] md:object-center object-cover transition-all duration-700"
+        className="object-[center_25%] md:object-center object-cover transition-all duration-700"
         priority
         fetchPriority="high"
       />
 
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
 
       {/* Content */}
-      <div className="relative z-20 flex flex-col items-center justify-center text-center px-4 h-full pt-12 md:pt-0 animate-fadeInSlow">
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-3 text-white drop-shadow-md leading-tight animate-fadeIn">
+      <div className="relative z-20 flex flex-col items-center justify-center text-center px-4 h-full animate-fadeInSlow">
+        <h1 className="text-3xl md:text-6xl font-extrabold mb-2 text-white drop-shadow-md leading-tight animate-fadeIn">
           {headline || "Safari. Reimagined."}
         </h1>
-        <p className="text-lg md:text-2xl text-white/90 max-w-xl mb-6 drop-shadow-md leading-snug animate-fadeInSlow delay-200">
+        <p className="text-sm md:text-2xl text-white/90 max-w-xl mb-4 drop-shadow-md leading-snug animate-fadeInSlow delay-200">
           {subheadline ||
             "Experience Africa through the eyes of locals, guided by purpose, powered by heart."}
         </p>
@@ -109,7 +99,7 @@ export default function HeroWithSearch({
 
       {/* Mobile Sticky CTA */}
       {!isDesktop && !showForm && (
-        <div className="fixed bottom-6 right-4 z-50">
+        <div className="fixed bottom-6 right-4 z-[100]">
           <button
             onClick={() => setShowForm(true)}
             className="px-5 py-3 rounded-xl bg-[#E5CBA2] text-[#3A2E1F] hover:bg-[#e0c197] transition-all shadow-md ring-1 ring-black/10 flex items-center justify-center gap-2 font-semibold text-sm"
@@ -122,7 +112,7 @@ export default function HeroWithSearch({
 
       {/* Mobile Form */}
       {!isDesktop && showForm && (
-        <div className="fixed bottom-0 left-0 w-full z-40 bg-white/90 backdrop-blur-lg border-t border-black/10 p-4">
+        <div className="fixed bottom-0 left-0 w-full z-[100] bg-white/90 backdrop-blur-lg border-t border-black/10 p-4">
           <SearchForm
             {...sharedFormProps}
             isMobile
@@ -134,29 +124,23 @@ export default function HeroWithSearch({
   );
 }
 
-// 🔍 Search Form (desktop & mobile)
+// 🔍 Search Form Component
 function SearchForm({
   destinations,
   luxuryLevels,
-  seasonOptions,
   selectedDestination,
   setSelectedDestination,
   selectedLuxury,
   setSelectedLuxury,
-  selectedSeason,
-  setSelectedSeason,
   isMobile = false,
   onClose,
 }: {
   destinations: string[];
   luxuryLevels: string[];
-  seasonOptions: string[];
   selectedDestination: string;
   setSelectedDestination: (v: string) => void;
   selectedLuxury: string;
   setSelectedLuxury: (v: string) => void;
-  selectedSeason: string;
-  setSelectedSeason: (v: string) => void;
   isMobile?: boolean;
   onClose?: () => void;
 }) {
@@ -164,12 +148,9 @@ function SearchForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const params = new URLSearchParams();
     if (selectedDestination) params.append("destination", selectedDestination);
     if (selectedLuxury) params.append("luxury", selectedLuxury);
-    if (selectedSeason) params.append("season", selectedSeason);
-
     router.push(`/journey?${params.toString()}`);
     if (isMobile && onClose) onClose();
   };
@@ -183,7 +164,6 @@ function SearchForm({
           : "mt-4 bg-white/70 dark:bg-black/60 backdrop-blur-md text-black dark:text-white rounded-xl px-4 py-4 shadow-2xl flex flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300 animate-fadeInSlow"
       }`}
     >
-      {/* ✅ MOBILE CLOSE BUTTON FIXED */}
       {isMobile && onClose && (
         <div className="flex justify-end">
           <button
@@ -212,14 +192,7 @@ function SearchForm({
         options={luxuryLevels}
         placeholder="Select luxury level"
       />
-      <SelectBlock
-        icon={<Calendar />}
-        label="Season"
-        value={selectedSeason}
-        onChange={setSelectedSeason}
-        options={seasonOptions}
-        placeholder="Select season"
-      />
+
       <button
         type="submit"
         className={`${
@@ -235,7 +208,7 @@ function SearchForm({
   );
 }
 
-// ⬇️ Select Field (reusable for all dropdowns)
+// 🔽 Reusable Select Component
 function SelectBlock({
   icon,
   value,

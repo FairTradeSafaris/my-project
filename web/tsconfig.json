@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve", // Updated to react-jsx for React 17+
+    "jsx": "preserve", // ✅ use react-jsx for React 17+ / Next.js
     "incremental": true,
     "baseUrl": ".",
     "paths": {
@@ -39,7 +39,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "types" // ✅ <- THIS is what was missing
   ],
   "exclude": [
     "node_modules"

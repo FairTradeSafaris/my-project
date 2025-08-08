@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import withPWA from "next-pwa";
+// @ts-ignore
+import runtimeCaching from "next-pwa/cache";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -45,6 +47,7 @@ export default withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
+  runtimeCaching, // ✅ PWA caching strategies
   fallbacks: {
     html: "/_offline",
   },

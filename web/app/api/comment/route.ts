@@ -4,8 +4,6 @@ import { NextResponse } from "next/server";
 import { serverClient } from "@/lib/sanity.server";
 import { Resend } from "resend";
 
-console.log("🔐 SANITY TOKEN:", process.env.SANITY_API_TOKEN);
-
 export async function POST(req: Request) {
   console.log("✅ API /api/comment hit");
 

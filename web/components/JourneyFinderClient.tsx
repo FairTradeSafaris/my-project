@@ -65,6 +65,21 @@ const formatMoney = (n: number) =>
     maximumFractionDigits: 0,
   });
 
+// Keep selections valid when availability changes (safe clamp)
+// --- Safe range clamp: keeps sliders valid across country changes ---
+const clampRange = (
+  value: [number, number],
+  bounds: [number, number]
+): [number, number] => {
+  const [minB, maxB] = bounds;
+  let [minV, maxV] = value;
+  minV = Math.max(minV, minB);
+  maxV = Math.min(maxV, maxB);
+  // if clamping inverts the range, reset to full bounds
+  if (minV > maxV) return [minB, maxB] as [number, number];
+  return [minV, maxV] as [number, number];
+};
+
 export default function JourneyFinderClient() {
   const [visibleCount, setVisibleCount] = useState(9);
   const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
@@ -234,59 +249,105 @@ export default function JourneyFinderClient() {
         }));
       });
   }, []);
+  // Build a pool filtered by selected region and/or countries
+  const scopedPool = useMemo(() => {
+    return optionsJourneys.filter((j) => {
+      const inRegion = selectedFilters.region
+        ? j.region?.title === selectedFilters.region
+        : true;
+      const inCountries = selectedFilters.country.length
+        ? j.country?.title
+          ? selectedFilters.country.includes(j.country.title)
+          : false
+        : true;
+      return inRegion && inCountries;
+    });
+  }, [optionsJourneys, selectedFilters.region, selectedFilters.country]);
+  const availableCountries = useMemo(() => {
+    const cs = Array.from(
+      new Set(
+        (selectedFilters.region
+          ? optionsJourneys.filter(
+              (j) => j.region?.title === selectedFilters.region
+            )
+          : optionsJourneys
+        )
+          .map((j) => j.country?.title)
+          .filter(Boolean)
+      )
+    ) as string[];
+    return cs.sort();
+  }, [optionsJourneys, selectedFilters.region]);
 
   // Dependent availability based on selected country
   const availableStyles = useMemo(() => {
-    if (!selectedFilters.country.length) return filterOptions.styles;
     const s = new Set<string>();
-    optionsJourneys.forEach((j) => {
-      const c = j.country?.title;
-      if (c && selectedFilters.country.includes(c)) {
-        (j.travelStyle || []).forEach((x) => s.add(x));
-      }
-    });
+    scopedPool.forEach((j) => (j.travelStyle || []).forEach((x) => s.add(x)));
     return Array.from(s).sort();
-  }, [selectedFilters.country, optionsJourneys, filterOptions.styles]);
+  }, [scopedPool]);
 
   const availableDurationRange = useMemo<[number, number]>(() => {
-    const pool = selectedFilters.country.length
-      ? optionsJourneys.filter(
-          (j) =>
-            j.country?.title &&
-            selectedFilters.country.includes(j.country.title)
-        )
-      : optionsJourneys;
-    const ds = pool
+    const ds = scopedPool
       .map((j) => parseDurationDays(j.duration))
       .filter((n) => n > 0);
     if (!ds.length) return [0, 0];
     return [Math.min(...ds), Math.max(...ds)];
-  }, [selectedFilters.country, optionsJourneys]);
+  }, [scopedPool]);
 
   const availablePriceRange = useMemo<[number, number]>(() => {
-    const pool = selectedFilters.country.length
-      ? optionsJourneys.filter(
-          (j) =>
-            j.country?.title &&
-            selectedFilters.country.includes(j.country.title)
-        )
-      : optionsJourneys;
-
-    // exclude 0/1 (on request) from slider range
-    const ps = pool.map((j) => parsePriceNumber(j.price)).filter((n) => n > 1);
-
+    const ps = scopedPool
+      .map((j) => parsePriceNumber(j.price))
+      .filter((n) => n > 1);
     if (!ps.length) return [0, 0];
     return [Math.min(...ps), Math.max(...ps)];
-  }, [selectedFilters.country, optionsJourneys]);
+  }, [scopedPool]);
 
   const priceFilterEnabled = useMemo(
     () => availablePriceRange[0] > 0 && availablePriceRange[1] > 0,
     [availablePriceRange]
   );
-
-  // Keep selections valid when availability changes
+  // When region changes, prune countries to those inside the region and reset dependent ranges/types
+  // When REGION changes, prune to region-scoped options and ONLY update if something actually changed
   useEffect(() => {
-    // prune interests
+    setSelectedFilters((prev) => {
+      const nextCountries = prev.country.filter((c) =>
+        availableCountries.includes(c)
+      );
+      const nextTypes = prev.types.filter((t) => availableStyles.includes(t));
+      const nextDuration = availableDurationRange as [number, number];
+      const nextPrice = availablePriceRange as [number, number];
+
+      const arrEq = (a: string[], b: string[]) =>
+        a.length === b.length && a.every((x, i) => x === b[i]);
+      const tupEq = (a: [number, number], b: [number, number]) =>
+        a[0] === b[0] && a[1] === b[1];
+
+      const changed =
+        !arrEq(prev.country, nextCountries) ||
+        !arrEq(prev.types, nextTypes) ||
+        !tupEq(prev.duration, nextDuration) ||
+        !tupEq(prev.price, nextPrice);
+
+      if (!changed) return prev; // avoid Maximum update depth loops
+      return {
+        ...prev,
+        country: nextCountries,
+        types: nextTypes,
+        duration: nextDuration,
+        price: nextPrice,
+      };
+    });
+  }, [
+    selectedFilters.region,
+    availableCountries,
+    availableStyles,
+    availableDurationRange,
+    availablePriceRange,
+  ]);
+
+  // Keep selections valid when availability changes (safe clamp)
+  useEffect(() => {
+    // prune interests to those still available
     if (selectedFilters.types.length) {
       const pruned = selectedFilters.types.filter((t) =>
         availableStyles.includes(t)
@@ -296,26 +357,83 @@ export default function JourneyFinderClient() {
       }
     }
 
-    // clamp duration
-    const [minD, maxD] = availableDurationRange;
+    // safely clamp ranges; if inverted, reset to full available bounds
+    const nextDuration: [number, number] = clampRange(
+      selectedFilters.duration,
+      availableDurationRange
+    );
     if (
-      selectedFilters.duration[0] < minD ||
-      selectedFilters.duration[1] > maxD
+      nextDuration[0] !== selectedFilters.duration[0] ||
+      nextDuration[1] !== selectedFilters.duration[1]
     ) {
-      const newMin = Math.max(selectedFilters.duration[0], minD);
-      const newMax = Math.min(selectedFilters.duration[1], maxD);
-      setSelectedFilters((prev) => ({ ...prev, duration: [newMin, newMax] }));
+      setSelectedFilters((prev) => ({ ...prev, duration: nextDuration }));
     }
 
-    // clamp price
-    const [minP, maxP] = availablePriceRange;
-    if (selectedFilters.price[0] < minP || selectedFilters.price[1] > maxP) {
-      const newMin = Math.max(selectedFilters.price[0], minP);
-      const newMax = Math.min(selectedFilters.price[1], maxP);
-      setSelectedFilters((prev) => ({ ...prev, price: [newMin, newMax] }));
+    const nextPrice: [number, number] = clampRange(
+      selectedFilters.price,
+      availablePriceRange
+    );
+    if (
+      nextPrice[0] !== selectedFilters.price[0] ||
+      nextPrice[1] !== selectedFilters.price[1]
+    ) {
+      setSelectedFilters((prev) => ({ ...prev, price: nextPrice }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableStyles, availableDurationRange, availablePriceRange]);
+
+  // Keep selections valid when availability changes
+  // Keep selections valid when availability changes (safe clamp)
+  useEffect(() => {
+    // prune interests to those still available
+    if (selectedFilters.types.length) {
+      const pruned = selectedFilters.types.filter((t) =>
+        availableStyles.includes(t)
+      );
+      if (pruned.length !== selectedFilters.types.length) {
+        setSelectedFilters((prev) => ({ ...prev, types: pruned }));
+      }
+    }
+
+    // safely clamp ranges; if inverted, reset to full available bounds
+    const nextDuration = clampRange(
+      selectedFilters.duration,
+      availableDurationRange
+    );
+    if (
+      nextDuration[0] !== selectedFilters.duration[0] ||
+      nextDuration[1] !== selectedFilters.duration[1]
+    ) {
+      setSelectedFilters((prev) => ({ ...prev, duration: nextDuration }));
+    }
+
+    const nextPrice = clampRange(selectedFilters.price, availablePriceRange);
+    if (
+      nextPrice[0] !== selectedFilters.price[0] ||
+      nextPrice[1] !== selectedFilters.price[1]
+    ) {
+      setSelectedFilters((prev) => ({ ...prev, price: nextPrice }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableStyles, availableDurationRange, availablePriceRange]);
+
+  // When countries change, refresh dependent filters to valid full ranges
+  useEffect(() => {
+    setSelectedFilters((prev) => {
+      const nextTypes = prev.types.filter((t) => availableStyles.includes(t));
+      const nextDuration = availableDurationRange;
+      const nextPrice = availablePriceRange;
+      return {
+        ...prev,
+        types: nextTypes,
+        duration: nextDuration,
+        price: nextPrice,
+        // optional: also clear star to avoid impossible combos
+        // star: "",
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFilters.country]);
 
   // Build GROQ based on non-range filters, then client-filter on search, duration and price.
   useEffect(() => {
@@ -443,10 +561,11 @@ export default function JourneyFinderClient() {
       { label: "Regions", items: filterOptions.regions, filterKey: "region" },
       {
         label: "Countries",
-        items: filterOptions.countries,
+        items: availableCountries,
         filterKey: "country",
         multi: true,
       },
+
       { label: "Luxury Level", items: filterOptions.stars, filterKey: "star" },
       { label: "Duration", items: [], filterKey: "duration" },
       { label: "Price", items: [], filterKey: "price" },
@@ -507,9 +626,10 @@ export default function JourneyFinderClient() {
                       value={selectedFilters.duration}
                       onChange={(value) => {
                         if (Array.isArray(value) && value.length === 2) {
+                          const [min, max] = value as [number, number];
                           setSelectedFilters((prev) => ({
                             ...prev,
-                            duration: [value[0], value[1]],
+                            duration: [min, max] as [number, number],
                           }));
                         }
                       }}

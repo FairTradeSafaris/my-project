@@ -1,3 +1,4 @@
+// journeys/journey.ts
 import {defineType, defineField} from 'sanity'
 
 export default defineType({
@@ -15,41 +16,18 @@ export default defineType({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: {
-        source: 'title',
-        maxLength: 96,
-      },
+      options: {source: 'title', maxLength: 96},
     }),
-    defineField({
-      name: 'summary',
-      title: 'Short Summary',
-      type: 'text',
-      rows: 3,
-    }),
-    defineField({
-      name: 'duration',
-      title: 'Trip Duration',
-      type: 'string',
-    }),
+    defineField({name: 'summary', title: 'Short Summary', type: 'text', rows: 3}),
+    defineField({name: 'duration', title: 'Trip Duration', type: 'string'}),
     defineField({
       name: 'price',
       title: 'Price Per Person (Sharing)',
       type: 'string',
       description: 'e.g. From $5,200 pp',
     }),
-    defineField({
-      name: 'heroImage',
-      title: 'Hero Image',
-      type: 'image',
-      options: {
-        hotspot: true,
-      },
-    }),
-    defineField({
-      name: 'alt',
-      title: 'Image Alt Text',
-      type: 'string',
-    }),
+    defineField({name: 'heroImage', title: 'Hero Image', type: 'image', options: {hotspot: true}}),
+    defineField({name: 'alt', title: 'Image Alt Text', type: 'string'}),
     defineField({
       name: 'ctaText',
       title: 'CTA Button Text',
@@ -57,7 +35,7 @@ export default defineType({
       initialValue: 'View Itinerary',
     }),
 
-    // 🎯 Filters
+    // filters
     defineField({
       name: 'region',
       title: 'Region',
@@ -65,52 +43,41 @@ export default defineType({
       to: [{type: 'region'}],
     }),
 
+    // 🔁 CHANGED: single → multiple
     defineField({
-      name: 'country',
-      title: 'Country',
-      type: 'reference',
-      to: [{type: 'country'}],
+      name: 'countries',
+      title: 'Countries',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'country'}]}],
+      validation: (Rule) => Rule.min(1).unique(),
     }),
 
     defineField({
       name: 'star',
       title: 'Star Level',
       type: 'string',
-      options: {
-        list: ['3 Star', '4 Star', '5 Star'],
-        layout: 'radio',
-      },
+      options: {list: ['3 Star', '4 Star', '5 Star'], layout: 'radio'},
     }),
     defineField({
       name: 'starIcon',
       title: 'Custom Star Icon (SVG)',
       type: 'image',
-      options: {
-        accept: 'image/svg+xml',
-      },
+      options: {accept: 'image/svg+xml'},
       description: 'Optional – upload an SVG to use instead of default stars.',
     }),
-
     defineField({
       name: 'travelStyle',
       title: 'Travel Style',
       type: 'array',
       of: [{type: 'string'}],
-      options: {
-        list: ['Luxury', 'Cultural', 'Adventure', 'Wildlife'],
-        layout: 'tags',
-      },
+      options: {list: ['Luxury', 'Cultural', 'Adventure', 'Wildlife'], layout: 'tags'},
     }),
-
     defineField({
       name: 'featuredOnHome',
       title: 'Feature on Homepage',
       type: 'boolean',
       initialValue: false,
-      description: 'Enable to show this journey on the homepage',
     }),
-
-    // 🔗 Wetu link for itinerary preview
     defineField({
       name: 'wetuLink',
       title: 'Wetu Itinerary Link',

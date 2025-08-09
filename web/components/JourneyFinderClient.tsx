@@ -4,81 +4,21 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { client as sanityClient } from "@/lib/sanity";
 import JourneyCard from "@/components/JourneyCard";
-import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
 
-// Types
-export type Journey = {
-  title: string;
-  summary: string;
-  slug?: { current: string };
-  duration?: string; // e.g., "10 Days / 9 Nights"
-  price?: string; // e.g., "$4,500"
-  heroUrl?: string;
-  alt?: string;
-  ctaText?: string;
-  wetuLink?: string;
-  region?: { title: string };
-  country?: { title: string; flag?: string };
-  star?: string;
-  starIcon?: string;
-  travelStyle?: string[];
-  featuredOnHome?: boolean;
-};
+// NEW
+import FiltersPanel from "./journey-finder/FiltersPanel";
 
-export type Filters = {
-  region: string;
-  country: string[];
-  star: string;
-  types: string[];
-  duration: [number, number];
-  price: [number, number];
-};
-
-export type FilterOptions = {
-  regions: string[];
-  countries: string[];
-  styles: string[];
-  stars: string[];
-  durations: number[]; // all available durations across dataset
-  prices: number[]; // all available prices across dataset
-};
-
-type FilterKey = keyof Filters;
-
-// Helpers
-const parseDurationDays = (d?: string) => {
-  const m = d?.match(/^(\d+)/);
-  return m ? parseInt(m[1], 10) : 0;
-};
-
-const parsePriceNumber = (p?: string) => {
-  if (!p) return 0;
-  const n = p.replace(/[^\d]/g, "");
-  return n ? parseInt(n, 10) : 0;
-};
-
-const formatMoney = (n: number) =>
-  n.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
-
-// Keep selections valid when availability changes (safe clamp)
-// --- Safe range clamp: keeps sliders valid across country changes ---
-const clampRange = (
-  value: [number, number],
-  bounds: [number, number]
-): [number, number] => {
-  const [minB, maxB] = bounds;
-  let [minV, maxV] = value;
-  minV = Math.max(minV, minB);
-  maxV = Math.min(maxV, maxB);
-  // if clamping inverts the range, reset to full bounds
-  if (minV > maxV) return [minB, maxB] as [number, number];
-  return [minV, maxV] as [number, number];
-};
+import {
+  Journey,
+  Filters,
+  FilterOptions,
+  FilterKey,
+} from "./journey-finder/types";
+import {
+  parseDurationDays,
+  parsePriceNumber,
+  clampRange,
+} from "./journey-finder/utils";
 
 export default function JourneyFinderClient() {
   const [visibleCount, setVisibleCount] = useState(9);
@@ -94,7 +34,7 @@ export default function JourneyFinderClient() {
     star: false,
     duration: false,
     price: false,
-    types: false, // interests moved to bottom
+    types: false,
   });
 
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
@@ -106,7 +46,6 @@ export default function JourneyFinderClient() {
     prices: [],
   });
 
-  // Keep raw option journeys to compute dependent options (styles, duration, price per country)
   const [optionsJourneys, setOptionsJourneys] = useState<Journey[]>([]);
 
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
@@ -128,8 +67,8 @@ export default function JourneyFinderClient() {
           )
         : "",
     types: [],
-    duration: [0, 100], // temporary until options load
-    price: [0, 999999], // temporary until options load
+    duration: [0, 100],
+    price: [0, 999999],
   });
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -146,7 +85,7 @@ export default function JourneyFinderClient() {
     return () => observer.disconnect();
   }, []);
 
-  // Fetch visible journeys (for cards and modal open via query)
+  // Fetch visible journeys
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     const queryTitle = query.get("q");
@@ -158,7 +97,7 @@ export default function JourneyFinderClient() {
           title, summary, slug, duration, price,
           "heroUrl": heroImage.asset->url,
           alt, ctaText, wetuLink,
-          region->{ title }, country->{ title, "flag": flag.asset->url },
+          region->{ title }, countries[]->{ title, "flag": flag.asset->url },
           star, "starIcon": starIcon.asset->url,
           travelStyle, "featuredOnHome": featuredOnHome
         }`
@@ -186,13 +125,13 @@ export default function JourneyFinderClient() {
       });
   }, [visibleCount]);
 
-  // Fetch option data (for filter options) – include price now
+  // Fetch option data
   useEffect(() => {
     sanityClient
       .fetch(
-        `*[_type == "journey"][0...1000] {
+        `*[_type == "journey"][0...1000]{
           region->{ title },
-          country->{ title },
+          countries[]->{ title },
           travelStyle,
           duration,
           star,
@@ -206,8 +145,13 @@ export default function JourneyFinderClient() {
           new Set(data.map((j) => j.region?.title).filter(Boolean))
         ) as string[];
         const countries = Array.from(
-          new Set(data.map((j) => j.country?.title).filter(Boolean))
+          new Set(
+            data
+              .flatMap((j) => (j.countries || []).map((c) => c.title))
+              .filter(Boolean)
+          )
         ) as string[];
+
         const styles = Array.from(
           new Set(data.flatMap((j) => j.travelStyle || []))
         );
@@ -225,7 +169,6 @@ export default function JourneyFinderClient() {
 
         const priceNumbers = data
           .map((j) => parsePriceNumber(j.price))
-          // 0/1 are treated as "on request" and excluded from slider stats
           .filter((n) => Number.isFinite(n) && n > 1);
 
         const minD = durationNumbers.length ? Math.min(...durationNumbers) : 0;
@@ -249,37 +192,40 @@ export default function JourneyFinderClient() {
         }));
       });
   }, []);
-  // Build a pool filtered by selected region and/or countries
+
+  // Pool after region/country
   const scopedPool = useMemo(() => {
     return optionsJourneys.filter((j) => {
       const inRegion = selectedFilters.region
         ? j.region?.title === selectedFilters.region
         : true;
-      const inCountries = selectedFilters.country.length
-        ? j.country?.title
-          ? selectedFilters.country.includes(j.country.title)
-          : false
-        : true;
-      return inRegion && inCountries;
+      if (!inRegion) return false;
+
+      if (selectedFilters.country.length === 0) return true;
+
+      const jc = new Set((j.countries || []).map((c) => c.title));
+      return selectedFilters.country.some((c) => jc.has(c));
     });
   }, [optionsJourneys, selectedFilters.region, selectedFilters.country]);
+
   const availableCountries = useMemo(() => {
+    const pool = selectedFilters.region
+      ? optionsJourneys.filter(
+          (j) => j.region?.title === selectedFilters.region
+        )
+      : optionsJourneys;
+
     const cs = Array.from(
       new Set(
-        (selectedFilters.region
-          ? optionsJourneys.filter(
-              (j) => j.region?.title === selectedFilters.region
-            )
-          : optionsJourneys
-        )
-          .map((j) => j.country?.title)
+        pool
+          .flatMap((j) => (j.countries || []).map((c) => c.title))
           .filter(Boolean)
       )
     ) as string[];
+
     return cs.sort();
   }, [optionsJourneys, selectedFilters.region]);
 
-  // Dependent availability based on selected country
   const availableStyles = useMemo(() => {
     const s = new Set<string>();
     scopedPool.forEach((j) => (j.travelStyle || []).forEach((x) => s.add(x)));
@@ -306,8 +252,8 @@ export default function JourneyFinderClient() {
     () => availablePriceRange[0] > 0 && availablePriceRange[1] > 0,
     [availablePriceRange]
   );
-  // When region changes, prune countries to those inside the region and reset dependent ranges/types
-  // When REGION changes, prune to region-scoped options and ONLY update if something actually changed
+
+  // React to REGION changes
   useEffect(() => {
     setSelectedFilters((prev) => {
       const nextCountries = prev.country.filter((c) =>
@@ -328,7 +274,7 @@ export default function JourneyFinderClient() {
         !tupEq(prev.duration, nextDuration) ||
         !tupEq(prev.price, nextPrice);
 
-      if (!changed) return prev; // avoid Maximum update depth loops
+      if (!changed) return prev;
       return {
         ...prev,
         country: nextCountries,
@@ -345,9 +291,8 @@ export default function JourneyFinderClient() {
     availablePriceRange,
   ]);
 
-  // Keep selections valid when availability changes (safe clamp)
+  // Clamp after availability changes
   useEffect(() => {
-    // prune interests to those still available
     if (selectedFilters.types.length) {
       const pruned = selectedFilters.types.filter((t) =>
         availableStyles.includes(t)
@@ -357,7 +302,6 @@ export default function JourneyFinderClient() {
       }
     }
 
-    // safely clamp ranges; if inverted, reset to full available bounds
     const nextDuration: [number, number] = clampRange(
       selectedFilters.duration,
       availableDurationRange
@@ -382,42 +326,7 @@ export default function JourneyFinderClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableStyles, availableDurationRange, availablePriceRange]);
 
-  // Keep selections valid when availability changes
-  // Keep selections valid when availability changes (safe clamp)
-  useEffect(() => {
-    // prune interests to those still available
-    if (selectedFilters.types.length) {
-      const pruned = selectedFilters.types.filter((t) =>
-        availableStyles.includes(t)
-      );
-      if (pruned.length !== selectedFilters.types.length) {
-        setSelectedFilters((prev) => ({ ...prev, types: pruned }));
-      }
-    }
-
-    // safely clamp ranges; if inverted, reset to full available bounds
-    const nextDuration = clampRange(
-      selectedFilters.duration,
-      availableDurationRange
-    );
-    if (
-      nextDuration[0] !== selectedFilters.duration[0] ||
-      nextDuration[1] !== selectedFilters.duration[1]
-    ) {
-      setSelectedFilters((prev) => ({ ...prev, duration: nextDuration }));
-    }
-
-    const nextPrice = clampRange(selectedFilters.price, availablePriceRange);
-    if (
-      nextPrice[0] !== selectedFilters.price[0] ||
-      nextPrice[1] !== selectedFilters.price[1]
-    ) {
-      setSelectedFilters((prev) => ({ ...prev, price: nextPrice }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableStyles, availableDurationRange, availablePriceRange]);
-
-  // When countries change, refresh dependent filters to valid full ranges
+  // Refresh dependents after country changes
   useEffect(() => {
     setSelectedFilters((prev) => {
       const nextTypes = prev.types.filter((t) => availableStyles.includes(t));
@@ -428,22 +337,21 @@ export default function JourneyFinderClient() {
         types: nextTypes,
         duration: nextDuration,
         price: nextPrice,
-        // optional: also clear star to avoid impossible combos
-        // star: "",
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFilters.country]);
 
-  // Build GROQ based on non-range filters, then client-filter on search, duration and price.
+  // Fetch + client filter
   useEffect(() => {
     const groqFilters: string[] = [];
     if (selectedFilters.region)
       groqFilters.push(`region->title == "${selectedFilters.region}"`);
     if (selectedFilters.country.length > 0)
       groqFilters.push(
-        `country->title in ${JSON.stringify(selectedFilters.country)}`
+        `count(countries[@->title in ${JSON.stringify(selectedFilters.country)}]) > 0`
       );
+
     if (selectedFilters.star)
       groqFilters.push(`star == "${selectedFilters.star}"`);
     if (selectedFilters.types.length > 0) {
@@ -464,7 +372,7 @@ export default function JourneyFinderClient() {
           title, summary, slug, duration, price,
           "heroUrl": heroImage.asset->url,
           alt, ctaText, wetuLink,
-          region->{ title }, country->{ title, "flag": flag.asset->url },
+          region->{ title }, countries[]->{ title, "flag": flag.asset->url },
           star, "starIcon": starIcon.asset->url,
           travelStyle, "featuredOnHome": featuredOnHome
         }`
@@ -480,7 +388,6 @@ export default function JourneyFinderClient() {
             journeyDuration >= selectedFilters.duration[0] &&
             journeyDuration <= selectedFilters.duration[1];
 
-          // "on request" (0/1) always matches the price filter
           const matchesPrice =
             priceValue <= 1 ||
             (priceValue >= selectedFilters.price[0] &&
@@ -493,7 +400,7 @@ export default function JourneyFinderClient() {
       });
   }, [searchTerm, selectedFilters]);
 
-  // Sync URL params destination/luxury into filters once options are ready
+  // URL params → filters (once options ready)
   useEffect(() => {
     if (
       filterOptions.countries.length === 0 &&
@@ -510,14 +417,13 @@ export default function JourneyFinderClient() {
     }));
   }, [filterOptions]);
 
-  // Utilities for global ranges (used by Clear All)
-  const globalDurationRange = useMemo<[number, number]>(() => {
+  const globalDurationRange = React.useMemo<[number, number]>(() => {
     const ds = filterOptions.durations.filter((n) => n > 0);
     if (!ds.length) return [0, 0];
     return [Math.min(...ds), Math.max(...ds)];
   }, [filterOptions.durations]);
 
-  const globalPriceRange = useMemo<[number, number]>(() => {
+  const globalPriceRange = React.useMemo<[number, number]>(() => {
     const ps = filterOptions.prices.filter((n) => n > 1);
     if (!ps.length) return [0, 0];
     return [Math.min(...ps), Math.max(...ps)];
@@ -541,6 +447,13 @@ export default function JourneyFinderClient() {
     }));
   };
 
+  const setSimpleFilter = (
+    key: Extract<FilterKey, "region" | "star">,
+    value: string
+  ) => {
+    setSelectedFilters((prev) => ({ ...prev, [key]: value }) as Filters);
+  };
+
   const clearAll = () =>
     setSelectedFilters({
       region: "",
@@ -550,239 +463,6 @@ export default function JourneyFinderClient() {
       duration: globalDurationRange,
       price: globalPriceRange,
     });
-
-  const renderFilterGroups = (): React.ReactElement => {
-    const groups: Array<{
-      label: string;
-      items: string[];
-      filterKey: FilterKey | "duration" | "price";
-      multi?: boolean;
-    }> = [
-      { label: "Regions", items: filterOptions.regions, filterKey: "region" },
-      {
-        label: "Countries",
-        items: availableCountries,
-        filterKey: "country",
-        multi: true,
-      },
-
-      { label: "Luxury Level", items: filterOptions.stars, filterKey: "star" },
-      { label: "Duration", items: [], filterKey: "duration" },
-      { label: "Price", items: [], filterKey: "price" },
-      // Interests moved to the bottom and dynamically scoped
-      {
-        label: "Interests & Activities",
-        items: availableStyles,
-        filterKey: "types",
-        multi: true,
-      },
-    ];
-
-    return (
-      <>
-        {groups.map((group) => (
-          <div key={group.label} className="mb-5">
-            {/* Toggle Button for Each Group */}
-            <button
-              className="flex justify-between items-center w-full text-xs tracking-wide font-semibold text-gray-600 mb-4 uppercase border-t pt-4"
-              onClick={() =>
-                setCollapsed((prev) => ({
-                  ...prev,
-                  [group.filterKey]:
-                    !prev[group.filterKey as keyof typeof prev],
-                }))
-              }
-            >
-              <span>{group.label}</span>
-              <svg
-                className={`w-4 h-4 transition-transform duration-300 ${
-                  collapsed[group.filterKey as keyof typeof collapsed]
-                    ? "rotate-180"
-                    : "rotate-0"
-                }`}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-
-            {/* Filter content */}
-            {!collapsed[group.filterKey as keyof typeof collapsed] && (
-              <div className="flex flex-wrap gap-4">
-                {/* Duration Slider */}
-                {group.filterKey === "duration" ? (
-                  <div className="w-full">
-                    <Slider
-                      range
-                      min={availableDurationRange[0]}
-                      max={availableDurationRange[1]}
-                      value={selectedFilters.duration}
-                      onChange={(value) => {
-                        if (Array.isArray(value) && value.length === 2) {
-                          const [min, max] = value as [number, number];
-                          setSelectedFilters((prev) => ({
-                            ...prev,
-                            duration: [min, max] as [number, number],
-                          }));
-                        }
-                      }}
-                      trackStyle={[{ backgroundColor: "#a35c2d", height: 6 }]}
-                      railStyle={{ backgroundColor: "#e2e2e2", height: 6 }}
-                      handleStyle={[
-                        {
-                          backgroundColor: "#fff",
-                          borderColor: "#a35c2d",
-                          height: 18,
-                          width: 18,
-                          marginTop: -6,
-                          borderRadius: "9999px",
-                          boxShadow: "0 0 0 2px rgba(163, 92, 45, 0.15)",
-                        },
-                        {
-                          backgroundColor: "#fff",
-                          borderColor: "#a35c2d",
-                          height: 18,
-                          width: 18,
-                          marginTop: -6,
-                          borderRadius: "9999px",
-                          boxShadow: "0 0 0 2px rgba(163, 92, 45, 0.15)",
-                        },
-                      ]}
-                    />
-                    <div className="flex justify-between text-sm mt-3 font-medium text-gray-800">
-                      <span>{selectedFilters.duration[0]} Days</span>
-                      <span>{selectedFilters.duration[1]} Days</span>
-                    </div>
-                  </div>
-                ) : group.filterKey === "price" ? (
-                  <div className="w-full">
-                    <Slider
-                      range
-                      min={availablePriceRange[0]}
-                      max={availablePriceRange[1]}
-                      value={selectedFilters.price}
-                      disabled={!priceFilterEnabled}
-                      onChange={(value) => {
-                        if (!priceFilterEnabled) return;
-                        if (Array.isArray(value) && value.length === 2) {
-                          setSelectedFilters((prev) => ({
-                            ...prev,
-                            price: [value[0], value[1]],
-                          }));
-                        }
-                      }}
-                      trackStyle={[{ backgroundColor: "#a35c2d", height: 6 }]}
-                      railStyle={{ backgroundColor: "#e2e2e2", height: 6 }}
-                      handleStyle={[
-                        {
-                          backgroundColor: "#fff",
-                          borderColor: "#a35c2d",
-                          height: 18,
-                          width: 18,
-                          marginTop: -6,
-                          borderRadius: "9999px",
-                          boxShadow: "0 0 0 2px rgba(163, 92, 45, 0.15)",
-                        },
-                        {
-                          backgroundColor: "#fff",
-                          borderColor: "#a35c2d",
-                          height: 18,
-                          width: 18,
-                          marginTop: -6,
-                          borderRadius: "9999px",
-                          boxShadow: "0 0 0 2px rgba(163, 92, 45, 0.15)",
-                        },
-                      ]}
-                    />
-                    <div className="flex justify-between text-sm mt-3 font-medium text-gray-800">
-                      <span>{formatMoney(selectedFilters.price[0])}</span>
-                      <span>{formatMoney(selectedFilters.price[1])}</span>
-                    </div>
-                    {!priceFilterEnabled && (
-                      <p className="mt-2 text-xs text-gray-600">
-                        Pricing is on request for the current selection.
-                      </p>
-                    )}
-                  </div>
-                ) : group.filterKey === "star" ? (
-                  <div className="flex flex-wrap gap-3">
-                    {group.items.map((level) => {
-                      const isActive = selectedFilters.star === level;
-                      return (
-                        <button
-                          key={level}
-                          onClick={() =>
-                            setSelectedFilters((prev) => ({
-                              ...prev,
-                              star: prev.star === level ? "" : level,
-                            }))
-                          }
-                          className={`px-4 py-1 rounded-full text-sm border transition-all ${
-                            isActive
-                              ? "bg-[#a35c2d] text-white border-[#a35c2d]"
-                              : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                          }`}
-                        >
-                          {level}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  // Regions, Countries, Interests
-                  group.items.map((item) => {
-                    const isActive =
-                      group.filterKey === "country"
-                        ? selectedFilters.country.includes(item)
-                        : group.multi
-                          ? selectedFilters.types.includes(item)
-                          : (selectedFilters[
-                              group.filterKey as FilterKey
-                            ] as string) === item;
-
-                    return (
-                      <button
-                        key={item}
-                        onClick={() => {
-                          const key = group.filterKey as FilterKey;
-                          if (key === "country") toggleCountry(item);
-                          else if (group.multi) toggleType(item);
-                          else if (key === "region" || key === "star") {
-                            setSelectedFilters(
-                              (prev) =>
-                                ({
-                                  ...prev,
-                                  [key]:
-                                    (prev[key] as string) === item ? "" : item,
-                                }) as Filters
-                            );
-                          }
-                        }}
-                        className={`px-2.5 py-[2px] rounded-full text-[11px] font-medium border transition-all ${
-                          isActive
-                            ? "bg-[#a35c2d] text-white border-[#a35c2d]"
-                            : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            )}
-          </div>
-        ))}
-      </>
-    );
-  };
 
   const renderSelectedFiltersSummary = () => {
     const countryText = selectedFilters.country.join(", ");
@@ -800,9 +480,7 @@ export default function JourneyFinderClient() {
     );
   };
 
-  if (!allJourneys.length && !filterOptions.regions.length) {
-    return null; // or loader
-  }
+  if (!allJourneys.length && !filterOptions.regions.length) return null;
 
   return (
     <main className="min-h-screen text-black bg-[#fdf8f3]">
@@ -832,10 +510,30 @@ export default function JourneyFinderClient() {
               </button>
             </div>
 
-            {renderFilterGroups()}
+            <FiltersPanel
+              filterOptions={filterOptions}
+              availableCountries={availableCountries}
+              availableStyles={availableStyles}
+              availableDurationRange={availableDurationRange}
+              availablePriceRange={availablePriceRange}
+              priceFilterEnabled={priceFilterEnabled}
+              selectedFilters={selectedFilters}
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              onToggleType={toggleType}
+              onToggleCountry={toggleCountry}
+              onSetSimpleFilter={setSimpleFilter}
+              onDurationChange={(r) =>
+                setSelectedFilters((p) => ({ ...p, duration: r }))
+              }
+              onPriceChange={(r) =>
+                setSelectedFilters((p) => ({ ...p, price: r }))
+              }
+            />
+
             <button
               onClick={() => setShowMobileFilters(false)}
-              className="mt-6 w-full py-3 bg-black text-white rounded-md"
+              className="mt-6 w-full py-3 bg黑 text-white rounded-md"
             >
               Show Results
             </button>
@@ -877,7 +575,27 @@ export default function JourneyFinderClient() {
               Clear All
             </button>
           </div>
-          {renderFilterGroups()}
+
+          <FiltersPanel
+            filterOptions={filterOptions}
+            availableCountries={availableCountries}
+            availableStyles={availableStyles}
+            availableDurationRange={availableDurationRange}
+            availablePriceRange={availablePriceRange}
+            priceFilterEnabled={priceFilterEnabled}
+            selectedFilters={selectedFilters}
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            onToggleType={toggleType}
+            onToggleCountry={toggleCountry}
+            onSetSimpleFilter={setSimpleFilter}
+            onDurationChange={(r) =>
+              setSelectedFilters((p) => ({ ...p, duration: r }))
+            }
+            onPriceChange={(r) =>
+              setSelectedFilters((p) => ({ ...p, price: r }))
+            }
+          />
         </aside>
 
         {/* Main content */}
@@ -941,7 +659,6 @@ export default function JourneyFinderClient() {
           >
             {selectedJourney.wetuLink ? (
               <>
-                {/* Header */}
                 <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md relative px-4 pt-4 pb-6">
                   <div className="flex justify-end">
                     <button

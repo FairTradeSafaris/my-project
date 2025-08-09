@@ -202,7 +202,7 @@ export default async function Home() {
         {whyChoose && <WhyChoose data={whyChoose} />}
         {foundersPromise && <FoundersPromise data={foundersPromise} />}
         {/* Journeys Section */}
-        <section className="py-20 bg-[#f9f9f9] text-black">
+        <section className="py-20 bg-[#e6d8c7] text-black">
           <div className="max-w-6xl mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold mb-4">
               Your Journey Starts Here
@@ -264,7 +264,7 @@ export default async function Home() {
               className="absolute top-0 left-0 w-full h-32 z-10 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(to bottom, #f9f9f9, rgba(255, 255, 255, 0))",
+                  "linear-gradient(to bottom, #e6d8c7, rgba(255, 255, 255, 0))",
               }}
             />
             <div

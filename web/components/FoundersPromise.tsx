@@ -6,7 +6,6 @@ import { PortableText } from "@portabletext/react";
 import dynamic from "next/dynamic";
 import type { FoundersPromiseBlock } from "@/types/types";
 
-// Dynamically import motion.div to avoid ESM export issue
 const MotionDiv = dynamic(
   () => import("framer-motion").then((mod) => mod.motion.div),
   { ssr: false }
@@ -37,9 +36,19 @@ export default function FoundersPromise({ data }: Props) {
           : "none",
       }}
     >
-      {/* Optional Fade Overlays */}
-      <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#fdf6ee] to-transparent z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#fefbf6] to-transparent z-10 pointer-events-none" />
+      {/* Fades using theme variables */}
+      <div
+        className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b to-transparent z-10 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(var(--background-rgb), 1), rgba(var(--background-rgb), 0))`,
+        }}
+      />
+      <div
+        className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t to-transparent z-10 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(to top, rgba(var(--background-rgb), 1), rgba(var(--background-rgb), 0))`,
+        }}
+      />
 
       {/* Animated Bird Bridge */}
       {lineArtImage?.asset?.url && (
@@ -59,7 +68,7 @@ export default function FoundersPromise({ data }: Props) {
         </MotionDiv>
       )}
 
-      {/* Content Layout */}
+      {/* Content */}
       <div className="relative z-20 max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-20">
         {/* Left Column */}
         <div

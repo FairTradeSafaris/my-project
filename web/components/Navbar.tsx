@@ -50,31 +50,22 @@ export default function Navbar({
 
   const [scrolled, setScrolled] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: PointerEvent) => {
       const target = event.target as Node;
-
-      const clickedInsideMobile =
-        mobileMenuRef.current && mobileMenuRef.current.contains(target);
-      const clickedInsideDesktop =
-        desktopMenuRef.current && desktopMenuRef.current.contains(target);
-      const clickedToggle =
-        toggleButtonRef.current && toggleButtonRef.current.contains(target);
-
-      if (clickedInsideMobile || clickedInsideDesktop || clickedToggle) {
-        return;
-      }
-
+      const inMobile = mobileMenuRef.current?.contains(target);
+      const inDesktop = desktopMenuRef.current?.contains(target);
+      const onToggle = toggleButtonRef.current?.contains(target);
+      if (inMobile || inDesktop || onToggle) return;
       setMenuOpen(false);
     };
-
     document.addEventListener("pointerdown", handleClickOutside);
     return () =>
       document.removeEventListener("pointerdown", handleClickOutside);
@@ -101,97 +92,94 @@ export default function Navbar({
 
   return (
     <>
-      {/* Top-Left Badge Logo */}
-
+      {/* === ROUND BADGE (TOP-LEFT) === */}
       {/* Desktop Badge */}
       <div
-        className={`fixed z-[60] top-0 left-4 px-2 pt-2 pb-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
-          scrolled ? "w-[96px] h-[96px]" : "w-[150px] h-[150px]"
-        } rounded-b-2xl rounded-t-none hidden md:flex items-center justify-center`}
-        style={{
-          backgroundColor: "rgba(var(--background-rgb), 0.95)",
-          color: "var(--foreground)",
-        }}
+        className={`fixed z-[60] top-0 left-4 px-2 pt-2 pb-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out
+        ${scrolled ? "w-[96px] h-[96px]" : "w-[150px] h-[150px]"}
+        rounded-b-2xl rounded-t-none hidden md:flex items-center justify-center
+        bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white`}
       >
         <Link href="/">
+          {/* Light mode badge (use light asset) */}
           <Image
-            src="/fts-logo.png"
-            alt="FTS Badge Logo"
+            src="/logos/badge-light.png"
+            alt="Fair Trade Safaris badge"
             width={scrolled ? 76 : 125}
             height={scrolled ? 76 : 125}
-            className="object-contain transition-all duration-300 ease-in-out"
+            className="object-contain transition-all duration-300 ease-in-out block dark:hidden"
+            priority
+          />
+          {/* Dark mode badge (use dark asset) */}
+          <Image
+            src="/logos/badge-dark.png"
+            alt="Fair Trade Safaris badge"
+            width={scrolled ? 76 : 125}
+            height={scrolled ? 76 : 125}
+            className="object-contain transition-all duration-300 ease-in-out hidden dark:block"
             priority
           />
         </Link>
       </div>
 
-      {/* Mobile Badge */}
       {/* Mobile Badge */}
       <div
-        className={`fixed ${
-          menuOpen
-            ? "translate-x-[-100%] opacity-0 z-[30]"
-            : "translate-x-0 opacity-100 z-[60]"
-        } top-[280px] left-0 px-2 py-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out ${
-          scrolled ? "w-[60px] h-[60px]" : "w-[90px] h-[90px]"
-        } rounded-r-2xl rounded-l-none flex md:hidden items-center justify-center`}
-        style={{
-          backgroundColor: "rgba(var(--background-rgb), 0.95)",
-          color: "var(--foreground)",
-        }}
+        className={`fixed ${menuOpen ? "translate-x-[-100%] opacity-0 z-[30]" : "translate-x-0 opacity-100 z-[60]"}
+        top-[280px] left-0 px-2 py-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out
+        ${scrolled ? "w-[60px] h-[60px]" : "w-[90px] h-[90px]"}
+        rounded-r-2xl rounded-l-none flex md:hidden items-center justify-center
+        bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white`}
       >
         <Link href="/">
+          {/* Light mode badge */}
           <Image
-            src="/fts-logo.png"
-            alt="FTS Badge Logo"
+            src="/logos/badge-light.png"
+            alt="Fair Trade Safaris badge"
             width={scrolled ? 50 : 75}
             height={scrolled ? 50 : 75}
-            className="object-contain transition-all duration-300 ease-in-out"
+            className="object-contain transition-all duration-300 ease-in-out block dark:hidden"
+            priority
+          />
+          {/* Dark mode badge */}
+          <Image
+            src="/logos/badge-dark.png"
+            alt="Fair Trade Safaris badge"
+            width={scrolled ? 50 : 75}
+            height={scrolled ? 50 : 75}
+            className="object-contain transition-all duration-300 ease-in-out hidden dark:block"
             priority
           />
         </Link>
       </div>
 
-      {/* Top Nav */}
+      {/* === TOP NAV === */}
       <nav
-        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[92vw] max-w-4xl px-3 flex items-center justify-between gap-6 rounded-2xl shadow-md backdrop-blur transition-all duration-300 ${
-          scrolled ? "py-1" : "py-3"
-        }`}
-        style={{
-          backgroundColor: "rgba(var(--background-rgb), 0.95)",
-          color: "var(--foreground)",
-        }}
+        className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[92vw] max-w-4xl px-3 flex items-center justify-between gap-6
+        rounded-2xl shadow-md backdrop-blur transition-all duration-300 ${scrolled ? "py-1" : "py-3"}
+        bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white`}
       >
         <Link href="/" className="flex items-center gap-2 pl-4 pt-2 md:pt-0">
-          {/* Light theme logo (dark ink) */}
-          <Image
-            src="/logos/logo-dark.png"
-            alt="Fair Trade Safaris"
-            width={scrolled ? 180 : 260}
-            height={scrolled ? 40 : 60}
-            className={`block dark:hidden object-contain transition-all duration-300 ease-in-out ${
-              scrolled ? "scale-100" : "scale-105"
-            }`}
-            priority
-          />
-
-          {/* Dark theme logo (white mark) */}
+          {/* Light mode wordmark (light asset) */}
           <Image
             src="/logos/logo-light.png"
             alt="Fair Trade Safaris"
             width={scrolled ? 180 : 260}
             height={scrolled ? 40 : 60}
-            className={`hidden dark:block object-contain transition-all duration-300 ease-in-out ${
-              scrolled ? "scale-100" : "scale-105"
-            }`}
+            className={`block dark:hidden object-contain transition-all duration-300 ease-in-out ${scrolled ? "scale-100" : "scale-105"}`}
+            priority
+          />
+          {/* Dark mode wordmark (dark asset) */}
+          <Image
+            src="/logos/logo-dark.png"
+            alt="Fair Trade Safaris"
+            width={scrolled ? 180 : 260}
+            height={scrolled ? 40 : 60}
+            className={`hidden dark:block object-contain transition-all duration-300 ease-in-out ${scrolled ? "scale-100" : "scale-105"}`}
             priority
           />
         </Link>
 
-        <div
-          className="flex items-center gap-4 md:gap-6"
-          style={{ color: "var(--foreground)" }}
-        >
+        <div className="flex items-center gap-4 md:gap-6">
           <Link href="/journey" title="Search">
             <Search size={20} />
           </Link>
@@ -207,7 +195,7 @@ export default function Navbar({
           </SignedOut>
 
           <motion.button
-            ref={toggleButtonRef} // ✅ Add this line
+            ref={toggleButtonRef}
             whileTap={{ scale: 0.9 }}
             title={menuOpen ? "Close Menu" : "Open Menu"}
             onClick={(e) => {
@@ -220,6 +208,7 @@ export default function Navbar({
           </motion.button>
         </div>
       </nav>
+
       {/* === MOBILE MENU === */}
       <AnimatePresence>
         {menuOpen && (
@@ -299,6 +288,7 @@ export default function Navbar({
           </motion.div>
         )}
       </AnimatePresence>
+
       {/* === DESKTOP MENU === */}
       <AnimatePresence>
         {menuOpen && (

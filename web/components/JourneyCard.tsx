@@ -1,6 +1,7 @@
 "use client";
+
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   title: string;
@@ -32,6 +33,8 @@ export default function JourneyCard({
   const [showMobileTooltip, setShowMobileTooltip] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showFullSummary, setShowFullSummary] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
+
   useEffect(() => {
     const updateIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -41,12 +44,27 @@ export default function JourneyCard({
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
 
-  // helper
-  const openExternal = (url: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    window.open(url, "_blank", "noopener,noreferrer");
+  // ---- Price helpers --------------------------------------------------------
+  const isPriceOnRequest = (val?: string) => {
+    if (!val) return true;
+    const clean = val.trim().toLowerCase();
+    return clean === "price on request" || clean === "price on demand";
   };
 
+  const buildPriceBadge = (val?: string) => {
+    if (isPriceOnRequest(val)) return "Price on request";
+    // keep numbers and commas/dots, but allow if it's already prefixed with $
+    const hasDollar = val?.trim().startsWith("$");
+    const numeric = (val || "").replace(/[^\d.,]/g, "");
+    // if we lost everything, fall back to "Price on request"
+    if (!numeric) return "Price on request";
+    const amount = hasDollar ? `$${numeric.replace(/^\$/, "")}` : `$${numeric}`;
+    return `From ${amount} p/p sharing`;
+  };
+
+  const priceBadge = buildPriceBadge(price);
+
+  // ---- Render ---------------------------------------------------------------
   return (
     <div className="w-full max-w-sm bg-transparent">
       {/* Image with price tag */}
@@ -60,11 +78,11 @@ export default function JourneyCard({
             className="w-full h-64 object-cover"
           />
         )}
-        {price && (
-          <div className="absolute top-2 right-2 bg-[#d2b48c] text-black text-sm font-bold px-4 py-1 rounded shadow-md z-10">
-            {price.startsWith("$") ? price : `$${price}`} p/p sharing
-          </div>
-        )}
+
+        {/* Price badge */}
+        <div className="absolute top-2 right-2 bg-[#d2b48c] text-black text-sm font-bold px-4 py-1 rounded shadow-md z-10">
+          {priceBadge}
+        </div>
       </div>
 
       {/* Card Body */}
@@ -83,7 +101,9 @@ export default function JourneyCard({
         {summary && (
           <div className="mb-3">
             <p
-              className={`text-sm text-gray-600 transition-all duration-200 ease-in-out ${showFullSummary ? "" : "line-clamp-3"}`}
+              className={`text-sm text-gray-600 transition-all duration-200 ease-in-out ${
+                showFullSummary ? "" : "line-clamp-3"
+              }`}
             >
               {summary}
             </p>
@@ -159,15 +179,60 @@ export default function JourneyCard({
           </div>
         )}
 
+        {/* Start Planning -> open booking modal */}
         <button
-          onClick={(e) =>
-            openExternal("https://bookings.fairtradesafaris.com", e)
-          }
+          onClick={(e) => {
+            e.stopPropagation(); // prevent parent card click
+            setBookingOpen(true);
+          }}
           className="mt-auto text-center bg-black text-white text-sm font-semibold py-2 rounded-md shadow-md hover:bg-neutral-800 transition-colors"
         >
           Start Planning →
         </button>
       </div>
+
+      {/* Booking Modal (Zoho portal-embed) */}
+      {bookingOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50"
+          onClick={() => setBookingOpen(false)}
+        >
+          <div
+            className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[85vw] lg:w-[75vw] bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-[#f2e7db]">
+              <div className="flex items-center gap-3">
+                <img
+                  src="/logos/logo-top.png"
+                  alt="Fair Trade Safaris"
+                  className="h-8 w-auto"
+                />
+                <span className="text-sm font-semibold text-gray-800">
+                  Start Planning
+                </span>
+              </div>
+              <button
+                onClick={() => setBookingOpen(false)}
+                className="text-2xl leading-none font-bold text-gray-800 hover:text-black"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Iframe */}
+            <iframe
+              src="https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"
+              className="w-full h-[calc(100%-56px)]"
+              style={{ border: "none" }}
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

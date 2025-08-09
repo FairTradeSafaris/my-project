@@ -47,7 +47,8 @@ export default withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
-  runtimeCaching,
-  // ✅ Ensure the offline route is precached
-  precachePages: ["/_offline"],
+  runtimeCaching, // ✅ PWA caching strategies
+  fallbacks: {
+    html: "/offline.html",
+  },
 })(nextConfig);

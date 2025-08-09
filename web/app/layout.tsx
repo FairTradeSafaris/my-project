@@ -31,6 +31,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2F3E46" />
         <link rel="icon" href="/favicon1.ico" type="image/x-icon" />
         <link rel="shortcut icon" href="/favicon1.ico" type="image/x-icon" />
         <link
@@ -39,6 +41,7 @@ export default function RootLayout({
           href="/apple-touch-icon.png"
         />
       </head>
+
       <body
         className={`${poppins.variable} font-poppins min-h-screen flex flex-col bg-white text-black dark:bg-neutral-950 dark:text-white transition-colors duration-300`}
       >

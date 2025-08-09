@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, Search, User, X } from "lucide-react";
-import { useTheme } from "next-themes"; // Make sure this is already imported
+
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
 
@@ -47,8 +47,7 @@ export default function Navbar({
   const [menuOpen, setMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const desktopMenuRef = useRef<HTMLDivElement | null>(null);
-  const { theme, systemTheme } = useTheme();
-  const resolvedTheme = theme === "system" ? systemTheme : theme;
+
   const [scrolled, setScrolled] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
@@ -164,22 +163,29 @@ export default function Navbar({
         }}
       >
         <Link href="/" className="flex items-center gap-2 pl-4 pt-2 md:pt-0">
-          <>
-            <Image
-              src={
-                resolvedTheme === "dark"
-                  ? "/logos/logo-dark.png"
-                  : "/logos/logo-light.png"
-              }
-              alt="Fair Trade Safaris"
-              width={scrolled ? 180 : 260}
-              height={scrolled ? 40 : 60}
-              className={`object-contain transition-all duration-300 ease-in-out ${
-                scrolled ? "scale-100" : "scale-105"
-              }`}
-              priority
-            />
-          </>
+          {/* Light theme logo (dark ink) */}
+          <Image
+            src="/logos/logo-dark.png"
+            alt="Fair Trade Safaris"
+            width={scrolled ? 180 : 260}
+            height={scrolled ? 40 : 60}
+            className={`block dark:hidden object-contain transition-all duration-300 ease-in-out ${
+              scrolled ? "scale-100" : "scale-105"
+            }`}
+            priority
+          />
+
+          {/* Dark theme logo (white mark) */}
+          <Image
+            src="/logos/logo-light.png"
+            alt="Fair Trade Safaris"
+            width={scrolled ? 180 : 260}
+            height={scrolled ? 40 : 60}
+            className={`hidden dark:block object-contain transition-all duration-300 ease-in-out ${
+              scrolled ? "scale-100" : "scale-105"
+            }`}
+            priority
+          />
         </Link>
 
         <div

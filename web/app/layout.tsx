@@ -1,3 +1,5 @@
+"use client";
+
 import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
 import ClientLayout from "@/components/ClientLayout";
@@ -5,7 +7,9 @@ import { Poppins } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
 import LeadMagnetWrapper from "@/components/LeadMagnetWrapper";
-import { ClerkWrapper } from "@/components/ClerkWrapper"; // new wrapper component
+import { ClerkWrapper } from "@/components/ClerkWrapper";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -28,6 +32,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    handleResize(); // check on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isJourneyPage = pathname?.startsWith("/journey");
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -38,8 +57,6 @@ export default function RootLayout({
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
-
-        {/* 👉 Add these two lines */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2F3E46" />
       </head>
@@ -51,7 +68,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
             <ClientLayout>{children}</ClientLayout>
-            <LeadMagnetWrapper />
+            {!(isJourneyPage && isMobile) && <LeadMagnetWrapper />}
             <CookieConsent />
           </ThemeProvider>
         </ClerkWrapper>

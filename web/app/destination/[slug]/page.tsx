@@ -53,17 +53,13 @@ const query = groq`
   }
 `;
 
-// Next 15: params may be a Promise
-type PageParams = { slug: string };
-type PageProps = { params: PageParams } | { params: Promise<PageParams> };
-
-async function unwrapParams(p: PageProps): Promise<PageParams> {
-  const raw = (p as { params: PageParams | Promise<PageParams> }).params;
-  return raw instanceof Promise ? await raw : raw;
-}
-
-export default async function DestinationPage(props: PageProps) {
-  const { slug } = await unwrapParams(props);
+// ✅ Next 15: params is a Promise
+export default async function DestinationPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
   const data = (await client.fetch(query, { slug })) as DestinationDoc | null;
 

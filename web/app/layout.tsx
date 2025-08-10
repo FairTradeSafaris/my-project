@@ -8,6 +8,7 @@ import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
 import { ClerkWrapper } from "@/components/ClerkWrapper";
 import LeadMagnetGate from "@/components/LeadMagnetGate";
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -47,9 +48,12 @@ export default function RootLayout({
         <ClerkWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
-            <ClientLayout>{children}</ClientLayout>
-            <LeadMagnetGate />
-            <CookieConsent />
+            {/* ⬇️ Everything that might call useSearchParams is now inside Suspense */}
+            <Suspense fallback={null}>
+              <ClientLayout>{children}</ClientLayout>
+              <LeadMagnetGate />
+              <CookieConsent />
+            </Suspense>
           </ThemeProvider>
         </ClerkWrapper>
       </body>

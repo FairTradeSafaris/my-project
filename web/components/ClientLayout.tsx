@@ -1,28 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { client } from "@/lib/sanity";
 
-type MenuItem = {
-  title: string;
-  href: string;
-};
-
-type NavSection = {
-  heading?: string;
-  links: MenuItem[];
-};
-
+type MenuItem = { title: string; href: string };
+type NavSection = { heading?: string; links: MenuItem[] };
 type FeatureCard = {
   title: string;
   description: string;
-  image: {
-    asset: {
-      url: string;
-    };
-  };
+  image: { asset: { url: string } };
   alt: string;
   link: string;
 };
@@ -44,84 +32,62 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const hideUI = pathname === "/project-portal";
+  const searchParams = useSearchParams();
+  const isJourneyOpen = searchParams.get("open") === "true";
+  const hideUI = isJourneyOpen || pathname === "/project-portal";
 
   const [navSections, setNavSections] = useState<NavSection[]>([]);
   const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
-  const [promoCard, setPromoCard] = useState<PromoCard | undefined>(undefined);
+  const [promoCard, setPromoCard] = useState<PromoCard | null>(null);
+  const [ready, setReady] = useState(false); // render extras only after mount
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await client.fetch(
-        `*[_type == "megaMenu"][0]{
-          navSections[] {
-            heading,
-            links[] {
-              title,
-              href
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await client.fetch(
+          `*[_type == "megaMenu"][0]{
+            navSections[] { heading, links[] { title, href } },
+            featureCards[] {
+              title, description, alt, link,
+              image { asset->{ _ref,_type,url }, _type }
+            },
+            promoCard {
+              title, description, alt, link,
+              image { asset->{ _ref,_type,url }, _type }
             }
-          },
-          featureCards[] {
-            title,
-            description,
-            alt,
-            link,
-            image {
-              asset->{
-                _ref,
-                _type,
-                url
-              },
-              _type
-            }
-          },
-          promoCard {
-            title,
-            description,
-            alt,
-            link,
-            image {
-              asset->{
-                _ref,
-                _type,
-                url
-              },
-              _type
-            }
-          }
-        }`
-      );
-
-      setNavSections(data?.navSections || []);
-      setFeatureCards(data?.featureCards || []);
-      setPromoCard(data?.promoCard || null);
-
-      console.log("PROMO CARD CHECK", {
-        title: data?.promoCard?.title,
-        link: data?.promoCard?.link,
-        imageUrl: data?.promoCard?.image?.asset?.url,
-      });
+          }`
+        );
+        if (cancelled) return;
+        setNavSections(data?.navSections || []);
+        setFeatureCards(data?.featureCards || []);
+        setPromoCard(data?.promoCard || null);
+      } catch (e) {
+        console.error("megaMenu fetch failed", e);
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
     };
-
-    fetchData();
   }, []);
 
-  if (!navSections.length && !featureCards.length && promoCard === null) {
-    return null; // or a loader/spinner
-  }
-
+  // 🚫 never return null — always render children
   return (
     <>
-      {navSections.length > 0 && (
+      {!hideUI && ready && navSections.length > 0 && (
         <Navbar
           navSections={navSections}
           featureCards={featureCards}
-          promoCard={promoCard}
+          promoCard={promoCard || undefined}
         />
       )}
+
       <main>{children}</main>
-      {!hideUI && <TestimonialCarousel />} {/* ✅ Testimonial added here */}
-      {!hideUI && <SafariFactFooter />}
+
+      {!hideUI && ready && <TestimonialCarousel />}
+      {!hideUI && ready && <SafariFactFooter />}
     </>
   );
 }

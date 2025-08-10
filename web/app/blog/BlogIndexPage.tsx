@@ -56,12 +56,15 @@ export default function BlogIndexPage() {
   useEffect(() => {
     const tagFromURL = searchParams.get("tag") || "";
     setSelectedTag(tagFromURL);
+    const qFromURL = searchParams.get("q") || "";
+    setSearchQuery(qFromURL);
   }, [searchParams]);
 
   const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.summary.toLowerCase().includes(searchQuery.toLowerCase());
+    const title = (post.title || "").toLowerCase();
+    const summary = (post.summary || "").toLowerCase();
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = title.includes(q) || summary.includes(q);
     const matchesTag =
       selectedTag === "" || (post.tags || []).includes(selectedTag);
     return matchesSearch && matchesTag;

@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
 import { ClerkWrapper } from "@/components/ClerkWrapper";
 import LeadMagnetGate from "@/components/LeadMagnetGate";
+import type { Metadata, Viewport } from "next";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -15,12 +16,23 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Fair Trade Safaris",
   description: "Explore ethical luxury safaris in Africa",
   manifest: "/manifest.json",
-  themeColor: "#2F3E46",
+  icons: {
+    icon: [
+      { url: "/favicon-20250810.ico", type: "image/x-icon" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
+
+export const viewport: Viewport = { themeColor: "#2F3E46" };
 
 export default function RootLayout({
   children,

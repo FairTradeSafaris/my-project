@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Dancing_Script } from "next/font/google";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { PortableText } from "@portabletext/react";
+import type { PortableTextBlock } from "@portabletext/types";
 
 const dancingScript = Dancing_Script({ subsets: ["latin"], weight: ["700"] });
 
-type PTBlock = any;
+type PTBlock = PortableTextBlock;
 
 type PracticalSection = {
   title?: string;

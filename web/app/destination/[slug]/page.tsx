@@ -3,9 +3,34 @@ import { groq } from "next-sanity";
 import { client } from "@/lib/sanity";
 import Image from "next/image";
 import { PortableText } from "@portabletext/react";
+import type { PortableTextBlock } from "@portabletext/types";
 import { Button } from "@/components/ui/button";
 
 export const revalidate = 60;
+
+type PracticalSection = {
+  title?: string;
+  content?: PortableTextBlock[];
+};
+
+type DestinationDoc = {
+  title: string;
+  slug: string;
+  heroImage?: string;
+  travelInfo?: PortableTextBlock[];
+  didYouKnowImage?: string;
+  didYouKnowText?: string;
+  highlights?: PortableTextBlock[];
+  practicalStuff?: PracticalSection[];
+  ctaLink?: string;
+  flagImage?: string;
+  region?: string;
+  ranking?: number;
+  featured?: boolean;
+  mapLocation?: string;
+  tags?: string[];
+  gallery?: string[];
+};
 
 const query = groq`
   *[_type == "destination" && slug.current == $slug][0]{
@@ -28,12 +53,19 @@ const query = groq`
   }
 `;
 
-export default async function DestinationPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const data = await client.fetch(query, { slug: params.slug });
+// Next 15: params may be a Promise
+type PageParams = { slug: string };
+type PageProps = { params: PageParams } | { params: Promise<PageParams> };
+
+async function unwrapParams(p: PageProps): Promise<PageParams> {
+  const raw = (p as { params: PageParams | Promise<PageParams> }).params;
+  return raw instanceof Promise ? await raw : raw;
+}
+
+export default async function DestinationPage(props: PageProps) {
+  const { slug } = await unwrapParams(props);
+
+  const data = (await client.fetch(query, { slug })) as DestinationDoc | null;
 
   if (!data) return <div className="p-10">Destination not found</div>;
 
@@ -97,14 +129,17 @@ export default async function DestinationPage({
         <section className="bg-gray-50 py-10 px-6">
           <div className="max-w-4xl mx-auto space-y-6">
             <h2 className="text-2xl font-semibold mb-4">Practical Info</h2>
-            {data.practicalStuff.map(
-              (section: { title?: string; content?: any }, i: number) => (
-                <div key={i} className="border p-4 rounded-lg bg-white">
+            {data.practicalStuff.map((section, i) => (
+              <div
+                key={`${section.title ?? "section"}-${i}`}
+                className="border p-4 rounded-lg bg-white"
+              >
+                {section.title && (
                   <h3 className="text-lg font-bold mb-2">{section.title}</h3>
-                  {section.content && <PortableText value={section.content} />}
-                </div>
-              )
-            )}
+                )}
+                {section.content && <PortableText value={section.content} />}
+              </div>
+            ))}
           </div>
         </section>
       )}
@@ -114,9 +149,9 @@ export default async function DestinationPage({
         <section className="max-w-5xl mx-auto py-10 px-6">
           <h2 className="text-2xl font-semibold mb-4">Photo Gallery</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {data.gallery.map((img: string, i: number) => (
+            {data.gallery.map((img, i) => (
               <Image
-                key={i}
+                key={`${img}-${i}`}
                 src={img}
                 alt={`Gallery ${i + 1}`}
                 width={400}
@@ -141,6 +176,7 @@ export default async function DestinationPage({
             allowFullScreen
             loading="lazy"
             className="rounded-lg border"
+            title={`${data.title} map`}
           />
         </section>
       )}

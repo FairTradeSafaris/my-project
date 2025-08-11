@@ -50,7 +50,7 @@ export default defineType({
       title: 'Content Blocks',
       type: 'array',
       of: [
-        {type: 'heroImage'}, // ✅ block used inside content
+        {type: 'heroBlock'}, // not 'heroImage'
         {type: 'textImage'},
         {type: 'quoteBlock'},
         {type: 'galleryBlock'},

@@ -1,4 +1,3 @@
-// app/layout.tsx
 import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
 import ClientLayout from "@/components/ClientLayout";
@@ -9,6 +8,7 @@ import { ClerkWrapper } from "@/components/ClerkWrapper";
 import LeadMagnetGate from "@/components/LeadMagnetGate";
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import GlobalBookingPortal from "@/components/GlobalBookingPortal";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -35,6 +35,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#2F3E46" };
 
+// app/layout.tsx
+// (leave your imports as-is)
 export default function RootLayout({
   children,
 }: {
@@ -42,15 +44,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${poppins.variable} font-poppins min-h-screen flex flex-col bg-white text-black dark:bg-neutral-950 dark:text-white transition-colors duration-300`}
-      >
+      <body className="...">
         <ClerkWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
-            {/* ⬇️ Everything that might call useSearchParams is now inside Suspense */}
+
             <Suspense fallback={null}>
               <ClientLayout>{children}</ClientLayout>
+              {/* Mount booking portal once */}
+              <GlobalBookingPortal />
               <LeadMagnetGate />
               <CookieConsent />
             </Suspense>

@@ -5,6 +5,11 @@ import { usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { client } from "@/lib/sanity";
 
+// Split navs (client components)
+import NavbarMobile from "@/components/NavbarMobile";
+import NavbarDesktop from "@/components/NavbarDesktop";
+import BottomTabBar from "@/components/BottomTabBar";
+
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
 type FeatureCard = {
@@ -16,7 +21,6 @@ type FeatureCard = {
 };
 type PromoCard = FeatureCard;
 
-const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false });
 const SafariFactFooter = dynamic(
   () => import("@/components/SafariFactFooter"),
   { ssr: false }
@@ -39,7 +43,7 @@ export default function ClientLayout({
   const [navSections, setNavSections] = useState<NavSection[]>([]);
   const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
   const [promoCard, setPromoCard] = useState<PromoCard | null>(null);
-  const [ready, setReady] = useState(false); // render extras only after mount
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,19 +77,26 @@ export default function ClientLayout({
     };
   }, []);
 
-  // 🚫 never return null — always render children
   return (
     <>
-      {!hideUI && ready && navSections.length > 0 && (
-        <Navbar
-          navSections={navSections}
-          featureCards={featureCards}
-          promoCard={promoCard || undefined}
-        />
+      {/* Global nav (mobile + desktop) */}
+      {!hideUI && ready && (
+        <>
+          <NavbarMobile
+            navSections={navSections}
+            featureCards={featureCards}
+            promoCard={promoCard || undefined}
+          />
+          {/* ⬇️ no props here */}
+          <NavbarDesktop />
+        </>
       )}
 
       <main>{children}</main>
 
+      {/* Bottom tabs + extras */}
+      {/* keep navs/testimonials/facts gated by ready, but NOT the bottom bar */}
+      {pathname !== "/project-portal" && <BottomTabBar />}
       {!hideUI && ready && <TestimonialCarousel />}
       {!hideUI && ready && <SafariFactFooter />}
     </>

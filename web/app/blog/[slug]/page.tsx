@@ -1,5 +1,4 @@
 // app/blog/[slug]/page.tsx
-
 import { notFound } from "next/navigation";
 import groq from "groq";
 import { client } from "@/lib/sanity";
@@ -8,7 +7,7 @@ import { LikeButton } from "@/components/LikeButton";
 import BlogContent from "@/components/BlogContent";
 import ShareButtons from "@/components/ShareButtons";
 import type { Block } from "@/types/block";
-import Link from "next/link"; // Make sure this is at the top
+import Link from "next/link";
 
 export const revalidate = 0;
 
@@ -17,26 +16,16 @@ type BlogPost = {
   title: string;
   summary: string;
   publishedAt: string;
-  coverImage?: string;
+  coverImage?: { url: string; alt?: string };
   heroImage?: {
-    alt?: string;
-    asset?: {
-      url: string;
-      _id: string;
-    };
+    image?: { url: string; alt?: string };
+    text?: string;
+    alignment?: string;
   };
-  heroGalleryImage?: {
-    alt?: string;
-    imageUrl?: string;
-    imageId?: string;
-  };
+  heroGalleryImage?: { imageUrl?: string; alt?: string; imageId?: string };
   content: Block[];
   likes?: number;
-  author?: {
-    name: string;
-    image?: string;
-    bio?: string;
-  };
+  author?: { name: string; image?: string; bio?: string };
   tags?: string[];
 };
 
@@ -52,7 +41,7 @@ type Journey = {
   title: string;
   slug: { current: string };
   region?: { title: string };
-  heroImage?: { asset: { url: string }; alt?: string };
+  heroImage?: { url: string; alt?: string };
 };
 
 type LikedBlog = {
@@ -72,47 +61,79 @@ export async function generateStaticParams() {
 }
 
 async function getPost(slug: string): Promise<BlogPost | null> {
-  const query = groq`*[_type == "blog" && slug.current == $slug][0] {
-  ...,
-  content[] {
-    ...,
-    image {
-      alt,
-      asset->{
-        _id,
-        url
+  // ✅ Project flat {url, alt} for every image shape
+  const query = groq`*[_type == "blog" && slug.current == $slug][0]{
+    _id,
+    title,
+    summary,
+    publishedAt,
+    // cover image
+    "coverImage": {
+      "url": coverImage.asset->url,
+      "alt": coverImage.alt
+    },
+    // hero block (if you use heroImage object inside content too)
+    heroImage{
+      text,
+      alignment,
+      image{
+        "url": asset->url,
+          "alt": alt
       }
     },
-    "galleryImage": galleryImage->{
+    // optional hero gallery pointer
+    "heroGalleryImage": heroGalleryImage->{
       alt,
       "imageUrl": image.asset->url,
       "imageId": image.asset->_id
-    }
-  },
- heroImage {
-  text,
-  alignment,
-  image {
-    alt,
-    asset->{
-      _id,
-      url
-    }
-  },
-  galleryImage->{
-    alt,
-    "imageUrl": image.asset->url,
-    "imageId": image.asset->_id
-  }
-},
+    },
 
-  "heroGalleryImage": heroGalleryImage->{
-    alt,
-    "imageUrl": image.asset->url,
-    "imageId": image.asset->_id
-  }
-}
-`;
+    // CONTENT: normalize all images
+    content[]{
+      ...,
+
+      // simple image blocks
+      image{
+        "url": asset->url,
+          "alt": alt
+      },
+
+      // text+image block
+      _type == "textImage" => {
+        ...,
+        image{
+          "url": asset->url,
+            "alt": alt
+        },
+        galleryImage->{
+          alt,
+          "imageUrl": image.asset->url,
+          "imageId": image.asset->_id
+        }
+      },
+
+      // gallery block: array of flat items
+      _type == "galleryBlock" => {
+        ...,
+        "images": images[]{
+          "url": asset->url,
+            "alt": alt
+        }
+      },
+
+      // smart carousel
+      _type == "smartCarousel" => {
+        ...,
+        "slides": slides[]{
+          ...,
+          image{
+            "url": asset->url,
+              "alt": alt
+          }
+        }
+      }
+    }
+  }`;
 
   return await client.fetch(query, { slug });
 }
@@ -130,19 +151,22 @@ async function getApprovedComments(postId: string): Promise<Comment[]> {
 
 async function getFeaturedJourneys(): Promise<Journey[]> {
   return await client.fetch(
-    groq`*[_type == "journey" && featuredOnHome == true][0...3] {
+    groq`*[_type == "journey" && featuredOnHome == true][0...3]{
       _id,
       title,
       "slug": slug,
       region->{ title },
-      heroImage { asset->{ url }, alt }
+      "heroImage": {
+        "url": heroImage.asset->url,
+        "alt": heroImage.alt
+      }
     }`
   );
 }
 
 async function getMostLikedBlogs(): Promise<LikedBlog[]> {
   return await client.fetch(
-    groq`*[_type == "blog"] | order(likes desc, publishedAt desc)[0...3] {
+    groq`*[_type == "blog"] | order(likes desc, publishedAt desc)[0...3]{
       _id,
       title,
       "slug": slug,
@@ -160,12 +184,8 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const post = await getPost(slug);
-
   if (!post) return { title: "Not Found" };
-  return {
-    title: post.title,
-    description: post.summary,
-  };
+  return { title: post.title, description: post.summary };
 }
 
 export default async function BlogPost({
@@ -183,13 +203,11 @@ export default async function BlogPost({
 
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen px-0">
-      {(post.heroImage?.asset?.url || post.heroGalleryImage?.imageUrl) && (
+      {(post.heroImage?.image?.url || post.heroGalleryImage?.imageUrl) && (
         <div
           className="relative w-full h-[300px] sm:h-[400px] flex items-center justify-center"
           style={{
-            backgroundImage: `url(${
-              post.heroImage?.asset?.url || post.heroGalleryImage?.imageUrl
-            })`,
+            backgroundImage: `url(${post.heroImage?.image?.url || post.heroGalleryImage?.imageUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -228,10 +246,10 @@ export default async function BlogPost({
               <p className="text-sm text-gray-600 mt-1">{post.author.bio}</p>
             )}
           </div>
+
           {Array.isArray(post.tags) && post.tags.length > 0 && (
             <div className="bg-white shadow p-4 rounded-lg">
               <h4 className="text-sm font-semibold mb-2 text-gray-800">Tags</h4>
-
               <ul className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <li key={tag}>
@@ -246,6 +264,7 @@ export default async function BlogPost({
               </ul>
             </div>
           )}
+
           {featuredJourneys.length > 0 && (
             <div className="bg-[#f5f3ef] p-4 rounded-lg">
               <h4 className="text-lg font-semibold mb-3">
@@ -258,9 +277,9 @@ export default async function BlogPost({
                       href={`/journey?q=${j.title}&open=true`}
                       className="bg-white p-2 rounded shadow flex gap-3 items-center hover:bg-gray-50 transition"
                     >
-                      {j.heroImage?.asset?.url && (
+                      {j.heroImage?.url && (
                         <img
-                          src={j.heroImage.asset.url}
+                          src={j.heroImage.url}
                           alt={j.heroImage.alt || j.title}
                           width={60}
                           height={60}

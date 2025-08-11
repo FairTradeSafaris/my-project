@@ -1,25 +1,53 @@
+// components/BlogContent.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Image from "next/image";
 import { PortableText } from "@portabletext/react";
-import { urlFor } from "../lib/sanityImage";
-import type { Block, SanityImage } from "../types/block";
+import type { PortableTextReactComponents } from "@portabletext/react";
+import { urlFor } from "@/lib/sanityImage";
+import type { Block } from "@/types/block";
 import { useState } from "react";
 import Modal from "react-modal";
 
-import { PortableTextReactComponents } from "@portabletext/react";
+// Accepts flat {url,alt} or Sanity {asset:{url|_ref}, alt}
+type ImageLike =
+  | { url?: string; alt?: string; asset?: { url?: string; _ref?: string } }
+  | null
+  | undefined;
+
+const getUrl = (img: ImageLike): string | null => {
+  if (!img) return null;
+  if (img.url) return img.url;
+  if (img.asset?.url) return img.asset.url;
+  if (img.asset?._ref) return urlFor({ asset: { _ref: img.asset._ref } }).url();
+  try {
+    // If it's any other valid Sanity source, let urlFor try
+    // @ts-ignore
+    return urlFor(img).url();
+  } catch {
+    return null;
+  }
+};
+
+const getAlt = (img: any, fallback = "Image") =>
+  (img?.alt as string | undefined) ?? fallback;
 
 const portableComponents: Partial<PortableTextReactComponents> = {
   types: {
-    image: ({ value }: { value: SanityImage }) => (
-      <Image
-        src={urlFor(value).url()}
-        alt={value.alt || "Image"}
-        width={800}
-        height={600}
-        className="my-4 rounded"
-      />
-    ),
+    image: ({ value }: { value: any }) => {
+      const src = getUrl(value);
+      if (!src) return null;
+      return (
+        <Image
+          src={src}
+          alt={getAlt(value)}
+          width={800}
+          height={600}
+          className="my-4 rounded"
+        />
+      );
+    },
   },
   block: {
     h1: ({ children }) => (
@@ -47,7 +75,6 @@ const portableComponents: Partial<PortableTextReactComponents> = {
     bullet: ({ children }) => <li className="mb-0 leading-snug">{children}</li>,
     number: ({ children }) => <li className="mb-0 leading-snug">{children}</li>,
   },
-
   marks: {
     strong: ({ children }) => (
       <strong className="font-semibold text-black">{children}</strong>
@@ -60,34 +87,28 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
   return (
     <div className="space-y-0 font-sans text-base sm:text-lg text-gray-800 leading-relaxed">
-      {blocks?.map((block, index) => {
+      {blocks?.map((block: any, index: number) => {
         switch (block._type) {
           case "heroImage": {
-            let imageUrl: string = "";
-
-            if (block.image) {
-              imageUrl = block.image.asset?.url || urlFor(block.image).url();
-            } else if (block.galleryImage?.image) {
-              imageUrl =
-                block.galleryImage.image.asset?.url ||
-                urlFor(block.galleryImage.image).url();
-            }
+            const imageUrl =
+              getUrl(block.image) || block.galleryImage?.imageUrl || null;
 
             return (
               <section
                 key={index}
                 className="relative text-center max-w-7xl mx-auto mb-6"
               >
-                {block.image && (
+                {imageUrl && (
                   <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] lg:aspect-[5/2] max-h-[600px] rounded overflow-hidden">
                     <Image
                       src={imageUrl}
                       alt={block.text || "Hero Image"}
                       fill
-                      className="object-contain"
+                      className="object-cover"
                     />
                   </div>
                 )}
+
                 {block.text && (
                   <div
                     className={`absolute inset-0 flex items-center justify-${block.alignment || "center"} px-4`}
@@ -105,10 +126,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
 
           case "textImage": {
             const imageUrl =
-              block.image?.asset?.url ??
-              block.galleryImage?.image?.asset?.url ??
-              null;
-
+              getUrl(block.image) || block.galleryImage?.imageUrl;
             const altText =
               block.image?.alt || block.galleryImage?.alt || "Image";
 
@@ -117,7 +135,6 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               | "md"
               | "lg"
               | "full";
-
             const imageSizeClass: Record<"sm" | "md" | "lg" | "full", string> =
               {
                 sm: "md:w-1/4",
@@ -135,11 +152,12 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               >
                 {imageUrl && (
                   <div className={`w-full ${imageSizeClass[imageSize]}`}>
-                    <img
+                    <Image
                       src={imageUrl}
                       alt={altText}
+                      width={1200}
+                      height={900}
                       className="w-full h-full object-cover rounded"
-                      style={{ height: "100%" }}
                     />
                   </div>
                 )}
@@ -297,19 +315,24 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 className="max-w-7xl mx-auto px-4 sm:px-6 my-12"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {block.images?.map((img: SanityImage, i: number) => (
-                    <Image
-                      key={i}
-                      src={img.asset?.url || urlFor(img).url()}
-                      alt={`Gallery Image ${i + 1}`}
-                      width={400}
-                      height={300}
-                      className="w-full h-64 object-cover rounded"
-                    />
-                  ))}
+                  {(block.images || []).map((img: any, i: number) => {
+                    const src = getUrl(img);
+                    if (!src) return null;
+                    return (
+                      <Image
+                        key={i}
+                        src={src}
+                        alt={getAlt(img, `Gallery Image ${i + 1}`)}
+                        width={400}
+                        height={300}
+                        className="w-full h-64 object-cover rounded"
+                      />
+                    );
+                  })}
                 </div>
               </section>
             );
+
           case "table":
             return (
               <div
@@ -318,7 +341,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               >
                 <table className="min-w-full table-auto text-sm text-left">
                   <tbody>
-                    {block.rows.map((row, rowIndex) => (
+                    {block.rows.map((row: any, rowIndex: number) => (
                       <tr
                         key={rowIndex}
                         className={
@@ -327,7 +350,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                             : "bg-white"
                         }
                       >
-                        {row.cells.map((cell, cellIndex) => (
+                        {row.cells.map((cell: any, cellIndex: number) => (
                           <td
                             key={cellIndex}
                             className="border px-4 py-3 align-top"
@@ -370,11 +393,8 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               >
                 <div className="relative w-full overflow-hidden rounded">
                   <div className="flex gap-4 snap-x overflow-x-auto scroll-smooth pb-4">
-                    {block.slides?.map((slide, i) => {
-                      const imageUrl = slide.image?.asset?.url
-                        ? slide.image.asset.url
-                        : urlFor(slide.image).width(1200).height(600).url();
-
+                    {(block.slides || []).map((slide: any, i: number) => {
+                      const imageUrl = getUrl(slide.image);
                       return (
                         <div
                           key={i}
@@ -387,7 +407,6 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                               width={1200}
                               height={600}
                               className="w-full h-96 object-cover rounded"
-                              unoptimized
                             />
                           ) : (
                             <div className="w-full h-96 bg-gray-200 rounded flex items-center justify-center">

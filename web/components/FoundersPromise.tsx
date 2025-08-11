@@ -11,15 +11,13 @@ const MotionDiv = dynamic(
   { ssr: false }
 );
 
-type Props = {
-  data: FoundersPromiseBlock;
-};
+type Props = { data: FoundersPromiseBlock };
 
 export default function FoundersPromise({ data }: Props) {
   const {
     headline,
     intro,
-    safelist,
+    safelist = [],
     buttonText,
     buttonLink,
     backgroundImage,
@@ -29,102 +27,175 @@ export default function FoundersPromise({ data }: Props) {
 
   return (
     <section
-      className="relative pt-32 pb-36 px-6 bg-cover bg-center bg-no-repeat text-black"
+      className={`
+        relative
+        /* extra breathing room on small screens */
+        pt-24 sm:pt-28 md:pt-32
+        pb-24 sm:pb-28 md:pb-36
+        px-5 sm:px-6 md:px-8
+        bg-cover bg-center bg-no-repeat text-black
+      `}
       style={{
         backgroundImage: backgroundImage?.asset?.url
           ? `url(${backgroundImage.asset.url})`
           : "none",
       }}
     >
-      {/* Fades using theme variables */}
+      {/* soft fades for readability */}
       <div
-        className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b to-transparent z-10 pointer-events-none"
+        className="absolute top-0 left-0 w-full h-20 sm:h-24 z-10 pointer-events-none"
         style={{
           backgroundImage: `linear-gradient(to bottom, rgba(var(--background-rgb), 1), rgba(var(--background-rgb), 0))`,
         }}
       />
       <div
-        className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t to-transparent z-10 pointer-events-none"
+        className="absolute bottom-0 left-0 w-full h-20 sm:h-24 z-10 pointer-events-none"
         style={{
           backgroundImage: `linear-gradient(to top, rgba(var(--background-rgb), 1), rgba(var(--background-rgb), 0))`,
         }}
       />
 
-      {/* Animated Bird Bridge */}
+      {/* line art */}
       {lineArtImage?.asset?.url && (
         <MotionDiv
-          initial={{ opacity: 0, y: -40 }}
+          initial={{ opacity: 0, y: -24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="absolute top-6 left-1/2 transform -translate-x-1/2 z-30 pointer-events-none"
+          transition={{ duration: 0.9, ease: "easeOut" }}
+          className="absolute top-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
         >
           <Image
             src={lineArtImage.asset.url}
             alt={lineArtImage.alt || "Bird bridge illustration"}
-            className="object-contain w-[240px] sm:w-[300px] md:w-[360px]"
+            className="object-contain w-[220px] sm:w-[280px] md:w-[360px]"
             width={360}
             height={220}
           />
         </MotionDiv>
       )}
 
-      {/* Content */}
-      <div className="relative z-20 max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-20">
-        {/* Left Column */}
+      {/* content */}
+      <div
+        className={`
+          relative z-20 max-w-7xl mx-auto
+          flex flex-col lg:flex-row items-stretch justify-between
+          gap-8 sm:gap-12 lg:gap-20
+        `}
+      >
+        {/* left card */}
         <div
           id="promise"
-          className="w-full lg:w-1/2 h-full min-h-[450px] border border-black/10 p-10 rounded-md shadow-md flex flex-col justify-between backdrop-blur-sm"
+          className={`
+            w-full lg:w-1/2 min-h-[450px]
+            border border-black/10 rounded-md shadow-md
+            p-6 sm:p-8 md:p-10
+            flex flex-col justify-between
+            backdrop-blur-sm
+          `}
           style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
         >
           <div>
-            <div className="mb-4 text-xs uppercase tracking-widest border border-black px-4 py-1 rounded-full inline-block">
+            <div
+              className={`
+                mb-4 text-[10px] sm:text-xs uppercase tracking-widest
+                border border-black px-3 py-1 sm:px-4 rounded-full inline-block
+                whitespace-nowrap
+              `}
+            >
               Our Promise
             </div>
-            <h2 className="text-3xl font-bold mb-4">{headline}</h2>
-            <div className="text-base text-black/80 leading-relaxed mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">{headline}</h2>
+
+            <div className="text-[0.985rem] sm:text-base text-black/80 leading-7 sm:leading-8 mb-6">
               <PortableText value={intro} />
             </div>
-            <ul className="list-disc pl-5 space-y-2 text-m text-black/80">
+
+            <ul className="list-disc pl-5 space-y-2 text-[0.985rem] sm:text-base text-black/80">
               {safelist.map((item, idx) => {
-                const [title, detail] = item.split("–");
+                const [title, detail] = item.split(/[-–—]\s?/); // robust dash split
                 return (
                   <li key={idx}>
-                    <strong>{title.trim()}</strong> – {detail?.trim()}
+                    <strong>{title?.trim()}</strong>
+                    {detail ? ` – ${detail.trim()}` : ""}
                   </li>
                 );
               })}
             </ul>
           </div>
+
           {buttonLink && buttonText && (
             <Link
               href={buttonLink}
-              className="mt-8 inline-block bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition"
+              className={`
+                mt-8 inline-flex items-center justify-center
+                /* keep it one line on mobile */
+                whitespace-nowrap
+                /* comfortable tap target but compact to avoid wrapping */
+                text-sm sm:text-base leading-none
+                px-5 sm:px-6 py-3
+                rounded-full font-semibold
+                bg-black text-white hover:bg-gray-800 transition
+                /* avoid squeezing too narrow on tiny screens */
+                min-w-[200px]
+                self-start
+              `}
+              aria-label={buttonText}
+              title={buttonText}
             >
               {buttonText}
             </Link>
           )}
         </div>
 
-        {/* Right Column */}
+        {/* right card */}
         {impactContent && (
           <div
             id="sustainability"
-            className="w-full lg:w-1/2 h-full min-h-[450px] border border-black/10 p-10 rounded-md shadow-md flex flex-col justify-between backdrop-blur-sm"
+            className={`
+              w-full lg:w-1/2 min-h-[450px]
+              border border-black/10 rounded-md shadow-md
+              p-6 sm:p-8 md:p-10
+              flex flex-col justify-between
+              backdrop-blur-sm
+            `}
             style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
           >
             <div>
-              <div className="mb-4 text-xs uppercase tracking-widest border border-black px-4 py-1 rounded-full inline-block">
+              <div
+                className={`
+                  mb-4 text-[10px] sm:text-xs uppercase
+                  tracking-widest border border-black
+                  px-3 py-1 sm:px-4 rounded-full inline-block
+                  whitespace-nowrap
+                `}
+              >
                 Travel with Purpose
               </div>
-              <h3 className="text-3xl font-bold mb-4">{impactContent.title}</h3>
-              <div className="text-base text-black/80 leading-relaxed mb-6">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-4">
+                {impactContent.title}
+              </h3>
+              <div className="text-[0.985rem] sm:text-base text-black/80 leading-7 sm:leading-8 mb-6">
                 <PortableText value={impactContent.body} />
               </div>
             </div>
+
             {impactContent.ctaLink && impactContent.ctaText && (
               <Link
                 href={impactContent.ctaLink}
-                className="mt-8 inline-block px-6 py-3 border-2 border-black text-black font-semibold uppercase text-sm tracking-wide rounded-full hover:bg-black hover:text-white transition"
+                className={`
+                  mt-8 inline-flex items-center justify-center
+                  whitespace-nowrap
+                  /* uppercase widens text; tighten tracking to prevent wrap */
+                  uppercase tracking-wide sm:tracking-wider
+                  text-xs sm:text-sm leading-none
+                  px-5 sm:px-6 py-3
+                  border-2 border-black text-black
+                  rounded-full font-semibold
+                  hover:bg-black hover:text-white transition
+                  min-w-[200px]
+                  self-start
+                `}
+                aria-label={impactContent.ctaText}
+                title={impactContent.ctaText}
               >
                 {impactContent.ctaText}
               </Link>
@@ -132,6 +203,17 @@ export default function FoundersPromise({ data }: Props) {
           </div>
         )}
       </div>
+
+      {/* respect reduced motion */}
+      <style jsx>{`
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation: none !important;
+            transition: none !important;
+            scroll-behavior: auto !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }

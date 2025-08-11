@@ -3,17 +3,13 @@ import HeroController, { type HeroData } from "@/components/HeroController";
 import { client } from "@/lib/sanity";
 
 export default async function HeroWrapper() {
-  // Fetch the hero document and pull all candidate images
   const data = await client.fetch(`
     *[_type == "hero"][0]{
       headline,
       subheadline,
       primaryCTA,
       secondaryCTA,
-      backgroundImages[]{
-        alt,
-        asset->{ _ref, _type, url }
-      }
+      backgroundImages[]{ alt, asset->{ _ref, _type, url } }
     }
   `);
 
@@ -21,13 +17,11 @@ export default async function HeroWrapper() {
     ? data.backgroundImages.filter(Boolean)
     : [];
 
-  // Pick one image (random like your original wrapper)
   const chosen =
     images.length > 0
       ? images[Math.floor(Math.random() * images.length)]
       : null;
 
-  // Shape it exactly how HeroController expects
   const heroData: HeroData = {
     headline: data?.headline ?? undefined,
     subheadline: data?.subheadline ?? undefined,

@@ -16,7 +16,7 @@ export default defineType({
         list: [
           {title: 'Default (global fallback)', value: 'default'},
           {title: 'Home', value: 'home'},
-          {title: 'Journeys', value: 'journeys'},
+          {title: 'Journeys', value: 'journey'},
           {title: 'Blog', value: 'blog'},
           {title: 'Books', value: 'books'},
           {title: 'Custom…', value: 'custom'},

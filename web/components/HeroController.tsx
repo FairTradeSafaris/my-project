@@ -3,8 +3,6 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-/* ---------- Sanity ---------- */
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client as sanityClient } from "@/lib/sanity";
@@ -12,7 +10,19 @@ import { client as sanityClient } from "@/lib/sanity";
 const builder = imageUrlBuilder(sanityClient);
 const urlFor = (src: SanityImageSource) => builder.image(src).width(1920).url();
 
-/* ---------- Types ---------- */
+/* ---------- export this ---------- */
+export type HeroData = {
+  headline?: string;
+  subheadline?: string;
+  primaryCTA?: string;
+  secondaryCTA?: string;
+  backgroundImages?: Array<{
+    alt?: string;
+    asset?: { _ref?: string; _type?: string; url?: string };
+  }>;
+};
+/* -------------------------------- */
+
 type HeroAsset = {
   asset?: { url?: string } | SanityImageSource;
   alt?: string;
@@ -31,7 +41,6 @@ type HeroDoc = {
 };
 
 type ActionMode = NonNullable<HeroDoc["action"]>;
-
 /* ---------- Events ---------- */
 const OPEN = {
   JOURNEY_SEARCH: "fts:open-search-sheet",
@@ -183,7 +192,20 @@ function HeroView({
 }
 
 /* ---------- Controller ---------- */
-export default function HeroController() {
+export default function HeroController({
+  heroData,
+}: {
+  heroData?: {
+    headline?: string;
+    subheadline?: string;
+    primaryCTA?: string;
+    secondaryCTA?: string;
+    backgroundImages?: Array<{
+      alt?: string;
+      asset?: { _ref?: string; _type?: string; url?: string };
+    }>;
+  };
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -192,6 +214,34 @@ export default function HeroController() {
 
   const [hero, setHero] = useState<HeroDoc | null>(null);
   const [bgUrl, setBgUrl] = useState<string | undefined>(undefined);
+
+  // If parent provided heroData, use it and skip fetching
+  useEffect(() => {
+    if (!heroData) return;
+
+    const doc: HeroDoc = {
+      scope: "default",
+      pageLabel: undefined,
+      customScope: undefined,
+      headline: heroData.headline,
+      subheadline: heroData.subheadline,
+      action: "none",
+      backgroundImages: heroData.backgroundImages,
+      primaryCTA: heroData.primaryCTA,
+      secondaryCTA: heroData.secondaryCTA,
+    };
+
+    setHero(doc);
+
+    const first = doc.backgroundImages?.[0]?.asset;
+    if (first && typeof first === "object" && "url" in first && first.url) {
+      setBgUrl(first.url as string);
+    } else if (first) {
+      setBgUrl(urlFor(first as SanityImageSource));
+    } else {
+      setBgUrl(undefined);
+    }
+  }, [heroData]);
 
   const HIDE_ON: RegExp[] = [
     /^\/(sign-in|sign-up)/,
@@ -241,6 +291,9 @@ export default function HeroController() {
   }, [pageKey]);
 
   useEffect(() => {
+    // If parent provided heroData, don't fetch from Sanity.
+    if (heroData) return;
+
     let mounted = true;
     sanityClient
       .fetch<HeroDoc | null>(queryAndParams.query, queryAndParams.params)
@@ -262,10 +315,11 @@ export default function HeroController() {
         setHero(null);
         setBgUrl(undefined);
       });
+
     return () => {
       mounted = false;
     };
-  }, [queryAndParams]);
+  }, [heroData, queryAndParams]);
 
   // Search helpers (declared unconditionally to keep hook order stable)
   const openJourneySearch = useCallback(

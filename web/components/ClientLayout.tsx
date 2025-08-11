@@ -1,6 +1,7 @@
+// components/ClientLayout.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { client } from "@/lib/sanity";
@@ -9,7 +10,19 @@ import { client } from "@/lib/sanity";
 import NavbarMobile from "@/components/NavbarMobile";
 import NavbarDesktop from "@/components/NavbarDesktop";
 import BottomTabBar from "@/components/BottomTabBar";
-import HeroController, { type HeroData } from "@/components/HeroController";
+import HeroController from "@/components/HeroController";
+
+// Local copy of the hero shape we pass to HeroController
+type HeroData = {
+  headline?: string;
+  subheadline?: string;
+  primaryCTA?: string;
+  secondaryCTA?: string;
+  backgroundImages?: Array<{
+    alt?: string;
+    asset?: { _ref?: string; _type?: string; url?: string };
+  }>;
+};
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -46,8 +59,14 @@ export default function ClientLayout({
   const [promoCard, setPromoCard] = useState<PromoCard | null>(null);
   const [ready, setReady] = useState(false);
 
+  // ---- derive page key for hero selection (top path segment or "home") ----
+  const pageKey = useMemo(() => {
+    const seg = pathname.split("/").filter(Boolean)[0];
+    return seg || "home";
+  }, [pathname]);
+
   // hero data for HeroController (BG from Sanity)
-  const [heroData, setHeroData] = useState<HeroData | null>(null);
+  const [heroData, setHeroData] = useState<HeroData | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,21 +102,38 @@ export default function ClientLayout({
       }
     })();
 
-    // Hero content fetch (Sanity)
+    // Hero content fetch (page-specific with fallback to "default")
     (async () => {
       try {
-        const h = await client.fetch(`
-          *[_type == "hero"][0]{
-            headline,
-            subheadline,
-            primaryCTA,
-            secondaryCTA,
-            backgroundImages[]{ alt, asset->{ _ref, _type, url } }
-          }
-        `);
+        const data = await client.fetch(
+          `{
+            "items": [
+              ...*[_type=="hero" && (scope==$k || (scope=="custom" && customScope==$k))]{
+                headline, subheadline, primaryCTA, secondaryCTA,
+                backgroundImages[]{ alt, asset->{ _ref, _type, url } }
+              }[0...1],
+              ...*[_type=="hero" && scope=="default"]{
+                headline, subheadline, primaryCTA, secondaryCTA,
+                backgroundImages[]{ alt, asset->{ _ref, _type, url } }
+              }[0...1]
+            ]
+          }`,
+          { k: pageKey }
+        );
+
         if (cancelled) return;
 
-        const imgs = Array.isArray(h?.backgroundImages)
+        const h =
+          Array.isArray(data?.items) && data.items.length > 0
+            ? data.items[0]
+            : undefined;
+
+        if (!h) {
+          setHeroData(undefined);
+          return;
+        }
+
+        const imgs = Array.isArray(h.backgroundImages)
           ? h.backgroundImages.filter(Boolean)
           : [];
         const chosen = imgs.length
@@ -105,31 +141,31 @@ export default function ClientLayout({
           : [];
 
         const shaped: HeroData = {
-          headline: h?.headline ?? undefined,
-          subheadline: h?.subheadline ?? undefined,
-          primaryCTA: h?.primaryCTA ?? undefined,
-          secondaryCTA: h?.secondaryCTA ?? undefined,
+          headline: h.headline ?? undefined,
+          subheadline: h.subheadline ?? undefined,
+          primaryCTA: h.primaryCTA ?? undefined,
+          secondaryCTA: h.secondaryCTA ?? undefined,
           backgroundImages: chosen,
         };
+
         setHeroData(shaped);
       } catch (e) {
         console.error("hero fetch failed", e);
-        setHeroData(null);
+        setHeroData(undefined);
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pageKey]);
 
   return (
     <>
       {/* Global nav (mobile + desktop) */}
-
       {!hideUI && ready && (
         <>
-          <NavbarMobile /> {/* ← remove props here */}
+          <NavbarMobile />
           <NavbarDesktop
             navSections={navSections}
             featureCards={featureCards}

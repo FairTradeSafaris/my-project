@@ -4,7 +4,7 @@ import { client as sanity } from "@/lib/sanity";
 import Link from "next/link";
 import type { PortableTextBlock } from "@portabletext/types";
 import JourneyCard from "@/components/JourneyCard";
-import HeroWrapper from "@/components/HeroWrapper";
+
 import FoundersPromise from "@/components/FoundersPromise";
 import type { FoundersPromiseBlock } from "@/types/types";
 
@@ -195,9 +195,6 @@ export default async function Home() {
   return (
     <>
       <main className="min-h-screen font-poppins bg-white text-black">
-        {/* Hero Section */}
-        <HeroWrapper />
-
         {/* Why Travel With Us Section */}
         {whyChoose && <WhyChoose data={whyChoose} />}
         {foundersPromise && <FoundersPromise data={foundersPromise} />}
@@ -247,7 +244,7 @@ export default async function Home() {
             )}
 
             <Link
-              href="/journeys"
+              href="/journey"
               className="mt-12 inline-block text-black border border-black px-6 py-3 rounded-full font-semibold hover:bg-black hover:text-white transition"
             >
               Explore All Journeys →

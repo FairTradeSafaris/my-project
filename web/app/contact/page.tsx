@@ -27,22 +27,6 @@ export default async function ContactPage() {
   return (
     <main className="min-h-screen bg-[#fdf8f3] text-black font-sans">
       {/* Hero Banner */}
-      <section
-        className="relative h-[400px] bg-cover bg-center text-white"
-        style={{ backgroundImage: `url('/sunset-safari.webp')` }}
-      >
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 max-w-7xl mx-auto h-full flex flex-col justify-center px-6">
-          <h1 className="text-5xl font-bold text-[#fdf8f3] mb-4">
-            Let&apos;s Connect
-          </h1>
-          <p className="text-lg max-w-2xl text-[#e8e8e8]">
-            Fill out the form and one of our safari experts will be in touch
-            shortly. Whether you&apos;re curious about destinations, costs, or
-            customizations — we&apos;re here to help!
-          </p>
-        </div>
-      </section>
 
       {/* Main Contact Section */}
       <section className="max-w-6xl mx-auto px-4 py-20" id="form">

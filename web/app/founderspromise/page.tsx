@@ -9,17 +9,6 @@ export default function OurPromisePage() {
   return (
     <main className="min-h-screen bg-[#fdf8f3] text-black font-sans">
       {/* Hero */}
-      <section
-        className="relative h-[400px] bg-cover bg-center text-white"
-        style={{ backgroundImage: `url('/sunset-safari.webp')` }}
-      >
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 max-w-7xl mx-auto h-full flex flex-col justify-center px-6">
-          <h1 className="text-5xl font-bold text-[#fdf8f3] mb-4">
-            Our Promise and Purpose
-          </h1>
-        </div>
-      </section>
 
       {/* Main Section With Sidebar */}
       <section className="flex px-6 py-16 max-w-7xl mx-auto gap-12">

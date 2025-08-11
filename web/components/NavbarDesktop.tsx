@@ -1,12 +1,23 @@
+// components/NavbarDesktop.tsx
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Menu, Search, User, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
+
+type MenuItem = { title: string; href: string };
+type NavSection = { heading?: string; links: MenuItem[] };
+type FeatureCard = {
+  title: string;
+  description: string;
+  image: { asset: { url: string } };
+  alt: string;
+  link: string;
+};
 
 function cx(...classes: (string | false | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -64,9 +75,27 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
   );
 }
 
-export default function NavbarDesktop() {
+export default function NavbarDesktop({
+  navSections = [],
+  featureCards = [],
+  promoCard,
+}: {
+  navSections?: NavSection[];
+  featureCards?: FeatureCard[];
+  promoCard?: FeatureCard | null;
+}) {
   const scrolled = useScrolled(40);
-  const [open, setOpen] = useState(false); // if you later add a desktop mega menu
+  const [open, setOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  // lock body scroll when desktop menu is open
+  useEffect(() => {
+    const prev = document.documentElement.style.overflow;
+    if (open) document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = prev || "";
+    };
+  }, [open]);
 
   return (
     <>
@@ -129,11 +158,175 @@ export default function NavbarDesktop() {
             title={open ? "Close Menu" : "Open Menu"}
             onClick={() => setOpen((v) => !v)}
             className="transition-transform duration-200 p-2 rounded-xl"
+            aria-expanded={open}
+            aria-controls="desktop-menu-sheet"
           >
             {open ? <X size={22} /> : <Menu size={22} />}
           </motion.button>
         </div>
       </nav>
+
+      {/* Desktop full-screen sheet (reuses MobileMenuSheet content) */}
+      {/* Desktop compact menu (3 columns) */}
+      {/* Desktop compact menu (ALL sections left • Featured middle • Promo right) */}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* soft backdrop */}
+            <motion.div
+              key="desk-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.12 }}
+              className="hidden md:block fixed inset-0 z-40 bg-black/30"
+              onClick={() => setOpen(false)}
+              aria-hidden="true"
+            />
+
+            {/* centered floating panel */}
+            <motion.div
+              key="desk-panel"
+              initial={{ y: -8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -8, opacity: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.18 }}
+              className="hidden md:block fixed left-1/2 -translate-x-1/2 z-50 mt-28 w-[92vw] max-w-6xl"
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="rounded-3xl shadow-2xl ring-1 ring-black/10 backdrop-blur bg-white/85 dark:bg-neutral-900/80 border border-white/40 dark:border-white/10">
+                {/* dynamic grid: if Featured or Promo missing, collapse to 2 or 1 cols */}
+                <div
+                  className={[
+                    "p-6 lg:p-8 gap-6 grid",
+                    featureCards?.length && promoCard?.title
+                      ? "grid-cols-3"
+                      : featureCards?.length || promoCard?.title
+                        ? "grid-cols-2"
+                        : "grid-cols-1",
+                  ].join(" ")}
+                >
+                  {/* LEFT: all nav sections (scroll if tall) */}
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
+                      Navigation
+                    </h4>
+
+                    <div className="max-h-[62vh] overflow-y-auto pr-2">
+                      <div className="space-y-6">
+                        {navSections.map((section, sIdx) => (
+                          <div key={`sec-${sIdx}`} className="min-w-0">
+                            {section.heading && (
+                              <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-2">
+                                {section.heading}
+                              </div>
+                            )}
+                            <ul className="space-y-1.5">
+                              {section.links.map((item, i) => (
+                                <li key={`link-${sIdx}-${i}`}>
+                                  <Link
+                                    href={item.href}
+                                    onClick={() => setOpen(false)}
+                                  >
+                                    <span
+                                      className="block text-sm px-3 py-2 rounded-xl transition
+                                text-neutral-900 dark:text-neutral-100
+                                hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70"
+                                    >
+                                      {item.title}
+                                    </span>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MIDDLE: Featured (minimal image + text) */}
+                  {!!featureCards?.length && (
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
+                        Featured
+                      </h4>
+                      <ul className="space-y-3">
+                        {featureCards.slice(0, 4).map((card, idx) => (
+                          <li key={`feat-${idx}`}>
+                            <Link
+                              href={card.link}
+                              onClick={() => setOpen(false)}
+                              className="group flex items-center gap-3 rounded-2xl p-2 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70 transition"
+                            >
+                              <Image
+                                src={card.image.asset.url}
+                                alt={card.alt}
+                                width={56}
+                                height={56}
+                                className="w-14 h-14 rounded-xl object-cover"
+                              />
+                              <div className="min-w-0">
+                                <div className="text-sm font-semibold truncate group-hover:text-[#5a3e2b]">
+                                  {card.title}
+                                </div>
+                                <div className="text-xs text-neutral-600 dark:text-neutral-300 line-clamp-2">
+                                  {card.description}
+                                </div>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* RIGHT: Promo (edge-to-edge) */}
+                  {promoCard?.title && (
+                    <div className="min-w-0">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
+                        Special Offer
+                      </h4>
+                      <Link
+                        href={promoCard.link}
+                        onClick={() => setOpen(false)}
+                        className="group block rounded-2xl overflow-hidden ring-1 ring-black/10 bg-white/70 dark:bg-neutral-800/70"
+                      >
+                        <Image
+                          src={promoCard.image?.asset?.url || "/fallback.jpg"}
+                          alt={promoCard.alt || "Special offer"}
+                          width={640}
+                          height={360}
+                          className="w-full h-40 object-cover"
+                        />
+                        <div className="p-4">
+                          <div className="text-sm font-semibold group-hover:text-[#5a3e2b]">
+                            {promoCard.title}
+                          </div>
+                          <div className="text-xs text-neutral-600 dark:text-neutral-300 mt-1 line-clamp-2">
+                            {promoCard.description}
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* bottom action */}
+                <div className="flex justify-end px-6 lg:px-8 pb-5 -mt-2">
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="text-sm px-3 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -5,11 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Menu, Search, X } from "lucide-react"; // ⬅️ removed User
-// ⬇️ removed Clerk + CustomUserMenu imports
-// import { SignedIn, SignedOut } from "@clerk/nextjs";
-// import CustomUserMenu from "@/components/CustomUserMenu";
+import { Menu, Search, X } from "lucide-react";
 import MobileMenuSheet from "./MobileMenuSheet";
+import { client } from "@/lib/sanity"; // ← Sanity client
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -59,18 +57,51 @@ function BadgeVisual({ size }: { size: number }) {
   );
 }
 
-export default function NavbarMobile({
-  navSections = [],
-  featureCards = [],
-  promoCard,
-}: {
-  navSections?: NavSection[];
-  featureCards?: FeatureCard[];
-  promoCard?: FeatureCard | null;
-}) {
+export default function NavbarMobile() {
   const scrolled = useScrolled(40);
   const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Sanity-driven data (no props)
+  const [navSections, setNavSections] = useState<NavSection[]>([]);
+  const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
+  const [promoCard, setPromoCard] = useState<FeatureCard | null>(null);
+  const [ready, setReady] = useState(false);
+
+  // fetch menu from Sanity on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await client.fetch(`
+          *[_type == "megaMenu"][0]{
+            navSections[]{ heading, links[]{ title, href } },
+            featureCards[]{ title, description, alt, link, image{asset->{url}} },
+            promoCard{ title, description, alt, link, image{asset->{url}} }
+          }
+        `);
+        if (cancelled) return;
+
+        setNavSections(
+          Array.isArray(data?.navSections) ? data.navSections : []
+        );
+        setFeatureCards(
+          Array.isArray(data?.featureCards) ? data.featureCards : []
+        );
+        setPromoCard(data?.promoCard || null);
+      } catch (e) {
+        console.error("megaMenu fetch failed", e);
+        setNavSections([]);
+        setFeatureCards([]);
+        setPromoCard(null);
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // lock body scroll when menu is open
   useEffect(() => {
@@ -134,7 +165,7 @@ export default function NavbarMobile({
             </Link>
           </div>
 
-          {/* Right cluster: search + menu only (portal removed) */}
+          {/* Right cluster: search + menu */}
           <div className="flex items-center gap-3">
             <Link
               href="/journey"
@@ -156,9 +187,9 @@ export default function NavbarMobile({
         </div>
       </header>
 
-      {/* Full-screen mobile sheet */}
+      {/* Full-screen mobile sheet (data from Sanity) */}
       <AnimatePresence>
-        {menuOpen && (
+        {menuOpen && ready && (
           <motion.div
             key="mobile-sheet-wrapper"
             initial="hidden"

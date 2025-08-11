@@ -101,20 +101,6 @@ export default function ClientHomeContent() {
 
   return (
     <>
-      <section
-        className="relative h-[400px] bg-cover bg-center text-white"
-        style={{ backgroundImage: `url('/sunset-safari.webp')` }}
-      >
-        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 max-w-xl">
-            Welcome to your personal travel portal.
-          </h1>
-          <p className="text-lg max-w-lg">
-            View your upcoming trips and manage your safari documents below.
-          </p>
-        </div>
-      </section>
-
       <div className="px-4 sm:px-8 lg:px-16 py-10 text-base sm:text-lg lg:text-xl max-w-7xl mx-auto space-y-10">
         <SignedIn>
           <div className="mt-8">

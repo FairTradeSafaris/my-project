@@ -25,20 +25,6 @@ export default async function AmbassadorsPage() {
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen">
       {/* Hero Section */}
-      <section
-        className="relative h-[400px] bg-cover bg-center text-white"
-        style={{ backgroundImage: `url('/sunset-safari.webp')` }}
-      >
-        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 max-w-3xl">
-            Meet Our Ambassadors & Collaborators
-          </h1>
-          <p className="text-lg text-white/90 max-w-xl">
-            From influencers to wildlife photographers, meet the people who help
-            us shape ethical travel.
-          </p>
-        </div>
-      </section>
 
       {/* Intro Section */}
       <section className="max-w-3xl mx-auto px-6 pt-12 pb-6 text-center">

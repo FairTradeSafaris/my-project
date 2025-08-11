@@ -1,28 +1,40 @@
 // components/HeroWrapper.tsx
+import HeroController, { type HeroData } from "@/components/HeroController";
 import { client } from "@/lib/sanity";
-import HeroWithSearch from "./HeroWithSearch";
 
 export default async function HeroWrapper() {
+  // Fetch the hero document and pull all candidate images
   const data = await client.fetch(`
     *[_type == "hero"][0]{
       headline,
       subheadline,
-      backgroundImages[]{asset->{url}}
+      primaryCTA,
+      secondaryCTA,
+      backgroundImages[]{
+        alt,
+        asset->{ _ref, _type, url }
+      }
     }
   `);
 
-  const randomImage =
-    data?.backgroundImages?.[
-      Math.floor(Math.random() * data.backgroundImages.length)
-    ]?.asset?.url;
+  const images = Array.isArray(data?.backgroundImages)
+    ? data.backgroundImages.filter(Boolean)
+    : [];
 
-  return (
-    <HeroWithSearch
-      data={{
-        headline: data.headline,
-        subheadline: data.subheadline,
-        imageUrl: randomImage,
-      }}
-    />
-  );
+  // Pick one image (random like your original wrapper)
+  const chosen =
+    images.length > 0
+      ? images[Math.floor(Math.random() * images.length)]
+      : null;
+
+  // Shape it exactly how HeroController expects
+  const heroData: HeroData = {
+    headline: data?.headline ?? undefined,
+    subheadline: data?.subheadline ?? undefined,
+    primaryCTA: data?.primaryCTA ?? undefined,
+    secondaryCTA: data?.secondaryCTA ?? undefined,
+    backgroundImages: chosen ? [chosen] : [],
+  };
+
+  return <HeroController heroData={heroData} />;
 }

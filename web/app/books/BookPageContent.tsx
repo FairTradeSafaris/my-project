@@ -56,22 +56,6 @@ export default function BookPageContent() {
 
   return (
     <>
-      {/* HERO SECTION */}
-      <section
-        className="relative h-[400px] bg-cover bg-center text-white"
-        style={{ backgroundImage: `url('/sunset-safari.webp')` }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-30" />
-        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 max-w-xl drop-shadow">
-            Welcome to your personal travel portal.
-          </h1>
-          <p className="text-lg max-w-lg drop-shadow">
-            View your upcoming trips and manage your safari documents below.
-          </p>
-        </div>
-      </section>
-
       {/* MAIN CONTENT */}
       <div className="max-w-4xl mx-auto py-12 px-6">
         <div className="flex items-center justify-between mb-6">

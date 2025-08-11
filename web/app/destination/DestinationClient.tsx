@@ -180,20 +180,6 @@ export default function DestinationClient({
   return (
     <main className="relative z-0 min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       {/* Hero */}
-      <section
-        className="relative h-[320px] sm:h-[380px] md:h-[420px] bg-cover bg-center text-white"
-        style={{ backgroundImage: `url('/sunset-safari.webp')` }}
-      >
-        <div className="absolute inset-0 bg-black/50 z-0" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 h-full flex flex-col justify-end pb-10">
-          <h1 className="text-4xl sm:text-5xl leading-tight drop-shadow-xl font-bold">
-            Safari. Reimagined.
-          </h1>
-          <p className="mt-3 text-base sm:text-lg text-white/80 max-w-xl">
-            Travel with purpose. Explore Africa with heart.
-          </p>
-        </div>
-      </section>
 
       {/* Mobile sticky chips */}
       <div className="md:hidden sticky top-0 z-20 bg-[var(--surface-dark)] border-b border-[var(--border)]">

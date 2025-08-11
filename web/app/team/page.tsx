@@ -19,25 +19,6 @@ export default async function TeamPage() {
   return (
     <main className="bg-background text-foreground dark:bg-[#1a1a1a] dark:text-[#fdf8f3] min-h-screen font-sans">
       {/* Hero Section — DO NOT TOUCH */}
-      <section className="relative">
-        <div
-          className="relative bg-cover bg-center min-h-[500px] flex items-center justify-start px-6"
-          style={{ backgroundImage: `url('/sunset-safari.webp')` }}
-        >
-          <div className="absolute inset-0 bg-black/60 z-0" />
-          <div className="relative z-10 max-w-6xl mx-auto w-full flex flex-col md:flex-row gap-12 items-center py-12">
-            <div className="max-w-xl">
-              <h1 className="text-white text-5xl font-semibold leading-tight mb-4">
-                Meet the Team
-              </h1>
-              <p className="text-white/90 text-lg leading-relaxed">
-                The humans behind the journeys — planners, storytellers, and
-                change-makers with a shared mission.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Subheading */}
       <section className="text-center max-w-3xl mx-auto px-6 pt-12 pb-6">

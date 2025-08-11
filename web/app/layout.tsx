@@ -35,23 +35,22 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#2F3E46" };
 
-// app/layout.tsx
-// (leave your imports as-is)
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="...">
+      <body className={`${poppins.variable} font-sans`}>
         <ClerkWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
-
             <Suspense fallback={null}>
+              {/* Hero is rendered from ClientLayout now */}
               <ClientLayout>{children}</ClientLayout>
-              {/* Mount booking portal once */}
+
+              {/* Global one-offs */}
               <GlobalBookingPortal />
               <LeadMagnetGate />
               <CookieConsent />

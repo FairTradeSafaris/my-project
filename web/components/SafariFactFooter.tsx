@@ -66,53 +66,10 @@ export default function SafariFactFooter() {
   const col1 = allLinks.slice(0, mid);
   const col2 = allLinks.slice(mid);
 
-  const pressLogos = [
-    { src: "/logos/nbc.svg", alt: "NBC" },
-    { src: "/logos/usa-today.svg", alt: "USA Today" },
-    { src: "/logos/fox.svg", alt: "FOX" },
-    { src: "/logos/CBS_logo.svg", alt: "CBS" },
-  ];
-
   return (
     <footer className="relative text-[#3f2e1f] dark:text-neutral-300 text-sm bg-[#f7f3ec] dark:bg-[#0c0c0c]">
-      {/* As Seen On (slim) */}
-      <section aria-label="As seen on" className="relative z-10 py-6 md:py-7">
-        <div className="max-w-6xl mx-auto px-6">
-          <motion.h2
-            initial={fadeInitial}
-            whileInView={fadeAnimate}
-            transition={fadeTransition}
-            viewport={{ once: true, margin: "-20%" }}
-            className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-[#6a5a47] dark:text-neutral-400 text-center mb-4"
-          >
-            As Seen On
-          </motion.h2>
-          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-5 opacity-90">
-            {pressLogos.map((logo) => (
-              <Image
-                key={logo.alt}
-                src={logo.src}
-                alt={logo.alt}
-                width={110}
-                height={36}
-                className="h-7 md:h-8 w-auto"
-              />
-            ))}
-          </div>
-        </div>
-        <div className="relative -mt-1">
-          <svg
-            viewBox="0 0 500 50"
-            preserveAspectRatio="none"
-            className="w-full h-8 fill-[#efe6d8] dark:fill-[#0c0c0c] rotate-180"
-          >
-            <path d="M0,0 C150,50 350,0 500,50 L500,0 L0,0 Z" />
-          </svg>
-        </div>
-      </section>
-
       {/* Main grid — three columns: logo | links | illustration */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-4 pt-2 grid md:grid-cols-[auto_1fr_auto] gap-8 items-start">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-4 pt-8 md:pt-10 grid md:grid-cols-[auto_1fr_auto] gap-8 items-start">
         {/* Left: Brand */}
         <motion.div
           initial={fadeInitial}

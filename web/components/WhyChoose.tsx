@@ -18,6 +18,14 @@ type WhyChooseProps = { data: WhyChooseBlock };
 export default function WhyChoose({ data }: WhyChooseProps) {
   const { sectionTitle, sideImage, reasons } = data;
 
+  // "As Seen On" logos
+  const featuredLogos = [
+    { src: "/logos/nbc.svg", alt: "NBC" },
+    { src: "/logos/usa-today.svg", alt: "USA Today" },
+    { src: "/logos/fox.svg", alt: "FOX" },
+    { src: "/logos/CBS_logo.svg", alt: "CBS" },
+  ];
+
   return (
     <section
       className={`
@@ -99,7 +107,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
                 <div
                   className={`
                     flex-shrink-0
-                    w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20
+                    w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16
                     rounded-full flex items-center justify-center
                     bg-[color:rgba(var(--background-rgb),0.2)]
                     shadow-sm
@@ -109,7 +117,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
                     src={item.icon.asset.url}
                     alt={item.icon.alt || item.title || "Icon"}
                     className={`
-                      h-9 w-9 sm:h-10 sm:w-10 md:h-14 md:w-14
+                      h-8 w-8 sm:h-9 sm:w-9 md:h-12 md:w-12
                       object-contain
                     `}
                   />
@@ -137,6 +145,25 @@ export default function WhyChoose({ data }: WhyChooseProps) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* As Seen On — moved here from footer */}
+      <div className="max-w-6xl mx-auto px-5 sm:px-6 md:px-8 mt-14 sm:mt-16">
+        <div className="py-5 sm:py-6 border-t border-black/10 dark:border-white/10">
+          <p className="text-center text-xs tracking-[0.3em] uppercase opacity-70 mb-4">
+            As Seen On
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-x-10 sm:gap-x-16 gap-y-6 opacity-80">
+            {featuredLogos.map((logo) => (
+              <img
+                key={logo.alt}
+                src={logo.src}
+                alt={logo.alt}
+                className="h-6 sm:h-7 md:h-8 w-auto grayscale opacity-80"
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

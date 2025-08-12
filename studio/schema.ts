@@ -42,6 +42,8 @@ import dest_slug from './schemas/dest_slug'
 import trip from './schemas/trip'
 import book from './schemas/book'
 import leadMagnetClaim from './schemas/leadMagnetClaim'
+import faqQuestion from './schemas/faqQuestion'
+import faqCategory from './schemas/faqCategory'
 
 const schemaTypes = [
   blog,
@@ -86,6 +88,8 @@ const schemaTypes = [
   videoTestimonial,
   book,
   leadMagnetClaim,
+  faqQuestion,
+  faqCategory,
 ]
 
 // ✅ This is the only change:

@@ -34,6 +34,8 @@ import smartCarousel from '../schemas/blocks/smartCarousel'
 import teamMember from '../schemas/teamMember'
 import foundersPromise from '../schemas/founderPromise'
 import dest_slug from '../schemas/dest_slug'
+import faqQuestion from '../schemas/faqQuestion'
+import faqCategory from '../schemas/faqCategory'
 
 export const schemaTypes = [
   blog,
@@ -71,4 +73,6 @@ export const schemaTypes = [
   teamMember,
   team,
   foundersPromise,
+  faqQuestion,
+  faqCategory,
 ]

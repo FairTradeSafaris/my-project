@@ -1,7 +1,7 @@
 "use client";
 
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import Image from "next/image";
 
 type Book = {
@@ -9,11 +9,7 @@ type Book = {
   title: string;
   previewUrl: string;
   description?: string;
-  previewImage?: {
-    asset: {
-      url: string;
-    };
-  };
+  previewImage?: { asset: { url: string } };
   buyLink?: string;
 };
 
@@ -24,9 +20,19 @@ type Claim = {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+// Turn Google Drive "view" links into direct-download links
+function toDriveDownload(url: string) {
+  let m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+  m = url.match(/drive\.google\.com\/.*[?&]id=([^&]+)/i);
+  if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+  return url; // non-Drive links just open as-is
+}
+
 export default function BookPageContent() {
   const { user } = useUser();
   const userId = user?.id ?? null;
+  const { mutate } = useSWRConfig();
 
   const { data: bookData, isLoading: booksLoading } = useSWR(
     "/api/books",
@@ -41,22 +47,34 @@ export default function BookPageContent() {
   const claimed: Claim | null = claimData?.claim || null;
 
   const handleClaim = async (book: Book) => {
-    const res = await fetch("/api/claim-book", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ book, userId }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("Book claim recorded! Refresh to see update.");
-    } else {
-      alert("Something went wrong: " + data.error);
+    if (!userId) {
+      alert("Please sign in to claim your free guide.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/claim-book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ book, userId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to record claim");
+
+      // refresh claim status
+      mutate(`/api/claim-status?userId=${userId}`);
+
+      // kick off download / navigation
+      const downloadUrl = toDriveDownload(book.previewUrl);
+      window.location.href = downloadUrl; // or: window.open(downloadUrl, "_blank", "noopener,noreferrer");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      alert(`Something went wrong: ${msg}`);
     }
   };
 
   return (
     <>
-      {/* MAIN CONTENT */}
       <div className="max-w-4xl mx-auto py-12 px-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-bold">Fair Trade Safari Guides</h2>
@@ -122,9 +140,21 @@ export default function BookPageContent() {
                   <SignedIn>
                     {claimed ? (
                       isClaimed ? (
-                        <p className="text-green-700 text-sm font-medium">
-                          ✅ You downloaded this book
-                        </p>
+                        <div className="space-y-2">
+                          <p className="text-green-700 text-sm font-medium">
+                            ✅ You downloaded this book
+                          </p>
+                          <button
+                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                            onClick={() =>
+                              (window.location.href = toDriveDownload(
+                                book.previewUrl
+                              ))
+                            }
+                          >
+                            Download Again
+                          </button>
+                        </div>
                       ) : (
                         <p className="text-gray-500 text-sm italic">
                           You’ve already claimed a free guide.
@@ -135,7 +165,7 @@ export default function BookPageContent() {
                         className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                         onClick={() => handleClaim(book)}
                       >
-                        Claim This Guide
+                        Claim & Download
                       </button>
                     )}
 

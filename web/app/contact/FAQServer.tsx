@@ -1,20 +1,23 @@
 import { client } from "@/lib/sanity";
 import { faqCategoriesQuery } from "@/lib/queries";
-import Link from "next/link";
-import BookingCTA from "./BookingCTA";
 
-type FAQItem = { _id: string; question: string; keywords?: string[] };
-type FAQCat = { _id: string; title: string; slug: string; items: FAQItem[] };
+type FAQItem = {
+  _id: string;
+  question: string;
+  answer: string; // Ensure this is included in your Sanity query
+  keywords?: string[];
+};
+type FAQCat = { _id: string; title: string; items: FAQItem[] };
 
 export default async function FAQServer() {
   const categories: FAQCat[] = await client.fetch(faqCategoriesQuery);
 
-  const cardBorder = "#eee4d8";
-  const tileBg = "#ffffff";
+  const cardBorder = "#e7ded0"; // softer earth-tone
+  const tileBg = "#fdfaf6"; // warm off-white
   const commonSearches = categories.map((c) => c.title).slice(0, 6);
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-12">
+    <section className="max-w-6xl mx-auto px-4 py-12 font-sans">
       <div
         className="rounded-2xl shadow-lg border overflow-hidden"
         style={{ background: tileBg, borderColor: cardBorder }}
@@ -24,9 +27,13 @@ export default async function FAQServer() {
           className="px-6 md:px-8 py-5 border-b"
           style={{ borderColor: cardBorder }}
         >
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900">
-            Frequently Asked Questions
+          <h2 className="text-2xl md:text-3xl font-serif font-extrabold tracking-tight text-gray-900">
+            Your Safari Questions, Answered
           </h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Planning an ethical safari? Here’s what fellow travelers have asked
+            before embarking on their journey.
+          </p>
         </div>
 
         {/* Search + chips */}
@@ -35,17 +42,17 @@ export default async function FAQServer() {
             <input
               className="w-full rounded-xl border px-4 py-3 pr-12 text-base focus:outline-none"
               style={{ borderColor: cardBorder }}
-              placeholder="Ask a question..."
+              placeholder="Ask about wildlife, lodges, travel tips..."
               aria-label="Search FAQs"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-              ⌘K
+              🔍
             </span>
           </div>
 
           {commonSearches.length > 0 && (
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-gray-500">Common searches:</span>
+              <span className="text-gray-500">Popular questions:</span>
               {commonSearches.map((t) => (
                 <span
                   key={t}
@@ -68,10 +75,7 @@ export default async function FAQServer() {
                 className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm hover:shadow-md transition"
                 style={{ borderColor: cardBorder }}
               >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">{cat.title}</h3>
-                  <span className="text-gray-300">•</span>
-                </div>
+                <h3 className="font-semibold text-gray-900">{cat.title}</h3>
 
                 <ul
                   className="mt-2 divide-y"
@@ -79,37 +83,19 @@ export default async function FAQServer() {
                 >
                   {cat.items?.map((q) => (
                     <li key={q._id} className="py-2">
-                      <Link
-                        href={`/faq/${cat.slug}#${q._id}`}
-                        className="group flex items-center justify-between"
-                      >
-                        <span className="text-sm text-gray-800 group-hover:underline">
+                      <details className="group">
+                        <summary className="cursor-pointer group-hover:underline text-sm text-gray-900 list-none">
                           {q.question}
-                        </span>
-                        <span
-                          aria-hidden
-                          className="text-gray-400 group-hover:translate-x-0.5 transition"
-                        >
-                          →
-                        </span>
-                      </Link>
+                        </summary>
+                        <div className="mt-2 text-sm text-gray-700 leading-relaxed">
+                          {q.answer}
+                        </div>
+                      </details>
                     </li>
                   ))}
                 </ul>
-
-                <div className="mt-3">
-                  <Link
-                    href={`/faq/${cat.slug}`}
-                    className="text-sm text-gray-700 underline underline-offset-2"
-                  >
-                    See all
-                  </Link>
-                </div>
               </div>
             ))}
-
-            {/* CTA card with booking modal trigger */}
-            <BookingCTA cardBorder={cardBorder} />
           </div>
         </div>
       </div>

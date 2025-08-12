@@ -4,14 +4,61 @@ import Image from "next/image";
 import Link from "next/link";
 import { PortableText } from "@portabletext/react";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import type { FoundersPromiseBlock } from "@/types/types";
 
 const MotionDiv = dynamic(
-  () => import("framer-motion").then((mod) => mod.motion.div),
+  () => import("framer-motion").then((m) => m.motion.div),
   { ssr: false }
 );
 
 type Props = { data: FoundersPromiseBlock };
+
+/* split only on the FIRST dash */
+function splitOnce(s: string) {
+  const m = String(s).match(/^\s*([^–—-]+?)\s*[–—-]\s*(.+)\s*$/);
+  return m ? { title: m[1], detail: m[2] } : { title: s, detail: "" };
+}
+
+/* Mobile-only clamp with a COLORLESS fade (mask), desktop always open */
+function ClampMobile({
+  children,
+  collapsedHeight = 190, // adjust if you want more/less preview
+}: {
+  children: React.ReactNode;
+  collapsedHeight?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <div
+        className="md:overflow-visible"
+        style={{
+          overflow: open ? "visible" : "hidden",
+          maxHeight: open ? "none" : `${collapsedHeight}px`,
+          WebkitMaskImage: open
+            ? "none"
+            : "linear-gradient(to bottom, black 78%, transparent)",
+          maskImage: open
+            ? "none"
+            : "linear-gradient(to bottom, black 78%, transparent)",
+        }}
+      >
+        {children}
+      </div>
+
+      {/* link-style toggle: no background color */}
+      <button
+        type="button"
+        className="mt-3 md:hidden text-sm font-medium text-black/70 hover:text-black"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        {open ? "Show less" : "Read more"}
+      </button>
+    </div>
+  );
+}
 
 export default function FoundersPromise({ data }: Props) {
   const {
@@ -29,7 +76,6 @@ export default function FoundersPromise({ data }: Props) {
     <section
       className={`
         relative
-        /* extra breathing room on small screens */
         pt-24 sm:pt-28 md:pt-32
         pb-24 sm:pb-28 md:pb-36
         px-5 sm:px-6 md:px-8
@@ -41,7 +87,7 @@ export default function FoundersPromise({ data }: Props) {
           : "none",
       }}
     >
-      {/* soft fades for readability */}
+      {/* soft page fades */}
       <div
         className="absolute top-0 left-0 w-full h-20 sm:h-24 z-10 pointer-events-none"
         style={{
@@ -105,21 +151,24 @@ export default function FoundersPromise({ data }: Props) {
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold mb-4">{headline}</h2>
 
-            <div className="text-[0.985rem] sm:text-base text-black/80 leading-7 sm:leading-8 mb-6">
-              <PortableText value={intro} />
-            </div>
+            {/* ONE clamp wraps intro + bullets so both collapse on mobile */}
+            <ClampMobile>
+              <div className="text-[0.985rem] sm:text-base text-black/80 leading-7 sm:leading-8">
+                <PortableText value={intro} />
+              </div>
 
-            <ul className="list-disc pl-5 space-y-2 text-[0.985rem] sm:text-base text-black/80">
-              {safelist.map((item, idx) => {
-                const [title, detail] = item.split(/[-–—]\s?/); // robust dash split
-                return (
-                  <li key={idx}>
-                    <strong>{title?.trim()}</strong>
-                    {detail ? ` – ${detail.trim()}` : ""}
-                  </li>
-                );
-              })}
-            </ul>
+              <ul className="mt-4 list-disc pl-5 space-y-2 text-[0.985rem] sm:text-base text-black/80">
+                {safelist.map((item, idx) => {
+                  const { title, detail } = splitOnce(item);
+                  return (
+                    <li key={idx}>
+                      <strong>{title}</strong>
+                      {detail && ` – ${detail}`}
+                    </li>
+                  );
+                })}
+              </ul>
+            </ClampMobile>
           </div>
 
           {buttonLink && buttonText && (
@@ -127,14 +176,11 @@ export default function FoundersPromise({ data }: Props) {
               href={buttonLink}
               className={`
                 mt-8 inline-flex items-center justify-center
-                /* keep it one line on mobile */
                 whitespace-nowrap
-                /* comfortable tap target but compact to avoid wrapping */
                 text-sm sm:text-base leading-none
                 px-5 sm:px-6 py-3
                 rounded-full font-semibold
                 bg-black text-white hover:bg-gray-800 transition
-                /* avoid squeezing too narrow on tiny screens */
                 min-w-[200px]
                 self-start
               `}
@@ -173,9 +219,12 @@ export default function FoundersPromise({ data }: Props) {
               <h3 className="text-2xl sm:text-3xl font-bold mb-4">
                 {impactContent.title}
               </h3>
-              <div className="text-[0.985rem] sm:text-base text-black/80 leading-7 sm:leading-8 mb-6">
-                <PortableText value={impactContent.body} />
-              </div>
+
+              <ClampMobile>
+                <div className="text-[0.985rem] sm:text-base text-black/80 leading-7 sm:leading-8">
+                  <PortableText value={impactContent.body} />
+                </div>
+              </ClampMobile>
             </div>
 
             {impactContent.ctaLink && impactContent.ctaText && (
@@ -184,7 +233,6 @@ export default function FoundersPromise({ data }: Props) {
                 className={`
                   mt-8 inline-flex items-center justify-center
                   whitespace-nowrap
-                  /* uppercase widens text; tighten tracking to prevent wrap */
                   uppercase tracking-wide sm:tracking-wider
                   text-xs sm:text-sm leading-none
                   px-5 sm:px-6 py-3
@@ -204,7 +252,6 @@ export default function FoundersPromise({ data }: Props) {
         )}
       </div>
 
-      {/* respect reduced motion */}
       <style jsx>{`
         @media (prefers-reduced-motion: reduce) {
           * {

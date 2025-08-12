@@ -199,8 +199,11 @@ export default async function Home() {
         {whyChoose && <WhyChoose data={whyChoose} />}
         {foundersPromise && <FoundersPromise data={foundersPromise} />}
         {/* Journeys Section */}
-        <section className="py-20 bg-[#e6d8c7] text-black">
-          <div className="max-w-6xl mx-auto px-6 text-center">
+        <section className="relative py-20 bg-[#e6d8c7] text-black">
+          {/* Dark mode overlay */}
+          <div className="absolute inset-0 dark:bg-[#3f2e1f]/40 pointer-events-none"></div>
+
+          <div className="relative max-w-6xl mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold mb-4">
               Your Journey Starts Here
             </h2>
@@ -215,10 +218,7 @@ export default async function Home() {
                     key={j._id}
                     href={{
                       pathname: "/journey",
-                      query: {
-                        q: j.title,
-                        open: "true",
-                      },
+                      query: { q: j.title, open: "true" },
                     }}
                     className="block"
                   >
@@ -251,12 +251,13 @@ export default async function Home() {
             </Link>
           </div>
         </section>
+
         {ctaBanner && (
           <section
             className="relative w-full py-20 flex items-center justify-center overflow-hidden bg-cover bg-center"
             style={{ backgroundImage: `url(${ctaBanner.backgroundImageUrl})` }}
           >
-            {/* Top & Bottom Fades */}
+            {/* Top & Bottom Fades (will be tinted by overlay now) */}
             <div
               className="absolute top-0 left-0 w-full h-32 z-10 pointer-events-none"
               style={{
@@ -272,9 +273,15 @@ export default async function Home() {
               }}
             />
 
+            {/* DARK MODE OVERLAY — above fades, below content */}
+            <div
+              aria-hidden
+              className="absolute inset-0 z-20 hidden dark:block bg-black/22 pointer-events-none"
+            />
+
             {/* Content Row */}
             <div
-              className={`relative z-20 flex flex-col ${
+              className={`relative z-30 flex flex-col ${
                 ctaBanner.textOnLeft ? "md:flex-row" : "md:flex-row-reverse"
               } items-center justify-between max-w-6xl w-full px-6`}
             >

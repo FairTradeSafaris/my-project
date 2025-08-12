@@ -76,53 +76,62 @@ export default function TestimonialCarousel() {
   };
 
   return (
-    <section className="bg-white pt-10 pb-6 px-4 font-sans relative overflow-visible">
-      <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-16">
-          {settings?.heading || "Client Feedback"}{" "}
-          <span className="text-[#b49a7f]">& Testimonials</span>
-        </h2>
+    <section className="relative isolate bg-white pt-10 pb-6 px-4 font-sans overflow-visible">
+      {/* Dark overlay ONLY when the site is in dark mode */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 hidden dark:block bg-black/22"
+      />
 
-        <div className="relative flex items-center justify-center overflow-visible">
-          <div className="relative w-full max-w-7xl mx-auto flex items-center justify-center px-0 overflow-visible">
-            {/* Left Arrow */}
-            <button
-              onClick={prev}
-              aria-label="Previous testimonials"
-              className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+      {/* Content sits above the overlay */}
+      <div className="relative z-10">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-16">
+            {settings?.heading || "Client Feedback"}{" "}
+            <span className="text-[#b49a7f]">& Testimonials</span>
+          </h2>
 
-            {/* Cards */}
-            <div className="overflow-visible w-full" ref={containerRef}>
-              <div className="flex transition-transform duration-500">
-                {cardsToShow.map((t, i) => (
-                  <Card key={i} t={t} />
-                ))}
+          <div className="relative flex items-center justify-center overflow-visible">
+            <div className="relative w-full max-w-7xl mx-auto flex items-center justify-center px-0 overflow-visible">
+              {/* Left Arrow */}
+              <button
+                onClick={prev}
+                aria-label="Previous testimonials"
+                className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              {/* Cards */}
+              <div className="overflow-visible w-full" ref={containerRef}>
+                <div className="flex transition-transform duration-500">
+                  {cardsToShow.map((t, i) => (
+                    <Card key={i} t={t} />
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Right Arrow */}
-            <button
-              onClick={next}
-              aria-label="Next testimonials"
-              className="absolute top-1/2 -translate-y-1/2 -right-4 sm:-right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              {/* Right Arrow */}
+              <button
+                onClick={next}
+                aria-label="Next testimonials"
+                className="absolute top-1/2 -translate-y-1/2 -right-4 sm:-right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Video Testimonials Link */}
-      <div className="mt-8 flex justify-center">
-        <a
-          href="/videoTestimonial"
-          className="text-[#b49a7f] text-base font-semibold underline hover:text-[#a5835e] transition"
-        >
-          Look at our video testimonials
-        </a>
+        {/* Video Testimonials Link */}
+        <div className="mt-8 flex justify-center">
+          <a
+            href="/videoTestimonial"
+            className="text-[#b49a7f] text-base font-semibold underline hover:text-[#a5835e] transition"
+          >
+            Look at our video testimonials
+          </a>
+        </div>
       </div>
     </section>
   );

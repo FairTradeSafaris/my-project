@@ -65,6 +65,9 @@ export default function ClientLayout({
     return seg || "home";
   }, [pathname]);
 
+  // SHOW HERO? (hide on destinations)
+  const showHero = pageKey !== "destinations";
+
   // hero data for HeroController (BG from Sanity)
   const [heroData, setHeroData] = useState<HeroData | undefined>(undefined);
 
@@ -95,8 +98,8 @@ export default function ClientLayout({
           Array.isArray(data?.featureCards) ? data.featureCards : []
         );
         setPromoCard(data?.promoCard || null);
-      } catch (e) {
-        console.error("megaMenu fetch failed", e);
+      } catch {
+        // swallow
       } finally {
         if (!cancelled) setReady(true);
       }
@@ -105,6 +108,11 @@ export default function ClientLayout({
     // Hero content fetch (page-specific with fallback to "default")
     (async () => {
       try {
+        if (!showHero) {
+          setHeroData(undefined);
+          return;
+        }
+
         const data = await client.fetch(
           `{
             "items": [
@@ -149,8 +157,7 @@ export default function ClientLayout({
         };
 
         setHeroData(shaped);
-      } catch (e) {
-        console.error("hero fetch failed", e);
+      } catch {
         setHeroData(undefined);
       }
     })();
@@ -158,7 +165,7 @@ export default function ClientLayout({
     return () => {
       cancelled = true;
     };
-  }, [pageKey]);
+  }, [pageKey, showHero]);
 
   return (
     <>
@@ -174,8 +181,8 @@ export default function ClientLayout({
         </>
       )}
 
-      {/* Global hero */}
-      <HeroController heroData={heroData} />
+      {/* Global hero — hidden on /destinations */}
+      {showHero && <HeroController heroData={heroData} />}
 
       <main>{children}</main>
 

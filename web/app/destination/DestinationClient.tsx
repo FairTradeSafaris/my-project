@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Binoculars, PhoneCall, Info, Star, Images } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,44 +14,91 @@ import CountryTabs from "@/components/CountryTabs";
 
 const dancingScript = Dancing_Script({ subsets: ["latin"], weight: ["700"] });
 
-type PTBlock = PortableTextBlock;
+// ----------------------------------------------------------------------------
+// Constants
+// ----------------------------------------------------------------------------
+const AUTOPLAY_MS = 10_000;
+const USER_PAUSE_MS = 30_000;
+const PANEL_PAUSE_MS = 60_000;
+const RESUME_GRACE_MS = 3_000;
 
-type PracticalSection = { title?: string; content?: PTBlock };
+// ----------------------------------------------------------------------------
+// Types (local to this component)
+// ----------------------------------------------------------------------------
+export type PTBlock = PortableTextBlock;
 
-type Destination = {
-  slug?: { current?: string };
+export type PracticalSection = { title?: string; content?: PTBlock };
+
+export type Destination = {
+  slug?: { current?: string } | null; // incoming data might include null
   title: string;
-  image?: string;
-  subtitle?: string;
-  description?: string;
-  bestTime?: string;
-  highSeason?: string;
-  rating?: number;
-  reviews?: number;
-  flagImage?: string;
-  region?: string;
-  tags?: string[];
-  mapLocation?: string;
-  gallery?: string[];
-  travelInfo?: PTBlock;
-  highlights?: PTBlock;
-  practicalStuff?: PracticalSection[];
-  didYouKnowImage?: string;
-  didYouKnowText?: string;
+  image?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+  bestTime?: string | null;
+  highSeason?: string | null;
+  rating?: number | null;
+  reviews?: number | null;
+  flagImage?: string | null;
+  region?: string | null;
+  tags?: string[] | null;
+  mapLocation?: string | null;
+  gallery?: string[] | null;
+  travelInfo?: PTBlock | null;
+  highlights?: PTBlock | null;
+  practicalStuff?: PracticalSection[] | null;
+  didYouKnowImage?: string | null;
+  didYouKnowText?: string | null;
 };
 
+// CountryTabs expects slug?: { current?: string } | undefined (no null).
+type TabDestination = {
+  title: string;
+  slug?: { current?: string };
+  flagImage?: string;
+};
+
+// ----------------------------------------------------------------------------
+// Portal helper
+// ----------------------------------------------------------------------------
+function Portal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+  if (!mounted) return null;
+  return createPortal(children, document.body);
+}
+
+// ----------------------------------------------------------------------------
+// Component
+// ----------------------------------------------------------------------------
 export default function DestinationClient({
   initialDestinations = [],
 }: {
   initialDestinations?: Destination[];
 }) {
   const destinations: Destination[] = Array.isArray(initialDestinations)
-    ? initialDestinations
+    ? initialDestinations.filter(Boolean)
     : [];
+
+  // Normalize for CountryTabs to avoid the slug null type error
+  const tabItems: TabDestination[] = useMemo(
+    () =>
+      destinations.map((d) => ({
+        title: d.title,
+        slug: d.slug ?? undefined, // null -> undefined
+        flagImage: d.flagImage ?? undefined, // null -> undefined
+      })),
+    [destinations]
+  );
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   // Journey drawer (URL-driven)
   const isOpen = searchParams.get("open") === "true";
@@ -61,50 +109,53 @@ export default function DestinationClient({
   const [bookingOpen, setBookingOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
 
-  // selection
-  const [selected, setSelected] = useState<Destination | null>(
-    destinations[0] ?? null
+  // selection (index-based to make autoplay robust)
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selected = destinations[selectedIndex] ?? null;
+
+  // formatted reviews
+  const formattedReviews = useMemo(
+    () => (selected?.reviews ? selected.reviews.toLocaleString() : ""),
+    [selected?.reviews]
   );
-  const [formattedReviews, setFormattedReviews] = useState("");
 
   // cross-fade support
   const [prevBg, setPrevBg] = useState<string | null>(null);
   const [fade, setFade] = useState(false);
 
   // autoplay control
-  const AUTOPLAY_MS = 10000;
   const [userPausedUntil, setUserPausedUntil] = useState<number>(0);
 
   // dock positioning (avoid covering CTAs)
   const ctaRef = useRef<HTMLDivElement>(null);
   const [dockBottom, setDockBottom] = useState(24); // px from bottom
 
-  // init selected
+  // guard selectedIndex when list changes
   useEffect(() => {
-    if (!selected && destinations.length > 0) setSelected(destinations[0]);
-  }, [destinations, selected]);
-
-  // format reviews
-  useEffect(() => {
-    setFormattedReviews(
-      selected?.reviews ? selected.reviews.toLocaleString() : ""
-    );
-  }, [selected]);
+    if (!destinations.length) return;
+    if (selectedIndex >= destinations.length) setSelectedIndex(0);
+  }, [destinations.length, selectedIndex]);
 
   // smooth background fade when country changes
   useEffect(() => {
     if (!selected?.image) return;
+    if (prefersReducedMotion) {
+      setPrevBg(selected.image);
+      return;
+    }
     setFade(true);
-    const t = setTimeout(() => {
+    const t = window.setTimeout(() => {
       setPrevBg(selected.image || null);
       setFade(false);
     }, 450);
-    return () => clearTimeout(t);
-  }, [selected?.image]);
+    return () => window.clearTimeout(t);
+  }, [selected?.image, prefersReducedMotion]);
 
   // measure CTA block; keep dock just above it
   useEffect(() => {
-    if (!ctaRef.current) return;
+    if (!ctaRef.current || typeof window === "undefined") return;
+    if (typeof ResizeObserver === "undefined") return; // SSR/legacy guard
+
     const ro = new ResizeObserver(() => {
       const h = ctaRef.current?.offsetHeight ?? 0;
       setDockBottom(h + 24); // 24px gutter
@@ -115,40 +166,41 @@ export default function DestinationClient({
     return () => ro.disconnect();
   }, []);
 
-  // autoplay loop (pauses while any panel/gallery is open or when user paused)
+  // autoplay loop (index-based, no slug matching)
   const canAutoplay =
+    !prefersReducedMotion &&
     !aboutOpen &&
     !isOpen &&
     !bookingOpen &&
     !galleryOpen &&
-    Date.now() > userPausedUntil;
+    Date.now() > userPausedUntil &&
+    destinations.length > 1;
 
   useEffect(() => {
-    if (!destinations.length || !canAutoplay) return;
-    const id = setInterval(() => {
-      setSelected((prev) => {
-        const cur = prev
-          ? destinations.findIndex(
-              (d) => d.slug?.current === prev.slug?.current
-            )
-          : 0;
-        const next = (cur + 1) % destinations.length;
-        return destinations[next];
-      });
+    if (!canAutoplay) return;
+    const id = window.setInterval(() => {
+      setSelectedIndex((cur) => (cur + 1) % destinations.length);
     }, AUTOPLAY_MS);
-    return () => clearInterval(id);
-  }, [destinations, canAutoplay]);
+    return () => window.clearInterval(id);
+  }, [destinations.length, canAutoplay]);
 
   // manual select pauses autoplay for 30s
   const handleSelect = (d: Destination) => {
-    setSelected(d);
+    const i = destinations.findIndex((x) => {
+      const slugMatch =
+        x.slug?.current && d.slug?.current
+          ? x.slug.current === d.slug.current
+          : false;
+      return slugMatch || x.title === d.title;
+    });
+    setSelectedIndex(i >= 0 ? i : 0);
     setAboutOpen(false);
-    setUserPausedUntil(Date.now() + 30_000);
+    setUserPausedUntil(Date.now() + USER_PAUSE_MS);
   };
 
   // URL panel helpers
   const openPanel = (q: string) => {
-    setUserPausedUntil(Date.now() + 60_000); // pause while panel is likely being used
+    setUserPausedUntil(Date.now() + PANEL_PAUSE_MS);
     const params = new URLSearchParams(searchParams.toString());
     params.set("q", q);
     params.set("open", "true");
@@ -160,9 +212,34 @@ export default function DestinationClient({
     params.delete("open");
     const next = params.toString();
     router.push(next ? `${pathname}?${next}` : pathname, { scroll: false });
-    // resume after a short grace period
-    setUserPausedUntil(Date.now() + 3_000);
+    setUserPausedUntil(Date.now() + RESUME_GRACE_MS);
   };
+
+  const anyOverlayOpen = aboutOpen || bookingOpen || galleryOpen || isOpen;
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const { body } = document;
+    if (anyOverlayOpen) {
+      const original = body.style.overflow;
+      body.style.overflow = "hidden";
+      return () => {
+        body.style.overflow = original;
+      };
+    }
+  }, [anyOverlayOpen]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (galleryOpen) setGalleryOpen(false);
+        if (aboutOpen) setAboutOpen(false);
+        if (bookingOpen) setBookingOpen(false);
+        if (isOpen) closePanel();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [galleryOpen, aboutOpen, bookingOpen, isOpen]);
 
   if (!destinations.length) {
     return (
@@ -178,24 +255,25 @@ export default function DestinationClient({
   }
 
   return (
-    <main className="relative z-0 min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      {/* Hero */}
-
+    <main className="relative bg-[var(--background)] text-[var(--foreground)]">
       {/* Mobile sticky chips */}
       <div className="md:hidden sticky top-0 z-20 bg-[var(--surface-dark)] border-b border-[var(--border)]">
         <h2 className="text-base font-semibold px-4 py-3">
           Top-rated Safari Countries
         </h2>
         <CountryTabs
-          items={destinations}
-          selectedSlug={selected?.slug?.current}
-          onSelect={(d) => handleSelect(d)}
+          items={tabItems}
+          selectedSlug={selected?.slug?.current ?? undefined}
+          onSelect={(d) => handleSelect(d as Destination)}
         />
       </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row min-h-[calc(100vh-320px)]">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row h-full md:overflow-hidden">
         {/* Sidebar (md+) */}
-        <nav className="hidden md:block md:w-72 bg-[var(--surface-dark)] border-r border-[var(--border)]">
+        <nav
+          className="hidden md:block md:w-72 bg-[var(--surface-dark)] border-r border-[var(--border)]"
+          aria-label="Top-rated Safari Countries"
+        >
           <h2 className="text-xl font-semibold p-6 border-b border-[var(--border)]">
             Top-rated Safari Countries
           </h2>
@@ -203,13 +281,19 @@ export default function DestinationClient({
             {destinations.map((dest, i) => (
               <li key={dest.slug?.current ?? `${dest.title}-${i}`}>
                 <button
-                  onClick={() => handleSelect(dest)}
+                  type="button"
+                  onClick={() => {
+                    setSelectedIndex(i);
+                    setAboutOpen(false);
+                    setUserPausedUntil(Date.now() + USER_PAUSE_MS);
+                  }}
                   className={`w-full text-left px-6 py-3 border-b border-[var(--border)] flex items-center gap-2
                     ${
-                      selected?.slug?.current === dest.slug?.current
+                      selectedIndex === i
                         ? "bg-[var(--accent)] text-[var(--background)] font-semibold"
                         : "text-[var(--onSurface-light)] hover:bg-[var(--accent)] hover:text-[var(--background)]"
                     }`}
+                  aria-current={selectedIndex === i ? "true" : undefined}
                 >
                   <span className="text-[var(--background)]">#{i + 1}</span>
                   {dest.flagImage && (
@@ -217,6 +301,8 @@ export default function DestinationClient({
                       src={dest.flagImage}
                       alt=""
                       className="w-6 h-4 object-cover rounded-[2px]"
+                      loading="lazy"
+                      decoding="async"
                     />
                   )}
                   <span className="truncate">{dest.title}</span>
@@ -227,9 +313,9 @@ export default function DestinationClient({
         </nav>
 
         {/* Detail */}
-        <section className="relative flex-1 p-4 sm:p-6 md:p-10 text-white min-h-[calc(100vh-320px)] flex flex-col">
+        <section className="relative flex-1 p-4 sm:p-6 md:p-6 text-white flex flex-col">
           {/* Background with cross-fade */}
-          <div className="absolute inset-0 w-full h-full">
+          <div className="absolute inset-0 w-full h-full" aria-hidden>
             {prevBg && (
               <Image
                 key={`prev-${prevBg}`}
@@ -247,7 +333,11 @@ export default function DestinationClient({
               <Image
                 key={`cur-${selected.image}`}
                 src={selected.image}
-                alt={`${selected.title} background`}
+                alt={
+                  selected.title
+                    ? `${selected.title} background`
+                    : "Destination background"
+                }
                 fill
                 priority
                 sizes="100vw"
@@ -387,7 +477,7 @@ export default function DestinationClient({
                   </div>
                 </div>
 
-                {/* Mobile: compact button */}
+                {/* Mobile: compact button (fixed Tailwind class) */}
                 <div className="md:hidden mt-6">
                   <Button
                     onClick={() => {
@@ -448,7 +538,7 @@ export default function DestinationClient({
 
       {/* ---------- GALLERY MODAL ---------- */}
       {galleryOpen && selected?.gallery?.length ? (
-        <>
+        <Portal>
           <div
             className="fixed inset-0 bg-black/70 z-[1400]"
             onClick={() => setGalleryOpen(false)}
@@ -476,17 +566,7 @@ export default function DestinationClient({
                     key={`${img}-${i}`}
                     className="snap-center w-[calc(100vw-3rem)] md:w-[80vw] max-w-6xl"
                   >
-                    {/* Landscape frame: 4:3 on small phones, 16:9 on sm+ */}
                     <div className="relative mx-auto aspect-[4/3] sm:aspect-[16/9] max-h-[70vh] sm:max-h-[80vh] rounded-xl overflow-hidden bg-black">
-                      {/* (optional bg blur behind, uncomment if you like the cinematic look)
-          <Image
-            src={img}
-            alt=""
-            fill
-            className="object-cover blur-xl scale-110 opacity-60"
-            sizes="100vw"
-          />
-          */}
                       <Image
                         src={img}
                         alt={`Gallery image ${i + 1}`}
@@ -501,12 +581,12 @@ export default function DestinationClient({
               </div>
             </div>
           </div>
-        </>
+        </Portal>
       ) : null}
 
       {/* ---------- ABOUT PANEL ---------- */}
       {aboutOpen && (
-        <>
+        <Portal>
           <div
             onClick={() => setAboutOpen(false)}
             className="fixed inset-0 bg-black/50 z-[1100]"
@@ -663,12 +743,12 @@ export default function DestinationClient({
               )}
             </div>
           </aside>
-        </>
+        </Portal>
       )}
 
       {/* ---------- JOURNEY PANEL ---------- */}
       {isOpen && (
-        <>
+        <Portal>
           <div
             onClick={closePanel}
             className="fixed inset-0 bg-black/50 z-[1100]"
@@ -722,18 +802,18 @@ export default function DestinationClient({
               />
             </div>
           </aside>
-        </>
+        </Portal>
       )}
 
       {/* ---------- DISCOVERY CALL ---------- */}
       {bookingOpen && (
-        <>
+        <Portal>
           <div
-            className="fixed inset-0 z-[1300] bg-black/50"
+            className="fixed inset-0 z-[1100] bg-black/50"
             onClick={() => setBookingOpen(false)}
           />
           <div
-            className="fixed top-0 right-0 h-full w-full sm:w-[90vw] md:w-[85vw] lg:w-[75vw] bg-white shadow-2xl z-[1400]"
+            className="fixed top-0 right-0 h-full w-full sm:w-[90vw] md:w-[85vw] lg:w-[75vw] bg-white shadow-2xl z-[1200]"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -768,8 +848,22 @@ export default function DestinationClient({
               title="Fair Trade Safaris Booking"
             />
           </div>
-        </>
+        </Portal>
       )}
     </main>
   );
+}
+
+// ---- Hook definition (needed for the call above) ----
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduced(mq.matches);
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+  return reduced;
 }

@@ -495,9 +495,6 @@ export default function JourneyFinderClient() {
               Show Results & Close
             </button>
 
-            <h2 className="text-lg font-semibold mb-4">
-              Filter your adventure
-            </h2>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
                 Filter your adventure
@@ -582,7 +579,8 @@ export default function JourneyFinderClient() {
         {/* Main content */}
         <section className="flex-1 p-6 lg:ml-12">
           {/* Sticky Mobile Filter Buttons */}
-          <div className="fixed bottom-0 left-0 w-full z-50 bg-[#fdf8f3] border-t border-gray-200 px-4 py-3 flex gap-3 justify-center lg:hidden">
+          {/* Sticky Mobile Filter Bar (top, under navbar) */}
+          <div className="sticky top-0 z-40 bg-[#fdf8f3]/95 backdrop-blur border-b border-gray-200 px-4 py-2 flex gap-3 justify-center lg:hidden">
             <button
               onClick={() => setShowMobileFilters(true)}
               className="flex-1 py-2.5 text-sm font-semibold text-white bg-[#a35c2d] rounded-md shadow hover:bg-[#8d4f26] transition"

@@ -77,13 +77,11 @@ export default function TestimonialCarousel() {
 
   return (
     <section className="relative isolate bg-white pt-10 pb-6 px-4 font-sans overflow-visible">
-      {/* Dark overlay ONLY when the site is in dark mode */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-0 hidden dark:block bg-black/22"
       />
 
-      {/* Content sits above the overlay */}
       <div className="relative z-10">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-16">
@@ -97,14 +95,17 @@ export default function TestimonialCarousel() {
               <button
                 onClick={prev}
                 aria-label="Previous testimonials"
-                className="absolute top-1/2 -translate-y-1/2 -left-4 sm:-left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+                className="absolute top-1/2 -translate-y-1/2 left-2 sm:-left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
 
               {/* Cards */}
-              <div className="overflow-visible w-full" ref={containerRef}>
-                <div className="flex transition-transform duration-500">
+              <div
+                className="overflow-visible w-full px-2 sm:px-0"
+                ref={containerRef}
+              >
+                <div className="flex transition-transform duration-500 justify-center sm:justify-start">
                   {cardsToShow.map((t, i) => (
                     <Card key={i} t={t} />
                   ))}
@@ -115,7 +116,7 @@ export default function TestimonialCarousel() {
               <button
                 onClick={next}
                 aria-label="Next testimonials"
-                className="absolute top-1/2 -translate-y-1/2 -right-4 sm:-right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+                className="absolute top-1/2 -translate-y-1/2 right-2 sm:-right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

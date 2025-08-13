@@ -1,6 +1,13 @@
 // components/BottomTabBar.tsx
 "use client";
 
+/**
+ * IMPORTANT:
+ * Ensure your <head> includes:
+ * <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+ * so iOS exposes the safe-area variables.
+ */
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,7 +21,6 @@ export const OPEN_BOOK_SHEET = "fts:open-book-sheet";
 
 export default function BottomTabBar() {
   const { isSignedIn } = useUser();
-
   const router = useRouter();
 
   // Local slide-up sheet state
@@ -66,8 +72,6 @@ export default function BottomTabBar() {
   }, []);
 
   const openSearch = () => {
-    // If we’re already on journeys, just open the sheet for filters;
-    // otherwise also open (since it’s global), we’ll still navigate on submit.
     setOpen(true);
   };
 
@@ -81,7 +85,9 @@ export default function BottomTabBar() {
     setOpen(false);
   };
 
-  // Hide bar on desktop, stick to bottom on mobile
+  // Height constants
+  const TABBAR_BASE_HEIGHT = 56; // px
+
   return (
     <>
       {/* Slide-up sheet (mobile only) */}
@@ -92,19 +98,21 @@ export default function BottomTabBar() {
             aria-label="Close search"
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-[69] md:hidden bg-black/50 backdrop-blur-sm"
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           />
-          {/* Panel (sits above the tab bar height) */}
+
+          {/* Panel (sits above the tab bar height + safe area) */}
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Safari search"
+            aria-label="Search"
             className="
               md:hidden fixed inset-x-0 z-[70]
               rounded-t-2xl bg-white text-neutral-900 shadow-2xl
-              bottom-[56px]
             "
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+            style={{
+              bottom: `calc(${TABBAR_BASE_HEIGHT}px + env(safe-area-inset-bottom))`,
+              paddingBottom: "env(safe-area-inset-bottom)",
+            }}
           >
             <div className="flex items-center justify-between px-4 pt-3">
               <h2 className="text-sm font-semibold">Find your safari</h2>
@@ -185,11 +193,15 @@ export default function BottomTabBar() {
       <nav
         className="
           md:hidden fixed bottom-0 inset-x-0 z-[60]
-          h-[56px] bg-white/95 dark:bg-neutral-900/95 backdrop-blur
+          bg-white/95 dark:bg-neutral-900/95 backdrop-blur
           border-t border-black/10 dark:border-white/10
           flex items-center justify-around px-4
         "
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        style={{
+          // Real height = base height + iOS safe area
+          height: `calc(${TABBAR_BASE_HEIGHT}px + env(safe-area-inset-bottom))`,
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         {/* Home */}
         <Link href="/" className="flex flex-col items-center gap-1 text-xs">

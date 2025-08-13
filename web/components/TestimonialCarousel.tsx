@@ -23,7 +23,7 @@ export default function TestimonialCarousel() {
 
   const Card = ({ t }: { t: Testimonial }) => {
     const content = (
-      <div className="relative bg-white rounded-[20px] shadow-md text-center px-4 pt-14 pb-12 min-w-[260px] max-w-xs mx-3 flex flex-col overflow-visible transition hover:shadow-lg hover:scale-105 duration-300 cursor-pointer">
+      <div className="relative bg-white rounded-[20px] shadow-md text-center px-4 pt-14 pb-16 min-w-[260px] max-w-xs mx-3 flex flex-col overflow-visible transition hover:shadow-lg hover:scale-105 duration-300 cursor-pointer">
         <div className="absolute top-0 left-0 right-0 bg-[#b49a7f] rounded-t-[20px] py-2 flex flex-col items-center">
           <div className="flex justify-center space-x-1">
             {renderStars(t.rating || 5)}
@@ -48,7 +48,7 @@ export default function TestimonialCarousel() {
         </div>
 
         {t.sourceLogo?.asset?.url && (
-          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full border-2 border-white bg-white shadow-inner flex items-center justify-center overflow-hidden z-10">
+          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-12 h-12 rounded-full border-2 border-white bg-white shadow-inner flex items-center justify-center overflow-hidden z-10">
             <Image
               src={t.sourceLogo.asset.url}
               alt="Review Source"
@@ -89,34 +89,58 @@ export default function TestimonialCarousel() {
             <span className="text-[#b49a7f]">& Testimonials</span>
           </h2>
 
-          <div className="relative flex items-center justify-center overflow-visible">
-            <div className="relative w-full max-w-7xl mx-auto flex items-center justify-center px-0 overflow-visible">
-              {/* Left Arrow */}
+          {/* Desktop Layout */}
+          <div className="relative hidden sm:flex items-center justify-center overflow-visible">
+            <button
+              onClick={prev}
+              aria-label="Previous testimonials"
+              className="absolute top-1/2 -translate-y-1/2 -left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <div
+              className="overflow-visible w-full px-2 sm:px-0"
+              ref={containerRef}
+            >
+              <div className="flex transition-transform duration-500 justify-center sm:justify-start">
+                {cardsToShow.map((t, i) => (
+                  <Card key={i} t={t} />
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={next}
+              aria-label="Next testimonials"
+              className="absolute top-1/2 -translate-y-1/2 -right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="flex sm:hidden flex-col items-center space-y-4 mt-4">
+            <div className="overflow-visible w-full px-2" ref={containerRef}>
+              <div className="flex transition-transform duration-500 justify-center">
+                {cardsToShow.map((t, i) => (
+                  <Card key={i} t={t} />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex space-x-6 mt-4">
               <button
                 onClick={prev}
                 aria-label="Previous testimonials"
-                className="absolute top-1/2 -translate-y-1/2 left-2 sm:-left-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+                className="bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-
-              {/* Cards */}
-              <div
-                className="overflow-visible w-full px-2 sm:px-0"
-                ref={containerRef}
-              >
-                <div className="flex transition-transform duration-500 justify-center sm:justify-start">
-                  {cardsToShow.map((t, i) => (
-                    <Card key={i} t={t} />
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Arrow */}
               <button
                 onClick={next}
                 aria-label="Next testimonials"
-                className="absolute top-1/2 -translate-y-1/2 right-2 sm:-right-6 z-10 bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
+                className="bg-[#b49a7f] text-white p-2 rounded-full shadow-md hover:scale-105 transition"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

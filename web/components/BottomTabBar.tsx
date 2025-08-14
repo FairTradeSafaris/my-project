@@ -151,11 +151,8 @@ export default function BottomTabBar() {
     selectedInterests.forEach((d) => params.append("interest", d));
     selectedLuxury.forEach((l) => params.append("luxury", l));
 
-    // If you want to open the modal automatically, include open=true
-    params.set("open", "true");
-
     router.push(`/journey?${params.toString()}`);
-    setOpen(false);
+    setOpenWithEvents(false);
   };
 
   return (

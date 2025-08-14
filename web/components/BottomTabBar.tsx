@@ -2,18 +2,28 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Home, Search, CalendarCheck2, User2, BookOpen, X } from "lucide-react";
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
 import { client as sanityClient } from "@/lib/sanity";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { motion, AnimatePresence } from "framer-motion";
 
+// Events
 export const OPEN_SEARCH_SHEET = "fts:open-search-sheet";
 export const CLOSE_SEARCH_SHEET = "fts:close-search-sheet";
 export const OPEN_BOOK_SHEET = "fts:open-book-sheet";
 
-// Multi-select dropdown
+type HelperKey = "search" | "book" | "bookFree" | "account";
+
+const helperMessages: Record<HelperKey, string[]> = {
+  search: ["Start your safari now", "Explore journeys that matter"],
+  book: ["Need help planning?", "Talk to a safari expert"],
+  bookFree: ["Claim your free book", "Your ethical safari guide awaits"],
+  account: ["Sign in to personalize", "Track your bookings"],
+};
+
 function MultiSelectDropdown({
   label,
   options,
@@ -28,11 +38,11 @@ function MultiSelectDropdown({
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSelection = (option: string) => {
-    if (selected.includes(option)) {
-      setSelected(selected.filter((item) => item !== option));
-    } else {
-      setSelected([...selected, option]);
-    }
+    setSelected(
+      selected.includes(option)
+        ? selected.filter((item) => item !== option)
+        : [...selected, option]
+    );
   };
 
   const handleBlur = () => {
@@ -48,10 +58,7 @@ function MultiSelectDropdown({
           className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none text-sm text-black"
         >
           {selected.length > 0 ? selected.join(", ") : <span>{label}</span>}
-          <ChevronUpDownIcon
-            className="absolute right-2 top-2.5 h-5 w-5 text-gray-400"
-            aria-hidden="true"
-          />
+          <ChevronUpDownIcon className="absolute right-2 top-2.5 h-5 w-5 text-gray-400" />
         </button>
 
         {isOpen && (
@@ -90,9 +97,20 @@ export default function BottomTabBar() {
   const [selectedLuxury, setSelectedLuxury] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [visibleHelper, setVisibleHelper] = useState<{
+    key: HelperKey;
+    message: string;
+  } | null>(null);
+  const [tooltipX, setTooltipX] = useState<number | null>(null);
+
   const TABBAR_BASE_HEIGHT = 56;
 
-  // Sync open state with global event dispatch
+  const searchRef = useRef<HTMLButtonElement>(null);
+  const bookRef = useRef<HTMLButtonElement>(null);
+  const bookFreeRef = useRef<HTMLAnchorElement>(null);
+  const accountRefSignedIn = useRef<HTMLDivElement>(null);
+  const accountRefSignedOut = useRef<HTMLAnchorElement>(null);
+
   const setOpenWithEvents = (state: boolean) => {
     setOpen(state);
     window.dispatchEvent(
@@ -100,10 +118,10 @@ export default function BottomTabBar() {
     );
   };
 
-  // Fetch filter options
   useEffect(() => {
     let mounted = true;
     setLoading(true);
+
     sanityClient
       .fetch(
         `{
@@ -117,47 +135,109 @@ export default function BottomTabBar() {
           luxuryRaw: (string | null | undefined)[];
         }) => {
           if (!mounted) return;
-          const topInterests = data.interests.map((i) => i.title);
-          const luxuryUnique = Array.from(
-            new Set(data.luxuryRaw.filter((s): s is string => !!s))
-          ).slice(0, 5);
-          setInterests(topInterests);
-          setLuxuryLevels(luxuryUnique);
+          setInterests(data.interests.map((i) => i.title));
+          setLuxuryLevels(
+            Array.from(
+              new Set(data.luxuryRaw.filter((s): s is string => !!s))
+            ).slice(0, 5)
+          );
         }
       )
-      .catch(() => {})
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
+      .finally(() => mounted && setLoading(false));
 
     return () => {
       mounted = false;
     };
   }, []);
 
-  // Listen for global "open search" events
   useEffect(() => {
     const handler = () => setOpenWithEvents(true);
     window.addEventListener(OPEN_SEARCH_SHEET, handler);
-    return () => {
-      window.removeEventListener(OPEN_SEARCH_SHEET, handler);
-    };
+    return () => window.removeEventListener(OPEN_SEARCH_SHEET, handler);
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const keys = Object.keys(helperMessages) as HelperKey[];
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const randomMsg =
+        helperMessages[randomKey][
+          Math.floor(Math.random() * helperMessages[randomKey].length)
+        ];
+
+      setVisibleHelper({ key: randomKey, message: randomMsg });
+
+      const refMap = {
+        search: searchRef,
+        book: bookRef,
+        bookFree: bookFreeRef,
+        account: isSignedIn ? accountRefSignedIn : accountRefSignedOut,
+      } as Record<HelperKey, React.RefObject<Element>>;
+
+      const rect = refMap[randomKey].current?.getBoundingClientRect();
+      const centerX = rect ? rect.left + rect.width / 2 : null;
+
+      if (centerX !== null && typeof window !== "undefined") {
+        const left = Math.min(
+          Math.max(centerX - 80, 8),
+          window.innerWidth - 160
+        );
+        setTooltipX(left);
+      }
+
+      setTimeout(() => {
+        setVisibleHelper(null);
+        setTooltipX(null);
+      }, 4000);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [isSignedIn]);
 
   const onSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     const params = new URLSearchParams();
-
-    selectedInterests.forEach((d) => params.append("interest", d));
+    selectedInterests.forEach((i) => params.append("interest", i));
     selectedLuxury.forEach((l) => params.append("luxury", l));
-
     router.push(`/journey?${params.toString()}`);
     setOpenWithEvents(false);
   };
 
   return (
     <>
-      {/* Slide-up Search Sheet */}
+      {/* 💬 Tooltip */}
+      <AnimatePresence>
+        {visibleHelper && tooltipX !== null && (
+          <motion.div
+            key={visibleHelper.key + visibleHelper.message}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-[72px] z-[100] bg-white text-black px-4 py-2 text-sm rounded-2xl shadow-xl border border-gray-200 max-w-[80vw] text-center"
+            style={{
+              left: tooltipX,
+              position: "fixed",
+            }}
+          >
+            {visibleHelper.message}
+            <div
+              className="absolute top-full"
+              style={{
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 0,
+                height: 0,
+                borderLeft: "8px solid transparent",
+                borderRight: "8px solid transparent",
+                borderTop: "8px solid white",
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🔍 Search Sheet */}
       {open && (
         <>
           <button
@@ -169,7 +249,6 @@ export default function BottomTabBar() {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Search"
             className="md:hidden fixed inset-x-0 z-[70] rounded-t-2xl bg-white text-neutral-900 shadow-2xl"
             style={{
               bottom: `calc(${TABBAR_BASE_HEIGHT}px + env(safe-area-inset-bottom))`,
@@ -178,13 +257,12 @@ export default function BottomTabBar() {
           >
             <div className="flex items-center justify-between px-4 pt-3">
               <h2 className="text-sm font-semibold">
-                Start Your Transformational Journey
+                Discover Your Journey of a Lifetime
               </h2>
               <button
                 type="button"
                 onClick={() => setOpenWithEvents(false)}
                 className="p-2 rounded-lg hover:bg-neutral-100 active:scale-95"
-                aria-label="Close"
               >
                 <X size={18} />
               </button>
@@ -194,19 +272,24 @@ export default function BottomTabBar() {
               onSubmit={onSubmit}
               className="px-4 pb-4 pt-2 flex flex-col gap-3"
             >
-              <MultiSelectDropdown
-                label="I want to experience…"
-                options={interests}
-                selected={selectedInterests}
-                setSelected={setSelectedInterests}
-              />
-
-              <MultiSelectDropdown
-                label="Luxury Level"
-                options={luxuryLevels}
-                selected={selectedLuxury}
-                setSelected={setSelectedLuxury}
-              />
+              {loading ? (
+                <p className="text-sm text-gray-500">Loading options...</p>
+              ) : (
+                <>
+                  <MultiSelectDropdown
+                    label="I want to experience…"
+                    options={interests}
+                    selected={selectedInterests}
+                    setSelected={setSelectedInterests}
+                  />
+                  <MultiSelectDropdown
+                    label="Luxury Level"
+                    options={luxuryLevels}
+                    selected={selectedLuxury}
+                    setSelected={setSelectedLuxury}
+                  />
+                </>
+              )}
 
               <button
                 type="submit"
@@ -219,7 +302,7 @@ export default function BottomTabBar() {
         </>
       )}
 
-      {/* Bottom Tab Bar */}
+      {/* 📱 Bottom Tab Bar */}
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-t border-black/10 dark:border-white/10 flex items-center justify-around px-4"
         style={{
@@ -233,45 +316,48 @@ export default function BottomTabBar() {
         </Link>
 
         <button
+          ref={searchRef}
           type="button"
           onClick={() => setOpenWithEvents(true)}
           className="flex flex-col items-center gap-1 text-xs active:scale-95"
-          aria-label="Open safari filters"
         >
           <Search size={20} />
           <span>Search</span>
         </button>
 
         <button
+          ref={bookRef}
           type="button"
           onClick={() => window.dispatchEvent(new CustomEvent(OPEN_BOOK_SHEET))}
           className="flex flex-col items-center gap-1 text-xs active:scale-95"
-          aria-label="Open booking portal"
         >
           <CalendarCheck2 size={20} />
-          <span>Book call</span>
+          <span>Book Call</span>
         </button>
 
         <Link
+          ref={bookFreeRef}
           href={isSignedIn ? "/books" : "/sign-up"}
           className="flex flex-col items-center gap-1 text-xs active:scale-95"
-          aria-label="Claim your free book"
         >
           <BookOpen size={20} />
           <span>Free Book</span>
         </Link>
 
         <SignedIn>
-          <div className="flex flex-col items-center gap-1 text-xs">
+          <div
+            ref={accountRefSignedIn}
+            className="flex flex-col items-center gap-1 text-xs"
+          >
             <CustomUserMenu />
             <span>Account</span>
           </div>
         </SignedIn>
         <SignedOut>
           <Link
+            ref={accountRefSignedOut}
             href="/sign-in"
             className="flex flex-col items-center gap-1 text-xs"
-            aria-label="Sign in"
           >
             <User2 size={20} />
             <span>Account</span>

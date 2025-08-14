@@ -216,12 +216,12 @@ function HeroView({
   return (
     <section
       className={`
-        relative 
-        w-full 
-        overflow-hidden 
-        ${isHome ? "aspect-[16/9]" : "h-[500px]"}
-        pt-24 md:pt-28
-      `}
+    relative 
+    w-full 
+    overflow-hidden 
+    ${isHome ? "aspect-[16/9] md:h-auto" : "h-[500px] md:h-[500px]"}
+    pt-24 md:pt-28
+  `}
       id="hero"
     >
       <Image
@@ -248,17 +248,20 @@ function HeroView({
         {headline && (
           <h1
             className={`font-extrabold leading-tight ${
-              isHome ? "text-3xl md:text-6xl" : "text-xl md:text-4xl"
-            } mb-2`}
+              isHome
+                ? "text-4xl sm:text-5xl md:text-6xl"
+                : "text-3xl sm:text-4xl md:text-5xl"
+            } mb-2 drop-shadow-md`}
           >
             {headline}
           </h1>
         )}
         {sub && (
-          <p className="text-sm md:text-lg text-white/90 max-w-xl mb-2 md:mb-4 leading-snug">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-xl mb-2 md:mb-4 leading-snug drop-shadow">
             {sub}
           </p>
         )}
+
         {children && <div className="mt-3 w-full max-w-5xl">{children}</div>}
       </div>
     </section>
@@ -422,7 +425,7 @@ export default function HeroController({
               ref={inputRef}
               type="search"
               placeholder="Search journeys…"
-              className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black"
+              className="w-full bg-transparent text-base md:text-sm text-black outline-none placeholder:text-black"
               onChange={(e) => onType(e.target.value)}
               aria-label="Search journeys"
             />
@@ -432,7 +435,7 @@ export default function HeroController({
               ref={inputRef}
               type="search"
               placeholder="Search journeys…"
-              className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black"
+              className="w-full bg-transparent text-base md:text-sm text-black outline-none placeholder:text-black"
               onChange={(e) => onType(e.target.value)}
               aria-label="Search journeys"
             />

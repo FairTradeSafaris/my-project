@@ -22,6 +22,7 @@ type HeroData = {
     alt?: string;
     asset?: { _ref?: string; _type?: string; url?: string };
   }>;
+  action?: "none" | "homeFilters" | "typeSearch";
 };
 
 type MenuItem = { title: string; href: string };
@@ -75,20 +76,26 @@ export default function ClientLayout({
     let cancelled = false;
 
     // Mega menu fetch (Sanity)
+    console.log(
+      "🧃 useEffect triggered: pageKey =",
+      pageKey,
+      "| showHero =",
+      showHero
+    );
     (async () => {
       try {
         const data = await client.fetch(
           `*[_type == "megaMenu"][0]{
-            navSections[] { heading, links[] { title, href } },
-            featureCards[] {
-              title, description, alt, link,
-              image { asset->{ _ref,_type,url }, _type }
-            },
-            promoCard {
-              title, description, alt, link,
-              image { asset->{ _ref,_type,url }, _type }
-            }
-          }`
+          navSections[] { heading, links[] { title, href } },
+          featureCards[] {
+            title, description, alt, link,
+            image { asset->{ _ref,_type,url }, _type }
+          },
+          promoCard {
+            title, description, alt, link,
+            image { asset->{ _ref,_type,url }, _type }
+          }
+        }`
         );
         if (cancelled) return;
         setNavSections(
@@ -108,6 +115,9 @@ export default function ClientLayout({
     // Hero content fetch (page-specific with fallback to "default")
     (async () => {
       try {
+        console.log("🧩 pageKey in ClientLayout:", pageKey);
+        console.log("🧩 showHero:", showHero);
+
         if (!showHero) {
           setHeroData(undefined);
           return;
@@ -115,19 +125,21 @@ export default function ClientLayout({
 
         const data = await client.fetch(
           `{
-            "items": [
-              ...*[_type=="hero" && (scope==$k || (scope=="custom" && customScope==$k))]{
-                headline, subheadline, primaryCTA, secondaryCTA,
-                backgroundImages[]{ alt, asset->{ _ref, _type, url } }
-              }[0...1],
-              ...*[_type=="hero" && scope=="default"]{
-                headline, subheadline, primaryCTA, secondaryCTA,
-                backgroundImages[]{ alt, asset->{ _ref, _type, url } }
-              }[0...1]
-            ]
-          }`,
+          "items": [
+            ...*[_type=="hero" && (scope==$k || (scope=="custom" && customScope==$k))]{
+              headline, subheadline, primaryCTA, secondaryCTA, action,
+              backgroundImages[]{ alt, asset->{ _ref, _type, url } }
+            }[0...1],
+            ...*[_type=="hero" && scope=="default"]{
+              headline, subheadline, primaryCTA, secondaryCTA, action,
+              backgroundImages[]{ alt, asset->{ _ref, _type, url } }
+            }[0...1]
+          ]
+        }`,
           { k: pageKey }
         );
+
+        console.log("🧪 sanity hero fetch result:", data);
 
         if (cancelled) return;
 
@@ -154,10 +166,12 @@ export default function ClientLayout({
           primaryCTA: h.primaryCTA ?? undefined,
           secondaryCTA: h.secondaryCTA ?? undefined,
           backgroundImages: chosen,
+          action: h.action ?? undefined,
         };
 
         setHeroData(shaped);
-      } catch {
+      } catch (err) {
+        console.log("❌ Hero fetch error:", err);
         setHeroData(undefined);
       }
     })();

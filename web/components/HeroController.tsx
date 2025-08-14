@@ -6,6 +6,77 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client as sanityClient } from "@/lib/sanity";
+import { Fragment } from "react";
+import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
+
+function MultiSelectDropdown({
+  label,
+  options,
+  selected,
+  setSelected,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  setSelected: (val: string[]) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleSelection = (option: string) => {
+    if (selected.includes(option)) {
+      setSelected(selected.filter((item) => item !== option));
+    } else {
+      setSelected([...selected, option]);
+    }
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => setIsOpen(false), 100);
+  };
+
+  return (
+    <div className="relative w-full" onBlur={handleBlur}>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none text-sm"
+        >
+          {selected.length > 0 ? (
+            selected.join(", ")
+          ) : (
+            <span className="text-gray-400">{label}</span>
+          )}
+          <ChevronUpDownIcon
+            className="absolute right-2 top-2.5 h-5 w-5 text-gray-400"
+            aria-hidden="true"
+          />
+        </button>
+
+        {isOpen && (
+          <div className="absolute z-20 mt-1 w-full rounded-md bg-white shadow-lg max-h-60 overflow-auto border border-black/10">
+            {options.map((option) => (
+              <div
+                key={option}
+                className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onMouseDown={(e) => e.preventDefault()} // Prevent blur
+                onClick={() => toggleSelection(option)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(option)}
+                  readOnly // <-- prevent React warning with controlled checkbox
+                  className="mr-2 pointer-events-none" // <-- this is key!
+                />
+                <span className="text-sm">{option}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const builder = imageUrlBuilder(sanityClient);
 const urlFor = (src: SanityImageSource) => builder.image(src).width(1920).url();
@@ -20,7 +91,9 @@ export type HeroData = {
     alt?: string;
     asset?: { _ref?: string; _type?: string; url?: string };
   }>;
+  action?: "none" | "homeFilters" | "typeSearch";
 };
+
 /* -------------------------------- */
 
 type HeroAsset = {
@@ -51,85 +124,70 @@ function HomeFilters() {
   const router = useRouter();
   const [destinations, setDestinations] = useState<string[]>([]);
   const [luxuryLevels, setLuxuryLevels] = useState<string[]>([]);
-  const [destination, setDestination] = useState("");
-  const [luxury, setLuxury] = useState("");
+  const [destination, setDestination] = useState<string[]>([]);
+  const [luxury, setLuxury] = useState<string[]>([]);
 
   useEffect(() => {
-    sanityClient
-      .fetch(`*[_type == "journey"]{ country->{title}, star }`)
-      .then((rows: { country?: { title?: string }; star?: string }[]) => {
-        const dests = Array.from(
-          new Set(rows.map((j) => j.country?.title).filter(Boolean))
-        ) as string[];
-        const lux = Array.from(
-          new Set(rows.map((j) => j.star).filter((s): s is string => !!s))
+    const fetchFilters = async () => {
+      try {
+        const result: {
+          interests: { title: string }[];
+          luxuryRaw: (string | null | undefined)[];
+        } = await sanityClient.fetch(
+          `{
+  "interests": *[_type == "travelInterest" && isTopInterest == true][0...5] {
+    title
+  },
+  "luxuryRaw": *[_type == "journey"].star
+}
+`
         );
-        setDestinations(dests);
-        setLuxuryLevels(lux);
-      })
-      .catch(() => {});
-  }, []);
 
-  const go = (e: React.FormEvent) => {
-    e.preventDefault();
-    const qs = new URLSearchParams();
-    if (destination) qs.set("destination", destination);
-    if (luxury) qs.set("luxury", luxury);
-    router.push(`/journeys?${qs.toString()}`);
-  };
+        const topInterests = result.interests.map((i) => i.title);
+        const luxuryUnique = Array.from(
+          new Set(result.luxuryRaw.filter((s): s is string => !!s))
+        ).slice(0, 5);
+
+        setDestinations(topInterests);
+        setLuxuryLevels(luxuryUnique);
+      } catch (err) {
+        console.error("Failed to fetch filters", err);
+      }
+    };
+
+    fetchFilters();
+  }, []);
 
   return (
     <form
-      onSubmit={go}
+      onSubmit={(e) => {
+        e.preventDefault();
+        const qs = new URLSearchParams();
+        destination.forEach((d) => qs.append("interest", d));
+        luxury.forEach((l) => qs.append("luxury", l));
+        router.push(`/journey?${qs.toString()}`);
+      }}
       className="mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black dark:text-white rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
       role="search"
       aria-label="Find your safari"
     >
-      <label className="flex items-center gap-2 border border-black/10 rounded-lg px-4 py-2.5 w-full bg-white/90 hover:bg-white transition">
-        <span className="text-black/60 text-sm shrink-0">Destination</span>
-        <select
-          className="bg-transparent outline-none text-sm w-full text-black appearance-none"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-          aria-label="Destination"
-        >
-          <option value="">Choose a destination</option>
-          {destinations.length === 0 ? (
-            <option disabled>Loading…</option>
-          ) : (
-            destinations.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))
-          )}
-        </select>
-      </label>
+      <MultiSelectDropdown
+        label="I want to experience…"
+        options={destinations}
+        selected={destination}
+        setSelected={setDestination}
+      />
 
-      <label className="flex items-center gap-2 border border-black/10 rounded-lg px-4 py-2.5 w-full bg-white/90 hover:bg-white transition">
-        <span className="text-black/60 text-sm shrink-0">Luxury Level</span>
-        <select
-          className="bg-transparent outline-none text-sm w-full text-black appearance-none"
-          value={luxury}
-          onChange={(e) => setLuxury(e.target.value)}
-          aria-label="Luxury level"
-        >
-          <option value="">Select luxury level</option>
-          {luxuryLevels.length === 0 ? (
-            <option disabled>Loading…</option>
-          ) : (
-            luxuryLevels.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))
-          )}
-        </select>
-      </label>
+      <MultiSelectDropdown
+        label="Luxury Level"
+        options={luxuryLevels}
+        selected={luxury}
+        setSelected={setLuxury}
+      />
 
       <button
         type="submit"
-        className="bg-black text-white rounded-lg px-5 py-2.5 font-semibold hover:bg-gray-800 transition text-sm flex items-center justify-center w-full md:w-auto"
+        className="bg-black text-white rounded-lg px-5 py-2.5 font-semibold hover:bg-gray-800 transition text-sm flex items-center justify-center w-full md:w-auto mt-4 md:mt-0"
       >
         Search
       </button>
@@ -200,6 +258,7 @@ export default function HeroController({
     subheadline?: string;
     primaryCTA?: string;
     secondaryCTA?: string;
+    action?: "none" | "homeFilters" | "typeSearch"; // ✅ <-- ADD THIS LINE
     backgroundImages?: Array<{
       alt?: string;
       asset?: { _ref?: string; _type?: string; url?: string };
@@ -216,6 +275,8 @@ export default function HeroController({
   const [bgUrl, setBgUrl] = useState<string | undefined>(undefined);
 
   // If parent provided heroData, use it and skip fetching
+  console.log("🚨 heroData received in HeroController:", heroData);
+
   useEffect(() => {
     if (!heroData) return;
 
@@ -255,71 +316,35 @@ export default function HeroController({
     const seg = pathname.split("/").filter(Boolean)[0];
     return seg || "home";
   }, [pathname]);
-
-  const queryAndParams = useMemo(() => {
-    const known = new Set(["home", "journeys", "blog", "books", "default"]);
-    if (known.has(pageKey)) {
-      return {
-        query: `*[_type=="hero" && scope==$scope][0]{
-          scope,
-          customScope,
-          pageLabel,
-          headline,
-          subheadline,
-          action,
-          backgroundImages[]{asset->{_id, url}, alt},
-          primaryCTA,
-          secondaryCTA
-        }`,
-        params: { scope: pageKey },
-      };
-    }
-    return {
-      query: `*[_type=="hero" && scope=="custom" && customScope==$key][0]{
-        scope,
-        customScope,
-        pageLabel,
-        headline,
-        subheadline,
-        action,
-        backgroundImages[]{asset->{_id, url}, alt},
-        primaryCTA,
-        secondaryCTA
-      }`,
-      params: { key: pageKey },
-    };
-  }, [pageKey]);
+  console.log("🔍 pathname:", pathname);
+  console.log("🔍 pageKey:", pageKey);
 
   useEffect(() => {
-    // If parent provided heroData, don't fetch from Sanity.
-    if (heroData) return;
+    if (!heroData) return; // ✅ no fetch needed, data comes from ClientLayout
 
-    let mounted = true;
-    sanityClient
-      .fetch<HeroDoc | null>(queryAndParams.query, queryAndParams.params)
-      .then((doc) => {
-        if (!mounted) return;
-        setHero(doc ?? null);
-
-        const first = doc?.backgroundImages?.[0]?.asset;
-        if (first && typeof first === "object" && "url" in first && first.url) {
-          setBgUrl(first.url as string);
-        } else if (first) {
-          setBgUrl(urlFor(first as SanityImageSource));
-        } else {
-          setBgUrl(undefined);
-        }
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setHero(null);
-        setBgUrl(undefined);
-      });
-
-    return () => {
-      mounted = false;
+    const doc: HeroDoc = {
+      scope: "default",
+      pageLabel: undefined,
+      customScope: undefined,
+      headline: heroData.headline,
+      subheadline: heroData.subheadline,
+      action: heroData.action || "none",
+      backgroundImages: heroData.backgroundImages,
+      primaryCTA: heroData.primaryCTA,
+      secondaryCTA: heroData.secondaryCTA,
     };
-  }, [heroData, queryAndParams]);
+
+    setHero(doc);
+
+    const first = doc.backgroundImages?.[0]?.asset;
+    if (first && typeof first === "object" && "url" in first && first.url) {
+      setBgUrl(first.url as string);
+    } else if (first) {
+      setBgUrl(urlFor(first as SanityImageSource));
+    } else {
+      setBgUrl(undefined);
+    }
+  }, [heroData]);
 
   // Search helpers (declared unconditionally to keep hook order stable)
   const openJourneySearch = useCallback(

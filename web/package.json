@@ -16,6 +16,8 @@
   "dependencies": {
     "@clerk/nextjs": "^6.28.1",
     "@fontsource/poppins": "^5.2.6",
+    "@headlessui/react": "^2.2.7",
+    "@heroicons/react": "^2.2.0",
     "@portabletext/react": "^3.2.1",
     "@portabletext/types": "^2.0.13",
     "@radix-ui/react-slot": "^1.2.3",

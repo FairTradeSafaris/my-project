@@ -78,13 +78,13 @@ export default function OurPromisePage() {
                     <div>
                       <h4 className="font-semibold text-lg">Security</h4>
                       <p>
-                        Your well-being is non-negotiable. When you&quot;re
-                        exploring remote regions, flying in bush planes, or
-                        staying in off-the-grid lodges, peace of mind isn’t
-                        optional — it’s everything. We only work with trusted,
-                        vetted local operators, guides, and accommodations that
-                        meet rigorous safety standards. If it’s not safe, it
-                        doesn’t make the cut.
+                        Your well-being is non-negotiable. When you’re exploring
+                        remote regions, flying in bush planes, or staying in
+                        off-the-grid lodges, peace of mind isn’t optional — it’s
+                        everything. We only work with trusted, vetted local
+                        operators, guides, and accommodations that meet rigorous
+                        safety standards. If it’s not safe, it doesn’t make the
+                        cut.
                       </p>
                     </div>
                   </li>

@@ -1,4 +1,4 @@
-export type Journey = {
+export interface Journey {
   title: string;
   summary: string;
   slug?: { current: string };
@@ -12,9 +12,9 @@ export type Journey = {
   countries?: { title: string; flag?: string }[];
   star?: string;
   starIcon?: string;
-  travelStyle?: string[];
   featuredOnHome?: boolean;
-};
+  interests?: string[]; // ✅ add this new field
+}
 
 export type Filters = {
   region: string;

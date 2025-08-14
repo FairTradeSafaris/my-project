@@ -50,15 +50,7 @@ export default function JourneyFinderClient() {
 
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
     region: "",
-    country:
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("destination")
-        ? [
-            decodeURIComponent(
-              new URLSearchParams(window.location.search).get("destination")!
-            ),
-          ]
-        : [],
+    country: [],
     star:
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("luxury")
@@ -66,7 +58,15 @@ export default function JourneyFinderClient() {
             new URLSearchParams(window.location.search).get("luxury")!
           )
         : "",
-    types: [],
+    types:
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("interest")
+        ? [
+            decodeURIComponent(
+              new URLSearchParams(window.location.search).get("interest")!
+            ),
+          ]
+        : [],
     duration: [0, 100],
     price: [0, 999999],
   });
@@ -94,14 +94,16 @@ export default function JourneyFinderClient() {
     sanityClient
       .fetch(
         `*[_type == "journey"][0...${visibleCount}] {
-          title, summary, slug, duration, price,
-          "heroUrl": heroImage.asset->url,
-          alt, ctaText, wetuLink,
-          region->{ title }, countries[]->{ title, "flag": flag.asset->url },
-          star, "starIcon": starIcon.asset->url,
-          travelStyle, "featuredOnHome": featuredOnHome
-        }`
+      title, summary, slug, duration, price,
+      "heroUrl": heroImage.asset->url,
+      alt, ctaText, wetuLink,
+      region->{ title }, countries[]->{ title, "flag": flag.asset->url },
+      star, "starIcon": starIcon.asset->url,
+      "interests": travelStyleRefs[]->title,
+      "featuredOnHome": featuredOnHome
+    }`
       )
+
       .then((data: Journey[]) => {
         setAllJourneys((prev) => [
           ...prev,
@@ -130,15 +132,20 @@ export default function JourneyFinderClient() {
     sanityClient
       .fetch(
         `*[_type == "journey"][0...1000]{
-          region->{ title },
-          countries[]->{ title },
-          travelStyle,
-          duration,
-          star,
-          price
-        }`
+      region->{ title },
+      countries[]->{ title },
+      "interests": travelStyleRefs[]->title,
+      duration,
+      star,
+      price
+    }`
       )
+
       .then((data: Journey[]) => {
+        console.log(
+          "🧠 Journey interests in options fetch:",
+          data.map((j) => j.interests)
+        );
         setOptionsJourneys(data);
 
         const regions = Array.from(
@@ -153,8 +160,9 @@ export default function JourneyFinderClient() {
         ) as string[];
 
         const styles = Array.from(
-          new Set(data.flatMap((j) => j.travelStyle || []))
+          new Set(data.flatMap((j) => j.interests || []))
         );
+
         const stars = Array.from(
           new Set(
             data
@@ -228,7 +236,9 @@ export default function JourneyFinderClient() {
 
   const availableStyles = useMemo(() => {
     const s = new Set<string>();
-    scopedPool.forEach((j) => (j.travelStyle || []).forEach((x) => s.add(x)));
+    scopedPool.forEach((j) =>
+      (j.interests || []).forEach((interest) => s.add(interest))
+    );
     return Array.from(s).sort();
   }, [scopedPool]);
 
@@ -356,7 +366,7 @@ export default function JourneyFinderClient() {
       groqFilters.push(`star == "${selectedFilters.star}"`);
     if (selectedFilters.types.length > 0) {
       const styleFilters = selectedFilters.types
-        .map((style) => `"${style}" in travelStyle`)
+        .map((style) => `"${style}" in travelStyleRefs[]->title`)
         .join(" || ");
       groqFilters.push(`(${styleFilters})`);
     }
@@ -369,14 +379,16 @@ export default function JourneyFinderClient() {
     sanityClient
       .fetch(
         `${groqWhere}{
-          title, summary, slug, duration, price,
-          "heroUrl": heroImage.asset->url,
-          alt, ctaText, wetuLink,
-          region->{ title }, countries[]->{ title, "flag": flag.asset->url },
-          star, "starIcon": starIcon.asset->url,
-          travelStyle, "featuredOnHome": featuredOnHome
-        }`
+      title, summary, slug, duration, price,
+      "heroUrl": heroImage.asset->url,
+      alt, ctaText, wetuLink,
+      region->{ title }, countries[]->{ title, "flag": flag.asset->url },
+      star, "starIcon": starIcon.asset->url,
+      "interests": travelStyleRefs[]->title,
+      "featuredOnHome": featuredOnHome
+    }`
       )
+
       .then((data: Journey[]) => {
         const filtered = data.filter((j) => {
           const text = `${j.title} ${j.summary}`.toLowerCase();
@@ -408,11 +420,11 @@ export default function JourneyFinderClient() {
     )
       return;
     const urlParams = new URLSearchParams(window.location.search);
-    const country = urlParams.get("destination");
+    const interest = urlParams.get("interest"); // 💡 cleaner than 'destination'
     const star = urlParams.get("luxury");
     setSelectedFilters((prev) => ({
       ...prev,
-      country: country ? [decodeURIComponent(country)] : [],
+      types: interest ? [decodeURIComponent(interest)] : [],
       star: star ? decodeURIComponent(star) : "",
     }));
   }, [filterOptions]);
@@ -600,24 +612,25 @@ export default function JourneyFinderClient() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJourneys.length > 0 ? (
               filteredJourneys.map((j, index) => (
-                <div key={index} onClick={() => setSelectedJourney(j)}>
-                  <JourneyCard
-                    title={j.title}
-                    summary={j.summary}
-                    imageUrl={j.heroUrl || ""}
-                    alt={j.alt || j.title}
-                    duration={j.duration || ""}
-                    price={
-                      parsePriceNumber(j.price) <= 1
-                        ? "Price on request"
-                        : j.price || ""
-                    }
-                    star={j.star ? parseInt(j.star) : 0}
-                    starIcon={j.starIcon}
-                    region={j.region?.title || ""}
-                    isFeatured={j.featuredOnHome === true}
-                  />
-                </div>
+                <JourneyCard
+                  key={j.slug?.current || index}
+                  title={j.title}
+                  summary={j.summary}
+                  imageUrl={j.heroUrl || ""}
+                  alt={j.alt || j.title}
+                  duration={j.duration || ""}
+                  price={
+                    parsePriceNumber(j.price) <= 1
+                      ? "Price on request"
+                      : j.price || ""
+                  }
+                  star={j.star ? parseInt(j.star) : 0}
+                  starIcon={j.starIcon}
+                  region={j.region?.title || ""}
+                  isFeatured={j.featuredOnHome === true}
+                  // ✅ This enables View Itinerary from the card
+                  onViewItinerary={() => setSelectedJourney(j)}
+                />
               ))
             ) : (
               <p className="text-gray-600">No journeys found.</p>
@@ -638,33 +651,33 @@ export default function JourneyFinderClient() {
           >
             {selectedJourney.wetuLink ? (
               <>
-                <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md relative px-4 pt-4 pb-6">
-                  <div className="flex justify-end">
+                <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md relative px-4 pt-4 pb-4">
+                  {/* Top Row: Logo & Close */}
+                  <div className="flex justify-between items-start mb-4">
+                    <img
+                      src="/logos/logo-top.png"
+                      alt="Fair Trade Safaris"
+                      className="h-8 sm:h-10 w-auto"
+                    />
                     <button
                       onClick={() => setSelectedJourney(null)}
-                      className="text-2xl font-bold text-gray-800 hover:text-black z-10"
+                      className="text-2xl font-bold text-gray-800 hover:text-black"
                       aria-label="Close"
                     >
                       &times;
                     </button>
                   </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:pr-10">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      <img
-                        src="/logos/logo-top.png"
-                        alt="Fair Trade Safaris"
-                        className="h-10 w-auto"
-                      />
-                      <div>
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-800">
-                          {selectedJourney.title}
-                        </h2>
-                        <p className="text-sm text-gray-600">
-                          {selectedJourney.duration} •{" "}
-                          {selectedJourney.region?.title}
-                        </p>
-                      </div>
+                  {/* Journey Info & Rating */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <div>
+                      <h2 className="text-base sm:text-lg font-semibold text-gray-800">
+                        {selectedJourney.title}
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        {selectedJourney.duration} •{" "}
+                        {selectedJourney.region?.title}
+                      </p>
                     </div>
 
                     {selectedJourney.star && (
@@ -676,11 +689,30 @@ export default function JourneyFinderClient() {
                               selectedJourney.starIcon || "/default-star.svg"
                             }
                             alt="star"
-                            className={`w-5 h-5 sm:w-6 sm:h-6 ${i >= parseInt(selectedJourney.star || "0") ? "opacity-30" : ""}`}
+                            className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                              i >= parseInt(selectedJourney.star || "0")
+                                ? "opacity-30"
+                                : ""
+                            }`}
                           />
                         ))}
                       </div>
                     )}
+                  </div>
+
+                  {/* CTA Button */}
+                  <div className="mt-4 sm:mt-3">
+                    <button
+                      onClick={() =>
+                        window.open(
+                          "https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris",
+                          "_blank"
+                        )
+                      }
+                      className="w-full sm:w-auto px-4 py-2 bg-[#a35c2d] text-white text-sm font-semibold rounded-md shadow hover:bg-[#8d4f26] transition"
+                    >
+                      Start Planning Your Journey →
+                    </button>
                   </div>
                 </div>
 

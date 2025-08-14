@@ -16,13 +16,14 @@ export default defineType({
         list: [
           {title: 'Default (global fallback)', value: 'default'},
           {title: 'Home', value: 'home'},
-          {title: 'Journeys', value: 'journey'},
+          {title: 'Journeys', value: 'journeys'},
           {title: 'Blog', value: 'blog'},
           {title: 'Books', value: 'books'},
           {title: 'Custom…', value: 'custom'},
         ],
         layout: 'radio',
       },
+
       validation: (Rule) => Rule.required(),
     }),
 

@@ -121,13 +121,16 @@ export default function BookPageContent() {
                 >
                   {book.previewImage?.asset?.url ? (
                     <div className="relative w-full h-48">
-                      <Image
-                        src={book.previewImage.asset.url}
-                        alt={book.title}
-                        fill
-                        className="object-cover rounded"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
+                      <div className="relative w-full h-48">
+                        <Image
+                          src={book.previewImage.asset.url}
+                          alt={book.title}
+                          layout="responsive"
+                          width={400} // any realistic width/height ratio
+                          height={300}
+                          className="object-contain rounded"
+                        />
+                      </div>
                     </div>
                   ) : (
                     <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-sm">

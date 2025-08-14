@@ -44,6 +44,7 @@ import book from './schemas/book'
 import leadMagnetClaim from './schemas/leadMagnetClaim'
 import faqQuestion from './schemas/faqQuestion'
 import faqCategory from './schemas/faqCategory'
+import travelInterest from './schemas/journeys/travelInterest'
 
 const schemaTypes = [
   blog,
@@ -90,6 +91,7 @@ const schemaTypes = [
   leadMagnetClaim,
   faqQuestion,
   faqCategory,
+  travelInterest,
 ]
 
 // ✅ This is the only change:

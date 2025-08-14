@@ -73,6 +73,15 @@ export default defineType({
       options: {list: ['Luxury', 'Cultural', 'Adventure', 'Wildlife'], layout: 'tags'},
     }),
     defineField({
+      name: 'travelStyleRefs',
+      title: 'Travel Style (New)',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'travelInterest'}]}],
+      description:
+        'This is the new field using references. Use this for all new journeys going forward.',
+    }),
+
+    defineField({
       name: 'featuredOnHome',
       title: 'Feature on Homepage',
       type: 'boolean',

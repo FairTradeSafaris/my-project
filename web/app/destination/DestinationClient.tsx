@@ -504,7 +504,7 @@ export default function DestinationClient({
                 disabled={!selected}
               >
                 <Binoculars size={18} />
-                Explore {selected?.title ?? "Country"} Itineraries
+                Explore Itineraries
               </Button>
 
               <Button
@@ -516,7 +516,7 @@ export default function DestinationClient({
                 }}
                 disabled={!selected}
               >
-                <Info size={18} />
+                <Info size={15} />
                 More About {selected?.title ?? "Country"}
               </Button>
 

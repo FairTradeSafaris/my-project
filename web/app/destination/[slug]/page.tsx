@@ -85,7 +85,7 @@ export default async function DestinationPage({
 
       {/* Travel Info */}
       {data.travelInfo && (
-        <section className="max-w-4xl mx-auto py-10 px-6">
+        <section className="max-w-7xl mx-auto py-10 px-8">
           <h2 className="text-2xl font-semibold mb-4">Travel Information</h2>
           <PortableText value={data.travelInfo} />
         </section>
@@ -114,7 +114,7 @@ export default async function DestinationPage({
 
       {/* Highlights */}
       {data.highlights && (
-        <section className="max-w-4xl mx-auto py-10 px-6">
+        <section className="w-full px-6">
           <h2 className="text-2xl font-semibold mb-4">Highlights</h2>
           <PortableText value={data.highlights} />
         </section>

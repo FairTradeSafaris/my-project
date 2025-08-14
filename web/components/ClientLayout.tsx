@@ -76,12 +76,7 @@ export default function ClientLayout({
     let cancelled = false;
 
     // Mega menu fetch (Sanity)
-    console.log(
-      "🧃 useEffect triggered: pageKey =",
-      pageKey,
-      "| showHero =",
-      showHero
-    );
+
     (async () => {
       try {
         const data = await client.fetch(
@@ -115,9 +110,6 @@ export default function ClientLayout({
     // Hero content fetch (page-specific with fallback to "default")
     (async () => {
       try {
-        console.log("🧩 pageKey in ClientLayout:", pageKey);
-        console.log("🧩 showHero:", showHero);
-
         if (!showHero) {
           setHeroData(undefined);
           return;
@@ -138,8 +130,6 @@ export default function ClientLayout({
         }`,
           { k: pageKey }
         );
-
-        console.log("🧪 sanity hero fetch result:", data);
 
         if (cancelled) return;
 

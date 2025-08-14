@@ -146,12 +146,16 @@ export default function BottomTabBar() {
 
   const onSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const qs = new URLSearchParams();
-    selectedInterests.forEach((d) => qs.append("interest", d));
-    selectedLuxury.forEach((l) => qs.append("luxury", l));
-    const url = `/journeys?${qs.toString()}`;
-    router.push(url);
-    setOpenWithEvents(false);
+    const params = new URLSearchParams();
+
+    selectedInterests.forEach((d) => params.append("interest", d));
+    selectedLuxury.forEach((l) => params.append("luxury", l));
+
+    // If you want to open the modal automatically, include open=true
+    params.set("open", "true");
+
+    router.push(`/journey?${params.toString()}`);
+    setOpen(false);
   };
 
   return (

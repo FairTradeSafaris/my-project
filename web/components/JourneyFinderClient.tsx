@@ -22,6 +22,7 @@ import {
 
 export default function JourneyFinderClient() {
   const [visibleCount, setVisibleCount] = useState(9);
+  const [filtersReady, setFiltersReady] = useState(false);
   const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
   const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
@@ -64,22 +65,8 @@ export default function JourneyFinderClient() {
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
     region: "",
     country: [],
-    star:
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search)
-            .getAll("luxury")
-            .map(decodeURIComponent)
-        : [],
-
-    types:
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("interest")
-        ? [
-            decodeURIComponent(
-              new URLSearchParams(window.location.search).get("interest")!
-            ),
-          ]
-        : [],
+    star: [],
+    types: [],
     duration: [0, 100],
     price: [0, 999999],
   });
@@ -367,6 +354,8 @@ export default function JourneyFinderClient() {
 
   // Fetch + client filter
   useEffect(() => {
+    if (!filtersReady) return;
+
     const groqFilters: string[] = [];
     if (selectedFilters.region)
       groqFilters.push(`region->title == "${selectedFilters.region}"`);
@@ -393,16 +382,15 @@ export default function JourneyFinderClient() {
     sanityClient
       .fetch(
         `${groqWhere}{
-      title, summary, slug, duration, price,
-      "heroUrl": heroImage.asset->url,
-      alt, ctaText, wetuLink,
-      region->{ title }, countries[]->{ title, "flag": flag.asset->url },
-      star, "starIcon": starIcon.asset->url,
-      "interests": travelStyleRefs[]->title,
-      "featuredOnHome": featuredOnHome
-    }`
+        title, summary, slug, duration, price,
+        "heroUrl": heroImage.asset->url,
+        alt, ctaText, wetuLink,
+        region->{ title }, countries[]->{ title, "flag": flag.asset->url },
+        star, "starIcon": starIcon.asset->url,
+        "interests": travelStyleRefs[]->title,
+        "featuredOnHome": featuredOnHome
+      }`
       )
-
       .then((data: Journey[]) => {
         const filtered = data.filter((j) => {
           const text = `${j.title} ${j.summary}`.toLowerCase();
@@ -424,27 +412,40 @@ export default function JourneyFinderClient() {
         setFilteredJourneys(filtered);
         setAllJourneys(data);
       });
-  }, [searchTerm, selectedFilters]);
+  }, [searchTerm, selectedFilters, filtersReady]);
 
   // URL params → filters (once options ready)
+  // ✅ URL params → filters (only once after filterOptions are ready)
+
   useEffect(() => {
-    if (
-      filterOptions.countries.length === 0 &&
-      filterOptions.stars.length === 0
-    )
+    if (filtersReady) return;
+    if (filterOptions.styles.length === 0 || filterOptions.stars.length === 0)
       return;
 
-    const urlParams = new URLSearchParams(window.location.search); // ✅ Declare it here
-
+    const urlParams = new URLSearchParams(window.location.search);
     const interestParams = urlParams.getAll("interest").map(decodeURIComponent);
-    const starParams = urlParams.getAll("luxury").map(decodeURIComponent);
+    const luxuryParams = urlParams.getAll("luxury").map(decodeURIComponent);
+    const openParam = urlParams.get("open");
+
+    const validInterests = interestParams.filter((val) =>
+      filterOptions.styles.includes(val)
+    );
+    const validStars = luxuryParams.filter((val) =>
+      filterOptions.stars.includes(val)
+    );
 
     setSelectedFilters((prev) => ({
       ...prev,
-      types: interestParams,
-      star: starParams,
+      types: validInterests,
+      star: validStars,
     }));
-  }, [filterOptions]);
+
+    if (openParam === "true") {
+      window.dispatchEvent(new CustomEvent("fts:open-search-sheet"));
+    }
+
+    setFiltersReady(true);
+  }, [filterOptions.styles, filterOptions.stars, filtersReady]);
 
   const globalDurationRange = React.useMemo<[number, number]>(() => {
     const ds = filterOptions.durations.filter((n) => n > 0);

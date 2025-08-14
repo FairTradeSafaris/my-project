@@ -36,7 +36,20 @@ export default function JourneyFinderClient() {
     price: true,
     types: true,
   });
+  const [isSearchSheetOpen, setIsSearchSheetOpen] = useState(false);
 
+  useEffect(() => {
+    const openHandler = () => setIsSearchSheetOpen(true);
+    const closeHandler = () => setIsSearchSheetOpen(false);
+
+    window.addEventListener("fts:open-search-sheet", openHandler);
+    window.addEventListener("fts:close-search-sheet", closeHandler);
+
+    return () => {
+      window.removeEventListener("fts:open-search-sheet", openHandler);
+      window.removeEventListener("fts:close-search-sheet", closeHandler);
+    };
+  }, []);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     regions: [],
     countries: [],
@@ -610,7 +623,7 @@ export default function JourneyFinderClient() {
         <section className="flex-1 p-6 lg:ml-12">
           {/* Sticky Mobile Filter Buttons */}
           {/* Sticky Mobile Filter Bar (top, under navbar) */}
-          {!showMobileFilters && (
+          {!showMobileFilters && !isSearchSheetOpen && (
             <div className="sticky top-[56px] z-[9998] bg-[#fdf8f3]/95 backdrop-blur border-b border-gray-200 px-4 py-2 flex gap-3 justify-center lg:hidden">
               <button
                 onClick={() => setShowMobileFilters(true)}

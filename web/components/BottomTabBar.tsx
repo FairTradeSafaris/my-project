@@ -10,9 +10,10 @@ import { client as sanityClient } from "@/lib/sanity";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
 export const OPEN_SEARCH_SHEET = "fts:open-search-sheet";
+export const CLOSE_SEARCH_SHEET = "fts:close-search-sheet";
 export const OPEN_BOOK_SHEET = "fts:open-book-sheet";
 
-// Multi-select dropdown component
+// Multi-select dropdown
 function MultiSelectDropdown({
   label,
   options,
@@ -89,7 +90,17 @@ export default function BottomTabBar() {
   const [selectedLuxury, setSelectedLuxury] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch top interests + luxury levels
+  const TABBAR_BASE_HEIGHT = 56;
+
+  // Sync open state with global event dispatch
+  const setOpenWithEvents = (state: boolean) => {
+    setOpen(state);
+    window.dispatchEvent(
+      new CustomEvent(state ? OPEN_SEARCH_SHEET : CLOSE_SEARCH_SHEET)
+    );
+  };
+
+  // Fetch filter options
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -106,12 +117,10 @@ export default function BottomTabBar() {
           luxuryRaw: (string | null | undefined)[];
         }) => {
           if (!mounted) return;
-
           const topInterests = data.interests.map((i) => i.title);
           const luxuryUnique = Array.from(
             new Set(data.luxuryRaw.filter((s): s is string => !!s))
           ).slice(0, 5);
-
           setInterests(topInterests);
           setLuxuryLevels(luxuryUnique);
         }
@@ -126,17 +135,12 @@ export default function BottomTabBar() {
     };
   }, []);
 
+  // Listen for global "open search" events
   useEffect(() => {
-    const handler = () => setOpen(true);
-    window.addEventListener(
-      OPEN_SEARCH_SHEET,
-      handler as unknown as EventListener
-    );
+    const handler = () => setOpenWithEvents(true);
+    window.addEventListener(OPEN_SEARCH_SHEET, handler);
     return () => {
-      window.removeEventListener(
-        OPEN_SEARCH_SHEET,
-        handler as unknown as EventListener
-      );
+      window.removeEventListener(OPEN_SEARCH_SHEET, handler);
     };
   }, []);
 
@@ -147,18 +151,17 @@ export default function BottomTabBar() {
     selectedLuxury.forEach((l) => qs.append("luxury", l));
     const url = `/journeys?${qs.toString()}`;
     router.push(url);
-    setOpen(false);
+    setOpenWithEvents(false);
   };
-
-  const TABBAR_BASE_HEIGHT = 56;
 
   return (
     <>
+      {/* Slide-up Search Sheet */}
       {open && (
         <>
           <button
             aria-label="Close search"
-            onClick={() => setOpen(false)}
+            onClick={() => setOpenWithEvents(false)}
             className="fixed inset-0 z-[69] md:hidden bg-black/50 backdrop-blur-sm"
           />
 
@@ -178,7 +181,7 @@ export default function BottomTabBar() {
               </h2>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => setOpenWithEvents(false)}
                 className="p-2 rounded-lg hover:bg-neutral-100 active:scale-95"
                 aria-label="Close"
               >
@@ -215,6 +218,7 @@ export default function BottomTabBar() {
         </>
       )}
 
+      {/* Bottom Tab Bar */}
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-t border-black/10 dark:border-white/10 flex items-center justify-around px-4"
         style={{
@@ -229,7 +233,7 @@ export default function BottomTabBar() {
 
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => setOpenWithEvents(true)}
           className="flex flex-col items-center gap-1 text-xs active:scale-95"
           aria-label="Open safari filters"
         >

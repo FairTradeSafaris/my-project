@@ -22,14 +22,13 @@ type Props = {
   availableDurationRange: [number, number];
   availablePriceRange: [number, number];
   priceFilterEnabled: boolean;
-
   selectedFilters: Filters;
-
   collapsed: CollapsedMap;
   setCollapsed: React.Dispatch<React.SetStateAction<CollapsedMap>>;
 
   onToggleType: (type: string) => void;
   onToggleCountry: (country: string) => void;
+  onToggleStar: (star: string) => void; // ✅ Added
   onSetSimpleFilter: (
     key: Extract<FilterKey, "region" | "star">,
     value: string
@@ -50,6 +49,7 @@ export default function FiltersPanel({
   setCollapsed,
   onToggleType,
   onToggleCountry,
+  onToggleStar, // ✅ Used here
   onSetSimpleFilter,
   onDurationChange,
   onPriceChange,
@@ -67,7 +67,12 @@ export default function FiltersPanel({
       filterKey: "country",
       multi: true,
     },
-    { label: "Luxury Level", items: filterOptions.stars, filterKey: "star" },
+    {
+      label: "Luxury Level",
+      items: filterOptions.stars,
+      filterKey: "star",
+      multi: true,
+    },
     { label: "Duration", items: [], filterKey: "duration" },
     { label: "Price", items: [], filterKey: "price" },
     {
@@ -82,7 +87,7 @@ export default function FiltersPanel({
     <>
       {groups.map((group) => (
         <div key={group.label} className="mb-5">
-          {/* Toggle Button for Each Group */}
+          {/* Toggle Header */}
           <button
             className="flex justify-between items-center w-full text-xs tracking-wide font-semibold text-gray-600 mb-4 uppercase border-t pt-4"
             onClick={() =>
@@ -112,10 +117,10 @@ export default function FiltersPanel({
             </svg>
           </button>
 
-          {/* Filter content */}
+          {/* Filter Content */}
           {!collapsed[group.filterKey as keyof typeof collapsed] && (
             <div className="flex flex-wrap gap-4">
-              {/* Duration Slider */}
+              {/* Duration */}
               {group.filterKey === "duration" ? (
                 <div className="w-full">
                   <Slider
@@ -207,28 +212,28 @@ export default function FiltersPanel({
                   )}
                 </div>
               ) : group.filterKey === "star" ? (
-                <div className="flex flex-wrap gap-3">
+                // ✅ Multi-select Star checkboxes
+                <div className="flex flex-col gap-2">
                   {group.items.map((level) => {
-                    const isActive = selectedFilters.star === level;
+                    const isChecked = selectedFilters.star.includes(level);
                     return (
-                      <button
+                      <label
                         key={level}
-                        onClick={() =>
-                          onSetSimpleFilter("star", isActive ? "" : level)
-                        }
-                        className={`px-4 py-1 rounded-full text-sm border transition-all ${
-                          isActive
-                            ? "bg-[#a35c2d] text-white border-[#a35c2d]"
-                            : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
-                        }`}
+                        className="flex items-center text-sm text-gray-700 space-x-2"
                       >
-                        {level}
-                      </button>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => onToggleStar(level)}
+                          className="form-checkbox text-[#a35c2d]"
+                        />
+                        <span>{level} Star</span>
+                      </label>
                     );
                   })}
                 </div>
               ) : (
-                // Regions, Countries, Interests
+                // Region, Country, Type
                 group.items.map((item) => {
                   const isActive =
                     group.filterKey === "country"
@@ -244,6 +249,7 @@ export default function FiltersPanel({
                       key={item}
                       onClick={() => {
                         const key = group.filterKey as FilterKey;
+
                         if (key === "country") onToggleCountry(item);
                         else if (group.multi) onToggleType(item);
                         else if (key === "region" || key === "star") {

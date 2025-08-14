@@ -52,12 +52,12 @@ export default function JourneyFinderClient() {
     region: "",
     country: [],
     star:
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("luxury")
-        ? decodeURIComponent(
-            new URLSearchParams(window.location.search).get("luxury")!
-          )
-        : "",
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+            .getAll("luxury")
+            .map(decodeURIComponent)
+        : [],
+
     types:
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("interest")
@@ -362,8 +362,9 @@ export default function JourneyFinderClient() {
         `count(countries[@->title in ${JSON.stringify(selectedFilters.country)}]) > 0`
       );
 
-    if (selectedFilters.star)
-      groqFilters.push(`star == "${selectedFilters.star}"`);
+    if (selectedFilters.star.length > 0)
+      groqFilters.push(`star in ${JSON.stringify(selectedFilters.star)}`);
+
     if (selectedFilters.types.length > 0) {
       const styleFilters = selectedFilters.types
         .map((style) => `"${style}" in travelStyleRefs[]->title`)
@@ -419,13 +420,16 @@ export default function JourneyFinderClient() {
       filterOptions.stars.length === 0
     )
       return;
-    const urlParams = new URLSearchParams(window.location.search);
-    const interest = urlParams.get("interest"); // 💡 cleaner than 'destination'
-    const star = urlParams.get("luxury");
+
+    const urlParams = new URLSearchParams(window.location.search); // ✅ Declare it here
+
+    const interestParams = urlParams.getAll("interest").map(decodeURIComponent);
+    const starParams = urlParams.getAll("luxury").map(decodeURIComponent);
+
     setSelectedFilters((prev) => ({
       ...prev,
-      types: interest ? [decodeURIComponent(interest)] : [],
-      star: star ? decodeURIComponent(star) : "",
+      types: interestParams,
+      star: starParams,
     }));
   }, [filterOptions]);
 
@@ -463,14 +467,26 @@ export default function JourneyFinderClient() {
     key: Extract<FilterKey, "region" | "star">,
     value: string
   ) => {
-    setSelectedFilters((prev) => ({ ...prev, [key]: value }) as Filters);
+    setSelectedFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const toggleStar = (value: string) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      star: prev.star.includes(value)
+        ? prev.star.filter((s) => s !== value)
+        : [...prev.star, value],
+    }));
   };
 
   const clearAll = () =>
     setSelectedFilters({
       region: "",
       country: [],
-      star: "",
+      star: [],
       types: [],
       duration: globalDurationRange,
       price: globalPriceRange,
@@ -532,6 +548,7 @@ export default function JourneyFinderClient() {
               onToggleType={toggleType}
               onToggleCountry={toggleCountry}
               onSetSimpleFilter={setSimpleFilter}
+              onToggleStar={toggleStar}
               onDurationChange={(r) =>
                 setSelectedFilters((p) => ({ ...p, duration: r }))
               }
@@ -579,6 +596,7 @@ export default function JourneyFinderClient() {
             onToggleType={toggleType}
             onToggleCountry={toggleCountry}
             onSetSimpleFilter={setSimpleFilter}
+            onToggleStar={toggleStar}
             onDurationChange={(r) =>
               setSelectedFilters((p) => ({ ...p, duration: r }))
             }

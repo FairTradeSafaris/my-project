@@ -19,7 +19,7 @@ export interface Journey {
 export type Filters = {
   region: string;
   country: string[];
-  star: string;
+  star: string[];
   types: string[];
   duration: [number, number];
   price: [number, number];

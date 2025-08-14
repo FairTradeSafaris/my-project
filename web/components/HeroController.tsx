@@ -40,12 +40,12 @@ function MultiSelectDropdown({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none text-sm"
+          className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none text-sm text-black"
         >
           {selected.length > 0 ? (
             selected.join(", ")
           ) : (
-            <span className="text-gray-400">{label}</span>
+            <span className="text-black">{label}</span>
           )}
           <ChevronUpDownIcon
             className="absolute right-2 top-2.5 h-5 w-5 text-gray-400"
@@ -59,16 +59,16 @@ function MultiSelectDropdown({
               <div
                 key={option}
                 className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                onMouseDown={(e) => e.preventDefault()} // Prevent blur
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => toggleSelection(option)}
               >
                 <input
                   type="checkbox"
                   checked={selected.includes(option)}
-                  readOnly // <-- prevent React warning with controlled checkbox
-                  className="mr-2 pointer-events-none" // <-- this is key!
+                  readOnly
+                  className="mr-2 pointer-events-none"
                 />
-                <span className="text-sm">{option}</span>
+                <span className="text-sm text-black">{option}</span>
               </div>
             ))}
           </div>
@@ -167,7 +167,7 @@ function HomeFilters() {
         luxury.forEach((l) => qs.append("luxury", l));
         router.push(`/journey?${qs.toString()}`);
       }}
-      className="mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black dark:text-white rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
+      className="mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
       role="search"
       aria-label="Find your safari"
     >
@@ -202,48 +202,64 @@ function HeroView({
   headline,
   sub,
   children,
+  variant = "banner",
 }: {
   bgUrl?: string;
   pageLabel?: string;
   headline?: string;
   sub?: string;
   children?: React.ReactNode;
+  variant?: "home" | "banner";
 }) {
+  const isHome = variant === "home";
+
   return (
     <section
-      className="relative h-[45vh] md:h-[90vh] max-h-[600px] w-full pt-24 md:pt-28 overflow-hidden"
+      className={`
+        relative 
+        w-full 
+        overflow-hidden 
+        ${isHome ? "aspect-[16/9]" : "h-[500px]"}
+        pt-24 md:pt-28
+      `}
       id="hero"
     >
       <Image
         src={bgUrl || "/hero.webp"}
         alt="Hero background"
         fill
-        className="object-[center_25%] md:object-center object-cover transition-all duration-700"
+        className={`
+          transition-all duration-700 
+          object-center 
+          ${isHome ? "object-contain" : "object-cover"}
+        `}
         priority
         fetchPriority="high"
       />
+
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
 
       <div className="relative z-20 flex flex-col items-center justify-center text-center px-4 h-full text-white">
-        {pageLabel ? (
+        {pageLabel && (
           <span className="uppercase tracking-wide text-white/80 text-xs md:text-sm mb-1">
             {pageLabel}
           </span>
-        ) : null}
-        {headline ? (
-          <h1 className="text-3xl md:text-6xl font-extrabold mb-2 leading-tight">
+        )}
+        {headline && (
+          <h1
+            className={`font-extrabold leading-tight ${
+              isHome ? "text-3xl md:text-6xl" : "text-xl md:text-4xl"
+            } mb-2`}
+          >
             {headline}
           </h1>
-        ) : null}
-        {sub ? (
-          <p className="text-sm md:text-2xl text-white/90 max-w-xl mb-2 md:mb-4 leading-snug">
+        )}
+        {sub && (
+          <p className="text-sm md:text-lg text-white/90 max-w-xl mb-2 md:mb-4 leading-snug">
             {sub}
           </p>
-        ) : null}
-
-        {children ? (
-          <div className="mt-3 w-full max-w-5xl">{children}</div>
-        ) : null}
+        )}
+        {children && <div className="mt-3 w-full max-w-5xl">{children}</div>}
       </div>
     </section>
   );
@@ -406,7 +422,7 @@ export default function HeroController({
               ref={inputRef}
               type="search"
               placeholder="Search journeys…"
-              className="w-full bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-500"
+              className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black"
               onChange={(e) => onType(e.target.value)}
               aria-label="Search journeys"
             />
@@ -416,7 +432,7 @@ export default function HeroController({
               ref={inputRef}
               type="search"
               placeholder="Search journeys…"
-              className="w-full bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-500"
+              className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black"
               onChange={(e) => onType(e.target.value)}
               aria-label="Search journeys"
             />

@@ -1,13 +1,13 @@
 // components/NavbarMobile.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Menu, Search, X } from "lucide-react";
 import MobileMenuSheet from "./MobileMenuSheet";
-import { client } from "@/lib/sanity"; // ← Sanity client
+import { client } from "@/lib/sanity";
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -27,7 +27,6 @@ function useScrolled(threshold = 50) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > threshold);
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [threshold]);
@@ -62,13 +61,12 @@ export default function NavbarMobile() {
   const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Sanity-driven data (no props)
   const [navSections, setNavSections] = useState<NavSection[]>([]);
   const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
   const [promoCard, setPromoCard] = useState<FeatureCard | null>(null);
   const [ready, setReady] = useState(false);
 
-  // fetch menu from Sanity on mount
+  // Fetch Sanity menu data
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -82,18 +80,11 @@ export default function NavbarMobile() {
         `);
         if (cancelled) return;
 
-        setNavSections(
-          Array.isArray(data?.navSections) ? data.navSections : []
-        );
-        setFeatureCards(
-          Array.isArray(data?.featureCards) ? data.featureCards : []
-        );
+        setNavSections(data?.navSections || []);
+        setFeatureCards(data?.featureCards || []);
         setPromoCard(data?.promoCard || null);
       } catch (e) {
         console.error("megaMenu fetch failed", e);
-        setNavSections([]);
-        setFeatureCards([]);
-        setPromoCard(null);
       } finally {
         if (!cancelled) setReady(true);
       }
@@ -103,7 +94,7 @@ export default function NavbarMobile() {
     };
   }, []);
 
-  // lock body scroll when menu is open
+  // Lock scroll when menu is open
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = menuOpen ? "hidden" : "auto";
@@ -123,22 +114,22 @@ export default function NavbarMobile() {
 
   return (
     <>
-      {/* Sticky mobile header */}
+      {/* Persistent Sticky Mobile Header */}
       <header
         className={cx(
-          "md:hidden sticky top-0 z-50 w-full",
-          "backdrop-blur supports-[backdrop-filter]:bg-white/65 dark:supports-[backdrop-filter]:bg-neutral-900/60",
-          "bg-white/90 dark:bg-neutral-900/85",
+          "fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 md:hidden",
+          "backdrop-blur bg-white/90 dark:bg-neutral-900/85",
           "border-b border-black/5 dark:border-white/10"
         )}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div
           className={cx(
-            "flex items-center justify-between gap-3 px-4",
+            "flex items-center justify-between gap-3 px-4 transition-all duration-300",
             scrolled ? "h-14" : "h-16"
           )}
         >
+          {/* Logo + Badge */}
           <div className="flex items-center gap-3">
             <Link href="/" aria-label="Fair Trade Safaris" className="shrink-0">
               <div className="w-11 h-11 rounded-xl shadow-sm bg-[#d7ccc8] dark:bg-[#1f1410] grid place-items-center">
@@ -165,7 +156,7 @@ export default function NavbarMobile() {
             </Link>
           </div>
 
-          {/* Right cluster: search + menu */}
+          {/* Right Icons: Search + Menu */}
           <div className="flex items-center gap-3">
             <Link
               href="/journey"
@@ -174,7 +165,6 @@ export default function NavbarMobile() {
             >
               <Search size={20} />
             </Link>
-
             <motion.button
               whileTap={{ scale: 0.92 }}
               aria-label={menuOpen ? "Close Menu" : "Open Menu"}
@@ -187,7 +177,7 @@ export default function NavbarMobile() {
         </div>
       </header>
 
-      {/* Full-screen mobile sheet (data from Sanity) */}
+      {/* Mobile Menu Sheet */}
       <AnimatePresence>
         {menuOpen && ready && (
           <motion.div
@@ -197,7 +187,7 @@ export default function NavbarMobile() {
             exit="exit"
             variants={sheetVariants}
             transition={{ duration: reduceMotion ? 0 : 0.15 }}
-            className="md:hidden"
+            className="fixed inset-0 z-[9998] bg-white dark:bg-neutral-900 md:hidden"
           >
             <MobileMenuSheet
               onClose={() => setMenuOpen(false)}

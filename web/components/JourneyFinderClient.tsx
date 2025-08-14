@@ -29,12 +29,12 @@ export default function JourneyFinderClient() {
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [collapsed, setCollapsed] = useState({
-    region: false,
-    country: false,
-    star: false,
-    duration: false,
-    price: false,
-    types: false,
+    region: true,
+    country: true,
+    star: true,
+    duration: true,
+    price: true,
+    types: true,
   });
 
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
@@ -515,7 +515,7 @@ export default function JourneyFinderClient() {
       {/* Mobile Filter Drawer */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-end lg:hidden">
-          <div className="w-[85vw] max-w-sm bg-[#fdf8f3] h-full p-5 pt-6 overflow-y-auto relative border-l border-gray-200 shadow-xl">
+          <div className="w-[85vw] max-w-sm bg-[#fdf8f3] h-full pt-[72px] px-5 pb-5 overflow-y-auto relative border-l border-gray-200 shadow-xl">
             <button
               onClick={() => setShowMobileFilters(false)}
               className="w-full py-2.5 mb-4 bg-[#a35c2d] text-white text-sm font-semibold rounded-md shadow hover:bg-[#8d4f26] transition"
@@ -610,20 +610,22 @@ export default function JourneyFinderClient() {
         <section className="flex-1 p-6 lg:ml-12">
           {/* Sticky Mobile Filter Buttons */}
           {/* Sticky Mobile Filter Bar (top, under navbar) */}
-          <div className="sticky top-0 z-40 bg-[#fdf8f3]/95 backdrop-blur border-b border-gray-200 px-4 py-2 flex gap-3 justify-center lg:hidden">
-            <button
-              onClick={() => setShowMobileFilters(true)}
-              className="flex-1 py-2.5 text-sm font-semibold text-white bg-[#a35c2d] rounded-md shadow hover:bg-[#8d4f26] transition"
-            >
-              Refine Results 🔍
-            </button>
-            <button
-              onClick={clearAll}
-              className="flex-1 py-2.5 text-sm font-semibold text-[#a35c2d] border border-[#a35c2d] bg-white rounded-md shadow hover:bg-[#f5f3ef] transition"
-            >
-              Clear All
-            </button>
-          </div>
+          {!showMobileFilters && (
+            <div className="sticky top-[56px] z-[9998] bg-[#fdf8f3]/95 backdrop-blur border-b border-gray-200 px-4 py-2 flex gap-3 justify-center lg:hidden">
+              <button
+                onClick={() => setShowMobileFilters(true)}
+                className="flex-1 py-2.5 text-sm font-semibold text-white bg-[#a35c2d] rounded-md shadow hover:bg-[#8d4f26] transition"
+              >
+                Refine Results 🔍
+              </button>
+              <button
+                onClick={clearAll}
+                className="flex-1 py-2.5 text-sm font-semibold text-[#a35c2d] border border-[#a35c2d] bg-white rounded-md shadow hover:bg-[#f5f3ef] transition"
+              >
+                Clear All
+              </button>
+            </div>
+          )}
 
           {renderSelectedFiltersSummary()}
 

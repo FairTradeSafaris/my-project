@@ -676,17 +676,17 @@ export default function JourneyFinderClient() {
       {/* Modal */}
       {selectedJourney && (
         <div
-          className="fixed inset-0 z-50 bg-black/50"
+          className="fixed inset-0 z-[99999] bg-black/60 flex justify-end items-start"
           onClick={() => setSelectedJourney(null)}
         >
           <div
-            className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[80vw] lg:w-[70vw] bg-white shadow-xl"
+            className="relative w-full h-full sm:w-[90vw] md:w-[80vw] lg:w-[70vw] bg-white shadow-2xl z-[100000] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {selectedJourney.wetuLink ? (
               <>
-                <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md relative px-4 pt-4 pb-4">
-                  {/* Top Row: Logo & Close */}
+                {/* Header */}
+                <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md px-4 pt-4 pb-4 z-[100001]">
                   <div className="flex justify-between items-start mb-4">
                     <img
                       src="/logos/logo-top.png"
@@ -702,7 +702,6 @@ export default function JourneyFinderClient() {
                     </button>
                   </div>
 
-                  {/* Journey Info & Rating */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <div>
                       <h2 className="text-base sm:text-lg font-semibold text-gray-800">
@@ -734,7 +733,6 @@ export default function JourneyFinderClient() {
                     )}
                   </div>
 
-                  {/* CTA Button */}
                   <div className="mt-4 sm:mt-3">
                     <button
                       onClick={() =>
@@ -750,10 +748,10 @@ export default function JourneyFinderClient() {
                   </div>
                 </div>
 
+                {/* Iframe View */}
                 <iframe
                   src={selectedJourney.wetuLink}
-                  className="w-full h-[calc(100%-80px)]"
-                  style={{ border: "none" }}
+                  className="flex-grow w-full border-none"
                   allowFullScreen
                   loading="lazy"
                 />

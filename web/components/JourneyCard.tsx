@@ -208,11 +208,11 @@ export default function JourneyCard({
       {/* Booking Modal */}
       {bookingOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/50"
+          className="fixed inset-0 z-[99999] bg-black/60"
           onClick={() => setBookingOpen(false)}
         >
           <div
-            className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[85vw] lg:w-[75vw] bg-white shadow-xl"
+            className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[85vw] lg:w-[75vw] bg-white shadow-xl z-[100000]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b bg-[#f2e7db]">

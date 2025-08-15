@@ -158,6 +158,9 @@ export default function BottomTabBar() {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      // ✅ TOOLTIP ONLY ON MOBILE
+      if (typeof window !== "undefined" && window.innerWidth > 768) return;
+
       const keys = Object.keys(helperMessages) as HelperKey[];
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
       const randomMsg =
@@ -205,7 +208,7 @@ export default function BottomTabBar() {
 
   return (
     <>
-      {/* 💬 Tooltip */}
+      {/* 💬 Tooltip - MOBILE ONLY */}
       <AnimatePresence>
         {visibleHelper && tooltipX !== null && (
           <motion.div
@@ -214,11 +217,8 @@ export default function BottomTabBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-[72px] z-[100] bg-white text-black px-4 py-2 text-sm rounded-2xl shadow-xl border border-gray-200 max-w-[80vw] text-center"
-            style={{
-              left: tooltipX,
-              position: "fixed",
-            }}
+            className="fixed bottom-[72px] z-[100] bg-white text-black px-4 py-2 text-sm rounded-2xl shadow-xl border border-gray-200 max-w-[80vw] text-center md:hidden"
+            style={{ left: tooltipX }}
           >
             {visibleHelper.message}
             <div

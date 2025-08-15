@@ -35,7 +35,7 @@ function MultiSelectDropdown({
   };
 
   return (
-    <div className="relative w-full" onBlur={handleBlur}>
+    <div className="relative w-full z-50" onBlur={handleBlur}>
       <div className="relative">
         <button
           type="button"
@@ -54,7 +54,7 @@ function MultiSelectDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute z-20 mt-1 w-full rounded-md bg-white shadow-lg max-h-60 overflow-auto border border-black/10">
+          <div className="absolute z-50 mt-1 w-full rounded-md bg-white shadow-lg max-h-60 overflow-auto border border-black/10">
             {options.map((option) => (
               <div
                 key={option}
@@ -167,7 +167,7 @@ function HomeFilters() {
         luxury.forEach((l) => qs.append("luxury", l));
         router.push(`/journey?${qs.toString()}`);
       }}
-      className="mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
+      className="relative z-[999] mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
       role="search"
       aria-label="Find your safari"
     >
@@ -218,7 +218,6 @@ function HeroView({
       className={`
     relative 
     w-full 
-    overflow-hidden 
     ${isHome ? "aspect-[16/9] md:h-auto" : "h-[500px] md:h-[500px]"}
     pt-24 md:pt-28
   `}

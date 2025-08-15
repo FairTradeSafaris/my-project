@@ -527,33 +527,67 @@ export default function JourneyFinderClient() {
 
   useEffect(() => {
     if (filtersReady) return;
-    if (filterOptions.style.length === 0 || filterOptions.stars.length === 0)
+
+    // Wait until all relevant filterOptions are populated
+    if (
+      filterOptions.signature.length === 0 &&
+      filterOptions.style.length === 0 &&
+      filterOptions.feature.length === 0 &&
+      filterOptions.stars.length === 0
+    ) {
       return;
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const interestParams = urlParams.getAll("interest").map(decodeURIComponent);
     const luxuryParams = urlParams.getAll("luxury").map(decodeURIComponent);
     const openParam = urlParams.get("open");
 
-    const validInterests = interestParams.filter((val) =>
-      filterOptions.style.includes(val)
-    );
+    const interestToFilterMap: Partial<Filters> = {
+      signature: [],
+      style: [],
+      feature: [],
+    };
+
+    interestParams.forEach((val) => {
+      if (filterOptions.signature.includes(val)) {
+        interestToFilterMap.signature!.push(val);
+      } else if (filterOptions.style.includes(val)) {
+        interestToFilterMap.style!.push(val);
+      } else if (filterOptions.feature.includes(val)) {
+        interestToFilterMap.feature!.push(val);
+      }
+    });
+
     const validStars = luxuryParams.filter((val) =>
       filterOptions.stars.includes(val)
     );
 
     setSelectedFilters((prev) => ({
       ...prev,
-      types: validInterests,
+      ...interestToFilterMap,
       star: validStars,
     }));
 
     if (openParam === "true") {
       window.dispatchEvent(new CustomEvent("fts:open-search-sheet"));
     }
-    console.log("✅ Setting filtersReady to true");
+
+    console.log("✅ Filters applied from URL:", {
+      signature: interestToFilterMap.signature,
+      style: interestToFilterMap.style,
+      feature: interestToFilterMap.feature,
+      stars: validStars,
+    });
+
     setFiltersReady(true);
-  }, [filterOptions.style, filterOptions.stars, filtersReady]);
+  }, [
+    filterOptions.signature,
+    filterOptions.style,
+    filterOptions.feature,
+    filterOptions.stars,
+    filtersReady,
+  ]);
 
   const globalDurationRange = React.useMemo<[number, number]>(() => {
     const ds = filterOptions.durations.filter((n) => n > 0);

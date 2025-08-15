@@ -55,18 +55,18 @@ function MultiSelectDropdown({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none text-sm text-black"
+          className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-3 pl-4 pr-10 text-left shadow-sm focus:outline-none text-base text-black"
         >
           {selected.length > 0 ? selected.join(", ") : <span>{label}</span>}
-          <ChevronUpDownIcon className="absolute right-2 top-2.5 h-5 w-5 text-gray-400" />
+          <ChevronUpDownIcon className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
         </button>
 
         {isOpen && (
-          <div className="absolute z-20 mt-1 w-full rounded-md bg-white shadow-lg max-h-60 overflow-auto border border-black/10">
+          <div className="absolute bottom-full mb-2 z-[9999] w-full rounded-xl bg-white shadow-2xl max-h-[300px] overflow-auto border border-gray-200 text-black">
             {options.map((option) => (
               <div
                 key={option}
-                className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                className="flex items-center px-4 py-3 hover:bg-gray-100 cursor-pointer"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => toggleSelection(option)}
               >
@@ -76,7 +76,7 @@ function MultiSelectDropdown({
                   readOnly
                   className="mr-2 pointer-events-none"
                 />
-                <span className="text-sm text-black">{option}</span>
+                <span className="text-base">{option}</span>
               </div>
             ))}
           </div>

@@ -1,4 +1,3 @@
-// schemas/travelInterest.ts
 import {defineType, defineField} from 'sanity'
 
 export default defineType({
@@ -18,6 +17,20 @@ export default defineType({
       type: 'boolean',
       initialValue: false,
       description: 'Mark this if it should show as a top interest on the homepage',
+    }),
+    defineField({
+      name: 'category',
+      title: 'Filter Category',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Signature Safari Experience', value: 'signature'},
+          {title: 'Travel Style', value: 'style'},
+          {title: 'Trip Feature', value: 'feature'},
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
     }),
   ],
 })

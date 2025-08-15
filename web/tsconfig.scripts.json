@@ -1,0 +1,13 @@
+// tsconfig.scripts.json
+{
+  "compilerOptions": {
+    "target": "ES2020", // 👈 fixes #private identifier errors
+    "module": "CommonJS",
+    "strict": false,
+    "esModuleInterop": true, // 👈 fixes React/interop errors
+    "skipLibCheck": true, // 👈 ignore node_modules madness
+    "resolveJsonModule": true,
+    "outDir": "dist-scripts"
+  },
+  "include": ["scripts/**/*.ts"]
+}

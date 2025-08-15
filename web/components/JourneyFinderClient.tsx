@@ -54,7 +54,9 @@ export default function JourneyFinderClient() {
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     regions: [],
     countries: [],
-    styles: [],
+    signature: [], // ✅ add this
+    style: [],
+    feature: [], // ✅ add this
     stars: [],
     durations: [],
     prices: [],
@@ -66,7 +68,10 @@ export default function JourneyFinderClient() {
     region: "",
     country: [],
     star: [],
-    types: [],
+    signature: [],
+    style: [],
+    feature: [],
+    types: [], // ✅ Add this line
     duration: [0, 100],
     price: [0, 999999],
   });
@@ -99,12 +104,14 @@ export default function JourneyFinderClient() {
       alt, ctaText, wetuLink,
       region->{ title }, countries[]->{ title, "flag": flag.asset->url },
       star, "starIcon": starIcon.asset->url,
-      "interests": travelStyleRefs[]->title,
+      "interests": travelStyleRefs[]->{title, category, isTopInterest},
       "featuredOnHome": featuredOnHome
     }`
       )
 
       .then((data: Journey[]) => {
+        console.log("📦 Fetched visible journeys:", data);
+
         setAllJourneys((prev) => [
           ...prev,
           ...data.filter(
@@ -132,13 +139,13 @@ export default function JourneyFinderClient() {
     sanityClient
       .fetch(
         `*[_type == "journey"][0...1000]{
-      region->{ title },
-      countries[]->{ title },
-      "interests": travelStyleRefs[]->title,
-      duration,
-      star,
-      price
-    }`
+    region->{ title },
+    countries[]->{ title },
+    "interests": travelStyleRefs[]->{ title, category },
+    duration,
+    star,
+    price
+  }`
       )
 
       .then((data: Journey[]) => {
@@ -159,9 +166,39 @@ export default function JourneyFinderClient() {
           )
         ) as string[];
 
-        const styles = Array.from(
-          new Set(data.flatMap((j) => j.interests || []))
-        );
+        const signatureSet = new Set<string>();
+        const styleSet = new Set<string>();
+        const featureSet = new Set<string>();
+
+        data.forEach((j) => {
+          console.log("🔬 Interest categories for:", j.title, j.interests);
+          (j.interests || []).forEach(
+            (interest: { title?: string; category?: string }) => {
+              if (!interest?.title || !interest?.category) return;
+              const normalizedCategory = {
+                signature: "Signature Safari Experience",
+                style: "Travel Style",
+                feature: "Trip Feature",
+              }[interest.category?.toLowerCase() || ""];
+
+              switch (normalizedCategory) {
+                case "Signature Safari Experience":
+                  signatureSet.add(interest.title);
+                  break;
+                case "Travel Style":
+                  styleSet.add(interest.title);
+                  break;
+                case "Trip Feature":
+                  featureSet.add(interest.title);
+                  break;
+              }
+            }
+          );
+        });
+
+        const signature = Array.from(signatureSet).sort();
+        const style = Array.from(styleSet).sort();
+        const feature = Array.from(featureSet).sort();
 
         const stars = Array.from(
           new Set(
@@ -187,12 +224,18 @@ export default function JourneyFinderClient() {
         setFilterOptions({
           regions,
           countries,
-          styles,
+          signature,
+          style,
+          feature,
           stars,
           durations: durationNumbers,
           prices: priceNumbers,
         });
-
+        console.log("🧪 Parsed filter options:", {
+          style,
+          stars,
+          filterOptionsAfterSet: filterOptions,
+        });
         setSelectedFilters((prev) => ({
           ...prev,
           duration: [minD, maxD],
@@ -234,10 +277,65 @@ export default function JourneyFinderClient() {
     return cs.sort();
   }, [optionsJourneys, selectedFilters.region]);
 
-  const availableStyles = useMemo(() => {
+  const availableSignature = useMemo(() => {
     const s = new Set<string>();
     scopedPool.forEach((j) =>
-      (j.interests || []).forEach((interest) => s.add(interest))
+      (j.interests || []).forEach(
+        (interest: { title?: string; category?: string }) => {
+          const normalizedCategory = {
+            signature: "Signature Safari Experience",
+            style: "Travel Style",
+            feature: "Trip Feature",
+          }[interest.category?.toLowerCase() || ""];
+
+          if (
+            normalizedCategory === "Signature Safari Experience" &&
+            interest.title
+          ) {
+            s.add(interest.title);
+          }
+        }
+      )
+    );
+    return Array.from(s).sort();
+  }, [scopedPool]);
+
+  const availableStyle = useMemo(() => {
+    const s = new Set<string>();
+    scopedPool.forEach((j) =>
+      (j.interests || []).forEach(
+        (interest: { title?: string; category?: string }) => {
+          const normalizedCategory = {
+            signature: "Signature Safari Experience",
+            style: "Travel Style",
+            feature: "Trip Feature",
+          }[interest.category?.toLowerCase() || ""];
+
+          if (normalizedCategory === "Travel Style" && interest.title) {
+            s.add(interest.title);
+          }
+        }
+      )
+    );
+    return Array.from(s).sort();
+  }, [scopedPool]);
+
+  const availableFeature = useMemo(() => {
+    const s = new Set<string>();
+    scopedPool.forEach((j) =>
+      (j.interests || []).forEach(
+        (interest: { title?: string; category?: string }) => {
+          const normalizedCategory = {
+            signature: "Signature Safari Experience",
+            style: "Travel Style",
+            feature: "Trip Feature",
+          }[interest.category?.toLowerCase() || ""];
+
+          if (normalizedCategory === "Trip Feature" && interest.title) {
+            s.add(interest.title);
+          }
+        }
+      )
     );
     return Array.from(s).sort();
   }, [scopedPool]);
@@ -269,7 +367,7 @@ export default function JourneyFinderClient() {
       const nextCountries = prev.country.filter((c) =>
         availableCountries.includes(c)
       );
-      const nextTypes = prev.types.filter((t) => availableStyles.includes(t));
+      const nextTypes = prev.types.filter((t) => availableStyle.includes(t));
       const nextDuration = availableDurationRange as [number, number];
       const nextPrice = availablePriceRange as [number, number];
 
@@ -296,7 +394,7 @@ export default function JourneyFinderClient() {
   }, [
     selectedFilters.region,
     availableCountries,
-    availableStyles,
+    availableStyle,
     availableDurationRange,
     availablePriceRange,
   ]);
@@ -305,7 +403,7 @@ export default function JourneyFinderClient() {
   useEffect(() => {
     if (selectedFilters.types.length) {
       const pruned = selectedFilters.types.filter((t) =>
-        availableStyles.includes(t)
+        availableStyle.includes(t)
       );
       if (pruned.length !== selectedFilters.types.length) {
         setSelectedFilters((prev) => ({ ...prev, types: pruned }));
@@ -334,12 +432,12 @@ export default function JourneyFinderClient() {
       setSelectedFilters((prev) => ({ ...prev, price: nextPrice }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableStyles, availableDurationRange, availablePriceRange]);
+  }, [availableStyle, availableDurationRange, availablePriceRange]);
 
   // Refresh dependents after country changes
   useEffect(() => {
     setSelectedFilters((prev) => {
-      const nextTypes = prev.types.filter((t) => availableStyles.includes(t));
+      const nextTypes = prev.types.filter((t) => availableStyle.includes(t));
       const nextDuration = availableDurationRange;
       const nextPrice = availablePriceRange;
       return {
@@ -367,11 +465,14 @@ export default function JourneyFinderClient() {
     if (selectedFilters.star.length > 0)
       groqFilters.push(`star in ${JSON.stringify(selectedFilters.star)}`);
 
-    if (selectedFilters.types.length > 0) {
-      const styleFilters = selectedFilters.types
-        .map((style) => `"${style}" in travelStyleRefs[]->title`)
-        .join(" || ");
-      groqFilters.push(`(${styleFilters})`);
+    const interestFilters = ["signature", "style", "feature"].flatMap((key) =>
+      (selectedFilters[key as keyof Filters] as string[]).map(
+        (val) => `"${val}" in travelStyleRefs[]->title`
+      )
+    );
+
+    if (interestFilters.length > 0) {
+      groqFilters.push(`(${interestFilters.join(" || ")})`);
     }
 
     const groqWhere =
@@ -387,7 +488,7 @@ export default function JourneyFinderClient() {
         alt, ctaText, wetuLink,
         region->{ title }, countries[]->{ title, "flag": flag.asset->url },
         star, "starIcon": starIcon.asset->url,
-        "interests": travelStyleRefs[]->title,
+        "interests": travelStyleRefs[]->{title, category, isTopInterest},
         "featuredOnHome": featuredOnHome
       }`
       )
@@ -410,6 +511,13 @@ export default function JourneyFinderClient() {
           return matchesSearch && matchesDuration && matchesPrice;
         });
         setFilteredJourneys(filtered);
+        console.log("🔍 Filtering breakdown:");
+        console.log("Search term:", searchTerm);
+        console.log("Duration filter:", selectedFilters.duration);
+        console.log("Price filter:", selectedFilters.price);
+        console.log("Filtered result count:", filtered.length);
+        console.log("All fetched items:", data);
+
         setAllJourneys(data);
       });
   }, [searchTerm, selectedFilters, filtersReady]);
@@ -419,7 +527,7 @@ export default function JourneyFinderClient() {
 
   useEffect(() => {
     if (filtersReady) return;
-    if (filterOptions.styles.length === 0 || filterOptions.stars.length === 0)
+    if (filterOptions.style.length === 0 || filterOptions.stars.length === 0)
       return;
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -428,7 +536,7 @@ export default function JourneyFinderClient() {
     const openParam = urlParams.get("open");
 
     const validInterests = interestParams.filter((val) =>
-      filterOptions.styles.includes(val)
+      filterOptions.style.includes(val)
     );
     const validStars = luxuryParams.filter((val) =>
       filterOptions.stars.includes(val)
@@ -443,9 +551,9 @@ export default function JourneyFinderClient() {
     if (openParam === "true") {
       window.dispatchEvent(new CustomEvent("fts:open-search-sheet"));
     }
-
+    console.log("✅ Setting filtersReady to true");
     setFiltersReady(true);
-  }, [filterOptions.styles, filterOptions.stars, filtersReady]);
+  }, [filterOptions.style, filterOptions.stars, filtersReady]);
 
   const globalDurationRange = React.useMemo<[number, number]>(() => {
     const ds = filterOptions.durations.filter((n) => n > 0);
@@ -496,15 +604,44 @@ export default function JourneyFinderClient() {
     }));
   };
 
+  const toggleSignature = (value: string) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      signature: prev.signature.includes(value)
+        ? prev.signature.filter((s) => s !== value)
+        : [...prev.signature, value],
+    }));
+  };
+
   const clearAll = () =>
     setSelectedFilters({
       region: "",
       country: [],
       star: [],
       types: [],
+      signature: [], // ✅ ADD THIS
+      style: [], // ✅ ADD THIS
+      feature: [], // ✅ ADD THIS
       duration: globalDurationRange,
       price: globalPriceRange,
     });
+
+  const toggleStyle = (value: string) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      style: prev.style.includes(value)
+        ? prev.style.filter((s) => s !== value)
+        : [...prev.style, value],
+    }));
+  };
+  const toggleFeature = (value: string) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      feature: prev.feature.includes(value)
+        ? prev.feature.filter((f) => f !== value)
+        : [...prev.feature, value],
+    }));
+  };
 
   const renderSelectedFiltersSummary = () => {
     const countryText = selectedFilters.country.join(", ");
@@ -522,7 +659,12 @@ export default function JourneyFinderClient() {
     );
   };
 
-  if (!allJourneys.length && !filterOptions.regions.length) return null;
+  if (!allJourneys.length && !filterOptions.regions.length) {
+    console.log("⛔ No journeys or filters loaded yet.");
+    return (
+      <div style={{ padding: "2rem", color: "#444" }}>Loading journeys...</div>
+    );
+  }
 
   return (
     <main className="min-h-screen text-black bg-[#fdf8f3]">
@@ -552,17 +694,22 @@ export default function JourneyFinderClient() {
             <FiltersPanel
               filterOptions={filterOptions}
               availableCountries={availableCountries}
-              availableStyles={availableStyles}
+              availableSignature={availableSignature}
+              availableStyle={availableStyle}
+              availableFeature={availableFeature}
               availableDurationRange={availableDurationRange}
               availablePriceRange={availablePriceRange}
               priceFilterEnabled={priceFilterEnabled}
               selectedFilters={selectedFilters}
               collapsed={collapsed}
               setCollapsed={setCollapsed}
-              onToggleType={toggleType}
               onToggleCountry={toggleCountry}
               onSetSimpleFilter={setSimpleFilter}
               onToggleStar={toggleStar}
+              onToggleSignature={toggleSignature}
+              onToggleStyle={toggleStyle}
+              onToggleFeature={toggleFeature}
+              onToggleType={toggleType}
               onDurationChange={(r) =>
                 setSelectedFilters((p) => ({ ...p, duration: r }))
               }
@@ -596,21 +743,25 @@ export default function JourneyFinderClient() {
               Clear All
             </button>
           </div>
-
           <FiltersPanel
             filterOptions={filterOptions}
             availableCountries={availableCountries}
-            availableStyles={availableStyles}
+            availableSignature={availableSignature}
+            availableStyle={availableStyle}
+            availableFeature={availableFeature}
             availableDurationRange={availableDurationRange}
             availablePriceRange={availablePriceRange}
             priceFilterEnabled={priceFilterEnabled}
             selectedFilters={selectedFilters}
             collapsed={collapsed}
             setCollapsed={setCollapsed}
-            onToggleType={toggleType}
             onToggleCountry={toggleCountry}
             onSetSimpleFilter={setSimpleFilter}
             onToggleStar={toggleStar}
+            onToggleSignature={toggleSignature}
+            onToggleStyle={toggleStyle}
+            onToggleFeature={toggleFeature}
+            onToggleType={toggleType}
             onDurationChange={(r) =>
               setSelectedFilters((p) => ({ ...p, duration: r }))
             }

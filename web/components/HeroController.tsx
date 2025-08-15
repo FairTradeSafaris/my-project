@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client as sanityClient } from "@/lib/sanity";
@@ -293,9 +293,6 @@ export default function HeroController({
   const [hero, setHero] = useState<HeroDoc | null>(null);
   const [bgUrl, setBgUrl] = useState<string | undefined>(undefined);
 
-  // If parent provided heroData, use it and skip fetching
-  console.log("🚨 heroData received in HeroController:", heroData);
-
   useEffect(() => {
     if (!heroData) return;
 
@@ -330,13 +327,6 @@ export default function HeroController({
     /^\/project-portal/,
   ];
   const hideHero = HIDE_ON.some((rx) => rx.test(pathname));
-
-  const pageKey = useMemo(() => {
-    const seg = pathname.split("/").filter(Boolean)[0];
-    return seg || "home";
-  }, [pathname]);
-  console.log("🔍 pathname:", pathname);
-  console.log("🔍 pageKey:", pageKey);
 
   useEffect(() => {
     if (!heroData) return; // ✅ no fetch needed, data comes from ClientLayout

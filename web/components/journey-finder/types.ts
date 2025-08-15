@@ -13,14 +13,21 @@ export interface Journey {
   star?: string;
   starIcon?: string;
   featuredOnHome?: boolean;
-  interests?: string[]; // ✅ add this new field
+  interests?: {
+    title: string;
+    category: string;
+    isTopInterest?: boolean;
+  }[]; // ✅ fully typed interest object
 }
 
 export type Filters = {
   region: string;
   country: string[];
   star: string[];
-  types: string[];
+  signature: string[];
+  style: string[];
+  feature: string[];
+  types: string[]; // ✅ ADD THIS LINE
   duration: [number, number];
   price: [number, number];
 };
@@ -28,7 +35,9 @@ export type Filters = {
 export type FilterOptions = {
   regions: string[];
   countries: string[];
-  styles: string[];
+  signature: string[];
+  style: string[];
+  feature: string[];
   stars: string[];
   durations: number[];
   prices: number[];

@@ -18,17 +18,21 @@ type CollapsedMap = {
 type Props = {
   filterOptions: FilterOptions;
   availableCountries: string[];
-  availableStyles: string[];
+  availableSignature: string[];
+  availableStyle: string[];
+  availableFeature: string[];
   availableDurationRange: [number, number];
   availablePriceRange: [number, number];
   priceFilterEnabled: boolean;
   selectedFilters: Filters;
   collapsed: CollapsedMap;
   setCollapsed: React.Dispatch<React.SetStateAction<CollapsedMap>>;
-
   onToggleType: (type: string) => void;
   onToggleCountry: (country: string) => void;
-  onToggleStar: (star: string) => void; // ✅ Added
+  onToggleStar: (star: string) => void;
+  onToggleSignature: (value: string) => void;
+  onToggleStyle: (value: string) => void;
+  onToggleFeature: (value: string) => void;
   onSetSimpleFilter: (
     key: Extract<FilterKey, "region" | "star">,
     value: string
@@ -40,16 +44,20 @@ type Props = {
 export default function FiltersPanel({
   filterOptions,
   availableCountries,
-  availableStyles,
+  availableSignature,
+  availableStyle,
+  availableFeature,
   availableDurationRange,
   availablePriceRange,
   priceFilterEnabled,
   selectedFilters,
   collapsed,
   setCollapsed,
-  onToggleType,
   onToggleCountry,
-  onToggleStar, // ✅ Used here
+  onToggleStar,
+  onToggleSignature,
+  onToggleStyle,
+  onToggleFeature,
   onSetSimpleFilter,
   onDurationChange,
   onPriceChange,
@@ -76,9 +84,21 @@ export default function FiltersPanel({
     { label: "Duration", items: [], filterKey: "duration" },
     { label: "Price", items: [], filterKey: "price" },
     {
-      label: "Interests & Activities",
-      items: availableStyles,
-      filterKey: "types",
+      label: "Signature Safari Experiences",
+      items: availableSignature,
+      filterKey: "signature",
+      multi: true,
+    },
+    {
+      label: "Travel Styles",
+      items: availableStyle,
+      filterKey: "style",
+      multi: true,
+    },
+    {
+      label: "Trip Features",
+      items: availableFeature,
+      filterKey: "feature",
       multi: true,
     },
   ];
@@ -87,7 +107,6 @@ export default function FiltersPanel({
     <>
       {groups.map((group) => (
         <div key={group.label} className="mb-5">
-          {/* Toggle Header */}
           <button
             className="flex justify-between items-center w-full text-xs tracking-wide font-semibold text-gray-600 mb-4 uppercase border-t pt-4"
             onClick={() =>
@@ -117,10 +136,8 @@ export default function FiltersPanel({
             </svg>
           </button>
 
-          {/* Filter Content */}
           {!collapsed[group.filterKey as keyof typeof collapsed] && (
             <div className="flex flex-wrap gap-4">
-              {/* Duration */}
               {group.filterKey === "duration" ? (
                 <div className="w-full">
                   <Slider
@@ -212,7 +229,6 @@ export default function FiltersPanel({
                   )}
                 </div>
               ) : group.filterKey === "star" ? (
-                // ✅ Multi-select Star checkboxes
                 <div className="flex flex-col gap-2">
                   {group.items.map((level) => {
                     const isChecked = selectedFilters.star.includes(level);
@@ -233,13 +249,19 @@ export default function FiltersPanel({
                   })}
                 </div>
               ) : (
-                // Region, Country, Type
                 group.items.map((item) => {
                   const isActive =
                     group.filterKey === "country"
                       ? selectedFilters.country.includes(item)
-                      : group.multi
-                        ? selectedFilters.types.includes(item)
+                      : group.multi &&
+                          Array.isArray(
+                            selectedFilters[group.filterKey as keyof Filters]
+                          )
+                        ? (
+                            selectedFilters[
+                              group.filterKey as keyof Filters
+                            ] as string[]
+                          ).includes(item)
                         : (selectedFilters[
                             group.filterKey as FilterKey
                           ] as string) === item;
@@ -249,9 +271,13 @@ export default function FiltersPanel({
                       key={item}
                       onClick={() => {
                         const key = group.filterKey as FilterKey;
-
                         if (key === "country") onToggleCountry(item);
-                        else if (group.multi) onToggleType(item);
+                        else if (group.filterKey === "signature")
+                          onToggleSignature(item);
+                        else if (group.filterKey === "style")
+                          onToggleStyle(item);
+                        else if (group.filterKey === "feature")
+                          onToggleFeature(item);
                         else if (key === "region" || key === "star") {
                           onSetSimpleFilter(key, isActive ? "" : item);
                         }

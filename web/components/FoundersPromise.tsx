@@ -85,7 +85,7 @@ export default function FoundersPromise({ data }: Props) {
       }}
     >
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black opacity-60 z-0 pointer-events-none" />
+      <div className="absolute inset-0 opacity-60 z-0 pointer-events-none" />
 
       {/* ✅ Fixed: Top fade matches previous gray tone */}
       <div
@@ -138,7 +138,7 @@ export default function FoundersPromise({ data }: Props) {
             flex flex-col justify-between
             backdrop-blur-sm
           `}
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+          style={{ backgroundColor: "#c8a165" }}
         >
           <div>
             <div
@@ -209,7 +209,7 @@ export default function FoundersPromise({ data }: Props) {
               flex flex-col justify-between
               backdrop-blur-sm
             `}
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+            style={{ backgroundColor: "#c8a165" }}
           >
             <div>
               <div

@@ -37,7 +37,7 @@ export default function ContactPageClient({
 
   const whatsappHref = useMemo(() => {
     const raw = contactInfo?.whatsappNumber;
-    if (!raw) return "https://wa.me/27795509203";
+    if (!raw) return "https://wa.me/27817517844";
     const digits = ("" + raw).replace(/\D/g, "");
     const withCountry = digits.startsWith("00") ? digits.slice(2) : digits;
     return `https://wa.me/${withCountry}`;

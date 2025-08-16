@@ -132,10 +132,15 @@ export default function Navbar({
 
   // lock body scroll when sheet is open
   useEffect(() => {
-    const prev = document.body.style.overflow;
+    const prevBody = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
+
     document.body.style.overflow = menuOpen ? "hidden" : "auto";
+    document.documentElement.style.overflow = menuOpen ? "hidden" : "auto";
+
     return () => {
-      document.body.style.overflow = prev || "auto";
+      document.body.style.overflow = prevBody || "auto";
+      document.documentElement.style.overflow = prevHtml || "auto";
     };
   }, [menuOpen]);
 
@@ -323,13 +328,14 @@ export default function Navbar({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="md:hidden fixed inset-0 z-[79] bg-black/50"
+              className="md:hidden fixed inset-0 z-[9998] bg-black/50"
               onClick={(e) => {
                 if ((e.target as HTMLElement).dataset.backdrop === "true")
                   setMenuOpen(false);
               }}
               aria-hidden="true"
             />
+
             <motion.div
               key="sheet"
               role="dialog"
@@ -339,7 +345,7 @@ export default function Navbar({
               exit="exit"
               variants={sheetVariants}
               transition={{ duration: reduceMotion ? 0 : 0.18 }}
-              className="md:hidden fixed inset-0 z-[80] pointer-events-none"
+              className="md:hidden fixed inset-0 z-[9999] pointer-events-none"
             >
               <motion.div
                 key="panel"

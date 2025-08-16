@@ -13,6 +13,9 @@ type CollapsedMap = {
   duration: boolean;
   price: boolean;
   types: boolean;
+  signature: boolean;
+  style: boolean;
+  feature: boolean;
 };
 
 type Props = {

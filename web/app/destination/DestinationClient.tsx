@@ -257,7 +257,7 @@ export default function DestinationClient({
   return (
     <main className="relative bg-[var(--background)] text-[var(--foreground)]">
       {/* Mobile sticky chips */}
-      <div className="md:hidden sticky top-0 z-20 bg-[var(--surface-dark)] border-b border-[var(--border)]">
+      <div className="md:hidden sticky top-0 z-20 bg-[#f2e7db] border-b border-[var(--border)]">
         <h2 className="text-base font-semibold px-4 py-3">
           Top-rated Safari Countries
         </h2>

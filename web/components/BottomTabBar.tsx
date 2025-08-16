@@ -10,7 +10,6 @@ import { client as sanityClient } from "@/lib/sanity";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Events
 export const OPEN_SEARCH_SHEET = "fts:open-search-sheet";
 export const CLOSE_SEARCH_SHEET = "fts:close-search-sheet";
 export const OPEN_BOOK_SHEET = "fts:open-book-sheet";
@@ -158,7 +157,6 @@ export default function BottomTabBar() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // ✅ TOOLTIP ONLY ON MOBILE
       if (typeof window !== "undefined" && window.innerWidth > 768) return;
 
       const keys = Object.keys(helperMessages) as HelperKey[];
@@ -208,7 +206,6 @@ export default function BottomTabBar() {
 
   return (
     <>
-      {/* 💬 Tooltip - MOBILE ONLY */}
       <AnimatePresence>
         {visibleHelper && tooltipX !== null && (
           <motion.div
@@ -220,7 +217,9 @@ export default function BottomTabBar() {
             className="fixed bottom-[72px] z-[100] bg-white text-black px-4 py-2 text-sm rounded-2xl shadow-xl border border-gray-200 max-w-[80vw] text-center md:hidden"
             style={{ left: tooltipX }}
           >
-            {visibleHelper.message}
+            {visibleHelper.key === "search"
+              ? "Start your trip"
+              : visibleHelper.message}
             <div
               className="absolute top-full"
               style={{
@@ -237,7 +236,6 @@ export default function BottomTabBar() {
         )}
       </AnimatePresence>
 
-      {/* 🔍 Search Sheet */}
       {open && (
         <>
           <button
@@ -245,15 +243,10 @@ export default function BottomTabBar() {
             onClick={() => setOpenWithEvents(false)}
             className="fixed inset-0 z-[69] md:hidden bg-black/50 backdrop-blur-sm"
           />
-
           <div
             role="dialog"
             aria-modal="true"
-            className="md:hidden fixed inset-x-0 z-[70] rounded-t-2xl bg-white text-neutral-900 shadow-2xl"
-            style={{
-              bottom: `calc(${TABBAR_BASE_HEIGHT}px + env(safe-area-inset-bottom))`,
-              paddingBottom: "env(safe-area-inset-bottom)",
-            }}
+            className="md:hidden fixed inset-x-0 bottom-0 z-[70] bg-white text-neutral-900 shadow-2xl"
           >
             <div className="flex items-center justify-between px-4 pt-3">
               <h2 className="text-sm font-semibold">
@@ -290,7 +283,6 @@ export default function BottomTabBar() {
                   />
                 </>
               )}
-
               <button
                 type="submit"
                 className="mt-1 w-full rounded-lg bg-neutral-900 text-white py-2.5 text-sm font-semibold active:scale-95"
@@ -302,7 +294,6 @@ export default function BottomTabBar() {
         </>
       )}
 
-      {/* 📱 Bottom Tab Bar */}
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-t border-black/10 dark:border-white/10 flex items-center justify-around px-4"
         style={{
@@ -322,7 +313,7 @@ export default function BottomTabBar() {
           className="flex flex-col items-center gap-1 text-xs active:scale-95"
         >
           <Search size={20} />
-          <span>Search</span>
+          <span>Trips</span>
         </button>
 
         <button

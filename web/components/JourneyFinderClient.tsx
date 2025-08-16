@@ -7,6 +7,7 @@ import JourneyCard from "@/components/JourneyCard";
 
 // NEW
 import FiltersPanel from "./journey-finder/FiltersPanel";
+import CountryDrawer from "./journey-finder/CountryDrawer";
 
 import {
   Journey,
@@ -24,8 +25,13 @@ export default function JourneyFinderClient() {
   const [visibleCount, setVisibleCount] = useState(9);
   const [filtersReady, setFiltersReady] = useState(false);
   const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
-  const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
+  const [drawerState, setDrawerState] = useState<{
+    open: boolean;
+    journey: Journey | null;
+    destination?: any; // or a proper Destination type if defined
+  }>({ open: false, journey: null });
+
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
@@ -36,8 +42,20 @@ export default function JourneyFinderClient() {
     duration: true,
     price: true,
     types: true,
+    signature: true,
+    style: true,
+    feature: true,
   });
+
   const [isSearchSheetOpen, setIsSearchSheetOpen] = useState(false);
+  useEffect(() => {
+    const isModalOpen = selectedJourney !== null || drawerState.open;
+    if (isModalOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+  }, [selectedJourney, drawerState.open]);
 
   useEffect(() => {
     const openHandler = () => setIsSearchSheetOpen(true);
@@ -61,8 +79,8 @@ export default function JourneyFinderClient() {
     durations: [],
     prices: [],
   });
-
   const [optionsJourneys, setOptionsJourneys] = useState<Journey[]>([]);
+  const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
 
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
     region: "",
@@ -76,6 +94,7 @@ export default function JourneyFinderClient() {
     price: [0, 999999],
   });
 
+  const journeysTopRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // Infinite loader
@@ -95,18 +114,25 @@ export default function JourneyFinderClient() {
     const query = new URLSearchParams(window.location.search);
     const queryTitle = query.get("q");
     const shouldOpen = query.get("open") === "true";
-
     sanityClient
       .fetch(
         `*[_type == "journey"][0...${visibleCount}] {
-      title, summary, slug, duration, price,
-      "heroUrl": heroImage.asset->url,
-      alt, ctaText, wetuLink,
-      region->{ title }, countries[]->{ title, "flag": flag.asset->url },
-      star, "starIcon": starIcon.asset->url,
-      "interests": travelStyleRefs[]->{title, category, isTopInterest},
-      "featuredOnHome": featuredOnHome
-    }`
+    title, summary, slug, duration, price,
+    "heroUrl": heroImage.asset->url,
+    alt, ctaText, wetuLink,
+    region->{ title },
+    countries[]->{
+      title,
+      "flag": flag.asset->url,
+      travelInfo,
+      highlights,
+      practicalStuff,
+      mapLocation
+    },
+    star, "starIcon": starIcon.asset->url,
+    "interests": travelStyleRefs[]->{title, category, isTopInterest},
+    "featuredOnHome": featuredOnHome
+  }`
       )
 
       .then((data: Journey[]) => {
@@ -668,6 +694,13 @@ export default function JourneyFinderClient() {
         : [...prev.style, value],
     }));
   };
+  const handleShowResultsAndScroll = () => {
+    setShowMobileFilters(false);
+    setTimeout(() => {
+      journeysTopRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  };
+
   const toggleFeature = (value: string) => {
     setSelectedFilters((prev) => ({
       ...prev,
@@ -707,7 +740,7 @@ export default function JourneyFinderClient() {
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-end lg:hidden">
           <div className="w-[85vw] max-w-sm bg-[#fdf8f3] h-full pt-[72px] px-5 pb-5 overflow-y-auto relative border-l border-gray-200 shadow-xl">
             <button
-              onClick={() => setShowMobileFilters(false)}
+              onClick={handleShowResultsAndScroll}
               className="w-full py-2.5 mb-4 bg-[#a35c2d] text-white text-sm font-semibold rounded-md shadow hover:bg-[#8d4f26] transition"
             >
               Show Results & Close
@@ -810,7 +843,7 @@ export default function JourneyFinderClient() {
           {/* Sticky Mobile Filter Buttons */}
           {/* Sticky Mobile Filter Bar (top, under navbar) */}
           {!showMobileFilters && !isSearchSheetOpen && (
-            <div className="sticky top-[56px] z-[9998] bg-[#fdf8f3]/95 backdrop-blur border-b border-gray-200 px-4 py-2 flex gap-3 justify-center lg:hidden">
+            <div className="sticky top-[56px] z-[30] bg-[#fdf8f3]/95 backdrop-blur border-b border-gray-200 px-4 py-2 flex gap-3 justify-center lg:hidden">
               <button
                 onClick={() => setShowMobileFilters(true)}
                 className="flex-1 py-2.5 text-sm font-semibold text-white bg-[#a35c2d] rounded-md shadow hover:bg-[#8d4f26] transition"
@@ -828,6 +861,7 @@ export default function JourneyFinderClient() {
 
           {renderSelectedFiltersSummary()}
 
+          <div ref={journeysTopRef} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJourneys.length > 0 ? (
               filteredJourneys.map((j, index) => (
@@ -870,70 +904,110 @@ export default function JourneyFinderClient() {
           >
             {selectedJourney.wetuLink ? (
               <>
-                {/* Header */}
-                <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md px-4 pt-4 pb-4 z-[100001]">
-                  <div className="flex justify-between items-start mb-4">
-                    <img
-                      src="/logos/logo-top.png"
-                      alt="Fair Trade Safaris"
-                      className="h-8 sm:h-10 w-auto"
-                    />
-                    <button
-                      onClick={() => setSelectedJourney(null)}
-                      className="text-2xl font-bold text-gray-800 hover:text-black"
-                      aria-label="Close"
-                    >
-                      &times;
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                    <div>
-                      <h2 className="text-base sm:text-lg font-semibold text-gray-800">
-                        {selectedJourney.title}
-                      </h2>
-                      <p className="text-sm text-gray-600">
-                        {selectedJourney.duration} •{" "}
-                        {selectedJourney.region?.title}
-                      </p>
+                <div className="bg-[#f2e7db] border-b border-gray-200 shadow-md px-4 py-3 z-[100001]">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-center sm:text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 flex-1">
+                      <div className="flex items-center justify-center sm:justify-start">
+                        <img
+                          src="/logos/logo-top.png"
+                          alt="Fair Trade Safaris"
+                          className="h-7 sm:h-8 w-auto mx-auto sm:mx-0"
+                        />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-800 mt-2 sm:mt-0">
+                          {selectedJourney.title}
+                        </div>
+                        <div className="flex flex-wrap justify-center sm:justify-start items-center text-sm text-gray-600 gap-2 mt-0.5">
+                          <span>
+                            {selectedJourney.duration} •{" "}
+                            {selectedJourney.region?.title}
+                          </span>
+                          {selectedJourney.star && (
+                            <div className="flex items-center gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <img
+                                  key={i}
+                                  src={
+                                    selectedJourney.starIcon ||
+                                    "/default-star.svg"
+                                  }
+                                  alt="star"
+                                  className={`w-4 h-4 ${
+                                    i >= parseInt(selectedJourney.star || "0")
+                                      ? "opacity-30"
+                                      : ""
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    {selectedJourney.star && (
-                      <div className="flex items-center gap-1 sm:justify-end justify-center">
-                        {[...Array(5)].map((_, i) => (
-                          <img
-                            key={i}
-                            src={
-                              selectedJourney.starIcon || "/default-star.svg"
-                            }
-                            alt="star"
-                            className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                              i >= parseInt(selectedJourney.star || "0")
-                                ? "opacity-30"
-                                : ""
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                    <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2">
+                      <button
+                        onClick={() =>
+                          window.open(
+                            "https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris",
+                            "_blank"
+                          )
+                        }
+                        className="px-3 py-1.5 text-xs bg-[#a35c2d] text-white font-semibold rounded shadow hover:bg-[#8d4f26] transition"
+                      >
+                        Start Planning
+                      </button>
 
-                  <div className="mt-4 sm:mt-3">
-                    <button
-                      onClick={() =>
-                        window.open(
-                          "https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris",
-                          "_blank"
-                        )
-                      }
-                      className="w-full sm:w-auto px-4 py-2 bg-[#a35c2d] text-white text-sm font-semibold rounded-md shadow hover:bg-[#8d4f26] transition"
-                    >
-                      Start Planning Your Journey →
-                    </button>
+                      <button
+                        onClick={async () => {
+                          if (!selectedJourney?.countries?.[0]?.title) return;
+
+                          const countryTitle =
+                            selectedJourney.countries[0].title;
+
+                          const destination = await sanityClient.fetch(
+                            `*[_type == "destination" && title == $title][0]{
+        title,
+        travelInfo,
+        highlights,
+        practicalStuff,
+        mapLocation,
+        "flag": flagImage.asset->url
+      }`,
+                            { title: countryTitle }
+                          );
+
+                          if (!destination) {
+                            console.warn(
+                              "❌ No destination found for:",
+                              countryTitle
+                            );
+                            return;
+                          }
+
+                          setDrawerState({
+                            open: true,
+                            journey: selectedJourney,
+                            destination,
+                          });
+                        }}
+                        className="px-3 py-1.5 text-xs border border-[#a35c2d] text-[#a35c2d] font-semibold rounded shadow hover:bg-[#f5f3ef] transition"
+                      >
+                        About This Country
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedJourney(null)}
+                        className="absolute top-2 right-3 sm:static text-lg font-bold text-gray-800 hover:text-black"
+                        aria-label="Close"
+                      >
+                        &times;
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Iframe View */}
                 <iframe
                   src={selectedJourney.wetuLink}
                   className="flex-grow w-full border-none"
@@ -950,7 +1024,12 @@ export default function JourneyFinderClient() {
         </div>
       )}
 
-      <div ref={loadMoreRef} className="h-5 mt-12" />
+      {drawerState.open && drawerState.destination && (
+        <CountryDrawer
+          destination={drawerState.destination}
+          onClose={() => setDrawerState({ open: false, journey: null })}
+        />
+      )}
     </main>
   );
 }

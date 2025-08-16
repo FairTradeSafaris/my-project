@@ -18,19 +18,12 @@ type WhyChooseProps = { data: WhyChooseBlock };
 export default function WhyChoose({ data }: WhyChooseProps) {
   const { sectionTitle, sideImage, reasons } = data;
 
-  const featuredLogos = [
-    { src: "/logos/nbc.svg", alt: "NBC" },
-    { src: "/logos/usa-today.svg", alt: "USA Today" },
-    { src: "/logos/fox.svg", alt: "FOX" },
-    { src: "/logos/CBS_logo.svg", alt: "CBS" },
-  ];
-
   return (
-    <section className="relative isolate bg-white text-black py-14 sm:py-16 md:py-20 overflow-hidden font-sans">
+    <section className="relative isolate bg-[#e6d8c7] text-black py-14 sm:py-16 md:py-20 overflow-hidden font-sans">
       {/* Dark mode overlay */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 hidden dark:block bg-black/20"
+        className="pointer-events-none absolute inset-0 z-0 hidden dark:block"
       />
 
       {/* Main Content */}
@@ -93,25 +86,6 @@ export default function WhyChoose({ data }: WhyChooseProps) {
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* As Seen On */}
-      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 md:px-8 mt-14 sm:mt-16">
-        <div className="py-5 sm:py-6 border-t border-black/10">
-          <p className="text-center text-xs tracking-[0.3em] uppercase opacity-70 mb-4">
-            As Seen On
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-x-10 sm:gap-x-16 gap-y-6 opacity-80">
-            {featuredLogos.map((logo) => (
-              <img
-                key={logo.alt}
-                src={logo.src}
-                alt={logo.alt}
-                className="h-6 sm:h-7 md:h-8 w-auto grayscale opacity-80"
-              />
-            ))}
-          </div>
         </div>
       </div>
     </section>

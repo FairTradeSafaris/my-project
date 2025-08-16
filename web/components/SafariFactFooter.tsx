@@ -30,6 +30,13 @@ export default function SafariFactFooter() {
   const [connectLinks, setConnectLinks] = useState<ConnectLink[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const featuredLogos = [
+    { src: "/logos/nbc.svg", alt: "NBC" },
+    { src: "/logos/usa-today.svg", alt: "USA Today" },
+    { src: "/logos/fox.svg", alt: "FOX" },
+    { src: "/logos/CBS_logo.svg", alt: "CBS" },
+  ];
+
   useEffect(() => {
     const fetchFooter = async () => {
       try {
@@ -67,6 +74,27 @@ export default function SafariFactFooter() {
 
   return (
     <footer className="relative isolate text-[#3f2e1f] text-sm bg-[#f7f3ec]">
+      {/* "As Seen On" Section */}
+      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 md:px-8 pt-10">
+        <div className="py-5 sm:py-6 border-b border-black/10">
+          <p className="text-center text-xs tracking-[0.3em] uppercase opacity-70 mb-4">
+            As Seen On
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-x-10 sm:gap-x-16 gap-y-6 opacity-80">
+            {featuredLogos.map((logo) => (
+              <Image
+                key={logo.alt}
+                src={logo.src}
+                alt={logo.alt}
+                width={80}
+                height={24}
+                className="h-6 sm:h-7 md:h-8 w-auto grayscale opacity-80"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Dark overlay ONLY when site is in dark mode */}
       <div
         aria-hidden

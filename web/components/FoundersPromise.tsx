@@ -76,7 +76,7 @@ export default function FoundersPromise({ data }: Props) {
         pt-24 sm:pt-28 md:pt-32
         pb-24 sm:pb-28 md:pb-36
         px-5 sm:px-6 md:px-8
-        bg-cover bg-center bg-no-repeat text-white
+        bg-cover bg-center bg-no-repeat text-black
       `}
       style={{
         backgroundImage: backgroundImage?.asset?.url
@@ -89,21 +89,22 @@ export default function FoundersPromise({ data }: Props) {
 
       {/* ✅ Fixed: Top fade matches previous gray tone */}
       <div
-        className="absolute top-0 left-0 w-full h-20 sm:h-24 z-10 pointer-events-none dark:hidden"
+        className="absolute top-0 left-0 w-full h-20 sm:h-24 z-20 pointer-events-none dark:hidden"
         style={{
-          backgroundImage: `linear-gradient(to bottom, #e4e4e4, rgba(0, 0, 0, 0))`,
+          background:
+            "linear-gradient(to bottom, #e6d8c7, rgba(200, 161, 101, 0))",
         }}
       />
 
       {/* Bottom white fade — optional, unchanged */}
       {/* Bottom fade — visible in light mode only */}
       <div
-        className="absolute bottom-0 left-0 w-full h-20 sm:h-24 z-10 pointer-events-none dark:hidden"
+        className="absolute bottom-0 left-0 w-full h-28 sm:h-32 z-20 pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(to top, white, rgba(255, 255, 255, 0))`,
+          background:
+            "linear-gradient(to bottom, rgba(200, 161, 101, 0) 0%, #e6d8c7 100%)",
         }}
       />
-
       {/* Line Art */}
       {lineArtImage?.asset?.url && (
         <MotionDiv
@@ -138,28 +139,28 @@ export default function FoundersPromise({ data }: Props) {
             flex flex-col justify-between
             backdrop-blur-sm
           `}
-          style={{ backgroundColor: "#c8a165" }}
+          style={{ backgroundColor: "#d2b48c" }}
         >
           <div>
             <div
               className={`
                 mb-4 text-[10px] sm:text-xs uppercase tracking-widest
-                border border-white px-3 py-1 sm:px-4 rounded-full inline-block
-                whitespace-nowrap text-white
+                border border-black px-3 py-1 sm:px-4 rounded-full inline-block
+                whitespace-nowrap text-black
               `}
             >
               Our Promise
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-black">
               {headline}
             </h2>
 
             <ClampMobile>
-              <div className="text-[0.985rem] sm:text-base text-white/80 leading-7 sm:leading-8">
+              <div className="text-[0.985rem] sm:text-base text-black leading-7 sm:leading-8">
                 <PortableText value={intro} />
               </div>
 
-              <ul className="mt-4 list-disc pl-5 space-y-2 text-[0.985rem] sm:text-base text-white/80">
+              <ul className="mt-4 list-disc pl-5 space-y-2 text-[0.985rem] sm:text-base text-black">
                 {safelist.map((item, idx) => {
                   const { title, detail } = splitOnce(item);
                   return (
@@ -177,15 +178,15 @@ export default function FoundersPromise({ data }: Props) {
             <Link
               href={buttonLink}
               className={`
-                mt-8 inline-flex items-center justify-center
-                whitespace-nowrap
-                text-sm sm:text-base leading-none
-                px-5 sm:px-6 py-3
-                rounded-full font-semibold
-                bg-white text-black hover:bg-gray-200 transition
-                min-w-[200px]
-                self-start
-              `}
+    mt-8 inline-flex items-center justify-center
+    whitespace-nowrap
+    text-sm sm:text-base leading-none
+    px-5 sm:px-6 py-3
+    rounded-full font-semibold
+   border-2 border-black text-black
+    min-w-[200px]
+    self-start
+  `}
               aria-label={buttonText}
               title={buttonText}
             >
@@ -209,25 +210,25 @@ export default function FoundersPromise({ data }: Props) {
               flex flex-col justify-between
               backdrop-blur-sm
             `}
-            style={{ backgroundColor: "#c8a165" }}
+            style={{ backgroundColor: "#d2b48c" }}
           >
             <div>
               <div
                 className={`
                   mb-4 text-[10px] sm:text-xs uppercase
-                  tracking-widest border border-white
+                  tracking-widest border border-black
                   px-3 py-1 sm:px-4 rounded-full inline-block
-                  whitespace-nowrap text-white
+                  whitespace-nowrap text-black
                 `}
               >
                 Travel with Purpose
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4 text-white">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-4 text-black">
                 {impactContent.title}
               </h3>
 
               <ClampMobile>
-                <div className="text-[0.985rem] sm:text-base text-white/80 leading-7 sm:leading-8">
+                <div className="text-[0.985rem] sm:text-base text-black leading-7 sm:leading-8">
                   <PortableText value={impactContent.body} />
                 </div>
               </ClampMobile>
@@ -242,9 +243,9 @@ export default function FoundersPromise({ data }: Props) {
                   uppercase tracking-wide sm:tracking-wider
                   text-xs sm:text-sm leading-none
                   px-5 sm:px-6 py-3
-                  border-2 border-white text-white
+                  border-2 border-black text-black
                   rounded-full font-semibold
-                  hover:bg-white hover:text-black transition
+
                   min-w-[200px]
                   self-start
                 `}

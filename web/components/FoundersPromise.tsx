@@ -47,7 +47,7 @@ function ClampMobile({
 
       <button
         type="button"
-        className="mt-3 md:hidden text-sm font-medium text-white/70 hover:text-white"
+        className="mt-3 md:hidden text-sm font-medium text-black"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
@@ -139,7 +139,7 @@ export default function FoundersPromise({ data }: Props) {
             flex flex-col justify-between
             backdrop-blur-sm
           `}
-          style={{ backgroundColor: "#d2b48c" }}
+          style={{ backgroundColor: "#e6d8c7" }}
         >
           <div>
             <div
@@ -210,7 +210,7 @@ export default function FoundersPromise({ data }: Props) {
               flex flex-col justify-between
               backdrop-blur-sm
             `}
-            style={{ backgroundColor: "#d2b48c" }}
+            style={{ backgroundColor: "#e6d8c7" }}
           >
             <div>
               <div

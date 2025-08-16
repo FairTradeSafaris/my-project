@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { client } from "@/lib/sanity";
 
@@ -51,9 +51,8 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const isJourneyOpen = searchParams.get("open") === "true";
-  const hideUI = isJourneyOpen || pathname === "/project-portal";
+
+  const hideUI = pathname === "/project-portal";
 
   const [navSections, setNavSections] = useState<NavSection[]>([]);
   const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);

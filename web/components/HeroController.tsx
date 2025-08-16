@@ -115,9 +115,6 @@ type HeroDoc = {
 
 type ActionMode = NonNullable<HeroDoc["action"]>;
 /* ---------- Events ---------- */
-const OPEN = {
-  JOURNEY_SEARCH: "fts:open-search-sheet",
-} as const;
 
 /* ---------- Home dropdown filters ---------- */
 function HomeFilters() {
@@ -284,7 +281,6 @@ export default function HeroController({
   };
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -354,34 +350,21 @@ export default function HeroController({
     }
   }, [heroData]);
 
-  // Search helpers (declared unconditionally to keep hook order stable)
-  const openJourneySearch = useCallback(
-    (q: string) => {
-      const base = "/journeys";
-      const url = q
-        ? `${base}?q=${encodeURIComponent(q)}&open=search`
-        : `${base}?open=search`;
-
-      if (pathname.startsWith(base)) {
-        window.dispatchEvent(
-          new CustomEvent(OPEN.JOURNEY_SEARCH, { detail: { q } })
-        );
-      } else {
-        router.push(url);
-      }
-    },
-    [pathname, router]
-  );
-
   const onType = useCallback(
     (value: string) => {
       if (hero?.action !== "typeSearch") return;
+
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        openJourneySearch(value.trim());
+        const params = new URLSearchParams(window.location.search);
+        params.set("q", value.trim());
+        params.set("open", "true");
+
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, "", newUrl);
       }, 300);
     },
-    [hero?.action, openJourneySearch]
+    [hero?.action]
   );
 
   const initialQ = searchParams.get("q") ?? "";

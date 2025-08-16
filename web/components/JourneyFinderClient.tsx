@@ -35,6 +35,21 @@ export default function JourneyFinderClient() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
+  useEffect(() => {
+    if (!filtersReady) return;
+
+    const qParam = searchParams.get("q");
+
+    if (justClearedRef.current) {
+      justClearedRef.current = false; // skip once
+      return;
+    }
+
+    if (qParam) {
+      setSearchTerm(qParam);
+    }
+  }, [filtersReady, searchParams]);
+  const justClearedRef = useRef(false); // 👈 Add this here
   const [collapsed, setCollapsed] = useState({
     region: true,
     country: true,
@@ -58,7 +73,13 @@ export default function JourneyFinderClient() {
   }, [selectedJourney, drawerState.open]);
 
   useEffect(() => {
-    const openHandler = () => setIsSearchSheetOpen(true);
+    const openHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const q = detail?.q;
+      if (q) return; // 🔒 If a search term exists, it means `typeSearch` — skip opening filters
+      setIsSearchSheetOpen(true);
+    };
+
     const closeHandler = () => setIsSearchSheetOpen(false);
 
     window.addEventListener("fts:open-search-sheet", openHandler);
@@ -595,7 +616,10 @@ export default function JourneyFinderClient() {
       star: validStars,
     }));
 
-    if (openParam === "true") {
+    const queryParam = urlParams.get("q");
+
+    // ✅ Only open drawer if no search term is present
+    if (openParam === "true" && !queryParam) {
       window.dispatchEvent(new CustomEvent("fts:open-search-sheet"));
     }
 
@@ -673,18 +697,33 @@ export default function JourneyFinderClient() {
     }));
   };
 
-  const clearAll = () =>
-    setSelectedFilters({
+  const clearAll = () => {
+    justClearedRef.current = true;
+
+    const newFilters: Filters = {
       region: "",
       country: [],
       star: [],
       types: [],
-      signature: [], // ✅ ADD THIS
-      style: [], // ✅ ADD THIS
-      feature: [], // ✅ ADD THIS
+      signature: [],
+      style: [],
+      feature: [],
       duration: globalDurationRange,
       price: globalPriceRange,
-    });
+    };
+
+    setSelectedFilters(newFilters);
+    setSearchTerm("");
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("q");
+    url.searchParams.delete("open");
+    window.history.replaceState({}, "", url.pathname);
+
+    // Reset the filter cycle
+    setFiltersReady(false);
+    setTimeout(() => setFiltersReady(true), 0);
+  };
 
   const toggleStyle = (value: string) => {
     setSelectedFilters((prev) => ({

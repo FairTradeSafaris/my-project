@@ -26,7 +26,15 @@ export default defineType({
       type: 'string',
       description: 'e.g. From $5,200 pp',
     }),
-    defineField({name: 'heroImage', title: 'Hero Image', type: 'image', options: {hotspot: true}}),
+    defineField({
+      name: 'heroImage',
+      title: 'Hero Image',
+      type: 'image',
+      options: {hotspot: true},
+      description:
+        'Recommended size: 785×551 or similar aspect ratio (≈1.4:1). Optimized for responsive display.',
+    }),
+
     defineField({name: 'alt', title: 'Image Alt Text', type: 'string'}),
     defineField({
       name: 'ctaText',

@@ -1,3 +1,5 @@
+import "./globals.css";
+
 import CookieConsent from "@/components/CookieConsent";
 import ClientLayout from "@/components/ClientLayout";
 import { Poppins } from "next/font/google";

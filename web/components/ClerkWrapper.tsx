@@ -11,3 +11,5 @@ export function ClerkWrapper({ children }: { children: React.ReactNode }) {
     </ClerkProvider>
   );
 }
+
+export default ClerkWrapper;

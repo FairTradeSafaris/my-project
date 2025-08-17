@@ -185,7 +185,11 @@ export default function ClientLayout({
       )}
 
       {/* Global hero — hidden on /destinations */}
-      {showHero && <HeroController heroData={heroData} />}
+      {showHero && (
+        <div className="min-h-[520px] sm:min-h-[640px]">
+          <HeroController heroData={heroData} />
+        </div>
+      )}
 
       <main>{children}</main>
 

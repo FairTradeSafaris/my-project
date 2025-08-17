@@ -329,10 +329,13 @@ export default function BottomTabBar() {
         <Link
           ref={bookFreeRef}
           href={isSignedIn ? "/books" : "/sign-up"}
-          className="flex flex-col items-center gap-1 text-xs active:scale-95"
+          className="flex flex-col items-center gap-1 text-xs active:scale-95 transform"
+          style={{ transformOrigin: "center center" }}
         >
-          <BookOpen size={20} />
-          <span>Free Book</span>
+          <div className="w-5 h-5 flex items-center justify-center">
+            <BookOpen size={20} />
+          </div>
+          <span className="leading-[1rem]">Free Book</span>
         </Link>
 
         <SignedIn>

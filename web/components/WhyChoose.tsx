@@ -19,7 +19,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
   const { sectionTitle, sideImage, reasons } = data;
 
   return (
-    <section className="relative isolate bg-[#e6d8c7] text-black py-14 sm:py-16 md:py-20 overflow-hidden font-sans">
+    <section className="relative isolate bg-[#e6d8c7] text-black py-5 sm:py-5 md:py-8 overflow-hidden font-sans">
       {/* Dark mode overlay */}
       <div
         aria-hidden
@@ -30,7 +30,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
       <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-10 sm:gap-12 lg:gap-16 items-stretch">
         {/* Left Image */}
         {sideImage?.asset?.url && (
-          <div className="w-full aspect-[4/5] md:aspect-auto max-h-[360px] md:max-h-none overflow-hidden rounded-xl shadow">
+          <div className="w-full aspect-[4/5] overflow-hidden rounded-xl shadow min-h-[300px] sm:min-h-[400px]">
             <img
               src={sideImage.asset.url}
               alt={sideImage.alt || "Why Travel Visual"}

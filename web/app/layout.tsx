@@ -5,12 +5,12 @@ import ClientLayout from "@/components/ClientLayout";
 import { Poppins } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
-import { ClerkWrapper } from "@/components/ClerkWrapper";
 import LeadMagnetGate from "@/components/LeadMagnetGate";
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import GlobalBookingPortal from "@/components/GlobalBookingPortal";
 import Head from "next/head";
+import ClerkClientWrapper from "@/components/ClerkClientWrapper"; // ✅ FIXED
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -57,7 +57,7 @@ export default async function RootLayout({
         />
       </Head>
       <body className={`${poppins.variable} font-sans`}>
-        <ClerkWrapper>
+        <ClerkClientWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
             <Suspense fallback={null}>
@@ -67,7 +67,7 @@ export default async function RootLayout({
               <CookieConsent />
             </Suspense>
           </ThemeProvider>
-        </ClerkWrapper>
+        </ClerkClientWrapper>
       </body>
     </html>
   );

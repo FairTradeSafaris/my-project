@@ -225,10 +225,9 @@ function HeroView({
         alt="Hero background"
         fill
         className={`
-          transition-all duration-700 
-          object-center 
-          ${isHome ? "object-contain" : "object-cover"}
-        `}
+    object-center 
+    ${isHome ? "object-contain" : "object-cover"}
+  `}
         priority
         fetchPriority="high"
       />

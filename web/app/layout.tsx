@@ -9,6 +9,7 @@ import LeadMagnetGate from "@/components/LeadMagnetGate";
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import GlobalBookingPortal from "@/components/GlobalBookingPortal";
+import Head from "next/head";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -42,15 +43,24 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Head>
+        <link
+          rel="preconnect"
+          href="https://clerk.demo.fairtradesafaris.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://jw917r14.api.sanity.io"
+          crossOrigin="anonymous"
+        />
+      </Head>
       <body className={`${poppins.variable} font-sans`}>
         <ClerkWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <GlobalScriptWrapper />
             <Suspense fallback={null}>
-              {/* Hero is rendered from ClientLayout now */}
               <ClientLayout>{children}</ClientLayout>
-
-              {/* Global one-offs */}
               <GlobalBookingPortal />
               <LeadMagnetGate />
               <CookieConsent />

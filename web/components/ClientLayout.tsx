@@ -113,20 +113,39 @@ export default function ClientLayout({
           setHeroData(undefined);
           return;
         }
-
         const data = await client.fetch(
           `{
-          "items": [
-            ...*[_type=="hero" && (scope==$k || (scope=="custom" && customScope==$k))]{
-              headline, subheadline, primaryCTA, secondaryCTA, action,
-              backgroundImages[]{ alt, asset->{ _ref, _type, url } }
-            }[0...1],
-            ...*[_type=="hero" && scope=="default"]{
-              headline, subheadline, primaryCTA, secondaryCTA, action,
-              backgroundImages[]{ alt, asset->{ _ref, _type, url } }
-            }[0...1]
-          ]
-        }`,
+    "items": [
+      ...*[_type == "hero" && (scope == $k || (scope == "custom" && customScope == $k))]{
+        headline,
+        subheadline,
+        primaryCTA,
+        secondaryCTA,
+        action,
+        backgroundImages[] {
+          _type,
+          alt,
+          asset->{ _ref, _type, url },
+          desktopImage{ asset->{ _ref, _type, url } },
+          mobileImage{ asset->{ _ref, _type, url } }
+        }
+      }[0...1],
+      ...*[_type == "hero" && scope == "default"]{
+        headline,
+        subheadline,
+        primaryCTA,
+        secondaryCTA,
+        action,
+        backgroundImages[] {
+          _type,
+          alt,
+          asset->{ _ref, _type, url },
+          desktopImage{ asset->{ _ref, _type, url } },
+          mobileImage{ asset->{ _ref, _type, url } }
+        }
+      }[0...1]
+    ]
+  }`,
           { k: pageKey }
         );
 

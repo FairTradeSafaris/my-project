@@ -6,9 +6,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client as sanityClient } from "@/lib/sanity";
-import { Fragment } from "react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
+/* -------------------- MultiSelectDropdown -------------------- */
 function MultiSelectDropdown({
   label,
   options,
@@ -78,6 +78,7 @@ function MultiSelectDropdown({
   );
 }
 
+/* -------------------- Sanity image helpers -------------------- */
 const builder = imageUrlBuilder(sanityClient);
 const urlFor = (src: SanityImageSource) => builder.image(src).width(1920).url();
 
@@ -87,17 +88,35 @@ export type HeroData = {
   subheadline?: string;
   primaryCTA?: string;
   secondaryCTA?: string;
-  backgroundImages?: Array<{
-    alt?: string;
-    asset?: { _ref?: string; _type?: string; url?: string };
-  }>;
   action?: "none" | "homeFilters" | "typeSearch";
+  backgroundImages?: Array<
+    | {
+        // legacy single image
+        alt?: string;
+        asset?: { _ref?: string; _type?: string; url?: string };
+        _type?: string | undefined;
+      }
+    | {
+        // responsive object from schema
+        _type?: "responsiveBackground";
+        alt?: string;
+        desktopImage?: SanityImageSource | { asset?: { url?: string } };
+        mobileImage?: SanityImageSource | { asset?: { url?: string } };
+      }
+  >;
 };
-
 /* -------------------------------- */
 
-type HeroAsset = {
+type HeroAssetLegacy = {
   asset?: { url?: string } | SanityImageSource;
+  alt?: string;
+  _type?: string;
+};
+
+type HeroAssetResponsive = {
+  _type?: "responsiveBackground";
+  desktopImage?: SanityImageSource | { asset?: { url?: string } };
+  mobileImage?: SanityImageSource | { asset?: { url?: string } };
   alt?: string;
 };
 
@@ -108,15 +127,14 @@ type HeroDoc = {
   headline?: string;
   subheadline?: string;
   action?: "none" | "homeFilters" | "typeSearch";
-  backgroundImages?: HeroAsset[];
+  backgroundImages?: (HeroAssetLegacy | HeroAssetResponsive)[];
   primaryCTA?: string;
   secondaryCTA?: string;
 };
 
 type ActionMode = NonNullable<HeroDoc["action"]>;
-/* ---------- Events ---------- */
 
-/* ---------- Home dropdown filters ---------- */
+/* -------------------- Filters -------------------- */
 function HomeFilters() {
   const router = useRouter();
   const [destinations, setDestinations] = useState<string[]>([]);
@@ -132,12 +150,9 @@ function HomeFilters() {
           luxuryRaw: (string | null | undefined)[];
         } = await sanityClient.fetch(
           `{
-  "interests": *[_type == "travelInterest" && isTopInterest == true][0...5] {
-    title
-  },
-  "luxuryRaw": *[_type == "journey"].star
-}
-`
+            "interests": *[_type == "travelInterest" && isTopInterest == true][0...5] { title },
+            "luxuryRaw": *[_type == "journey"].star
+          }`
         );
 
         const topInterests = result.interests.map((i) => i.title);
@@ -192,44 +207,57 @@ function HomeFilters() {
   );
 }
 
-/* ---------- Presentational Hero ---------- */
+/* -------------------- Presentational Hero -------------------- */
 function HeroView({
-  bgUrl,
+  bgUrlDesktop,
+  bgUrlMobile,
   pageLabel,
   headline,
   sub,
   children,
   variant = "banner",
+  alt,
 }: {
-  bgUrl?: string;
+  bgUrlDesktop?: string;
+  bgUrlMobile?: string;
   pageLabel?: string;
   headline?: string;
   sub?: string;
   children?: React.ReactNode;
   variant?: "home" | "banner";
+  alt?: string;
 }) {
   const isHome = variant === "home";
+  const desktopSrc = bgUrlDesktop || bgUrlMobile || "/sunset-safari.webp";
+  const mobileSrc = bgUrlMobile || bgUrlDesktop || "/sunset-safari.webp";
 
   return (
     <section
       className={`
-    relative 
-    w-full 
-    ${isHome ? "aspect-[16/9] md:h-auto" : "h-[500px] md:h-[500px]"}
-    pt-24 md:pt-28
-  `}
+        relative w-full
+        ${isHome ? "aspect-[16/9] md:h-auto" : "h-[500px] md:h-[500px]"}
+        pt-24 md:pt-28
+      `}
       id="hero"
     >
+      {/* Mobile art-directed image */}
       <Image
-        src={bgUrl || "/hero.webp"}
-        alt="Hero background"
+        src={mobileSrc}
+        alt={alt || "Hero background"}
         fill
-        className={`
-    object-center 
-    ${isHome ? "object-contain" : "object-cover"}
-  `}
         priority
         fetchPriority="high"
+        className="md:hidden object-cover object-center"
+        sizes="100vw"
+      />
+      <Image
+        src={desktopSrc}
+        alt={alt || "Hero background"}
+        fill
+        priority
+        fetchPriority="high"
+        className="hidden md:block object-cover object-center"
+        sizes="100vw"
       />
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
@@ -263,56 +291,88 @@ function HeroView({
   );
 }
 
-/* ---------- Controller ---------- */
-export default function HeroController({
-  heroData,
-}: {
-  heroData?: {
-    headline?: string;
-    subheadline?: string;
-    primaryCTA?: string;
-    secondaryCTA?: string;
-    action?: "none" | "homeFilters" | "typeSearch"; // ✅ <-- ADD THIS LINE
-    backgroundImages?: Array<{
-      alt?: string;
-      asset?: { _ref?: string; _type?: string; url?: string };
-    }>;
-  };
-}) {
+/* -------------------- Type guards & helpers (no `any`) -------------------- */
+
+/** A shape like { asset: { url: string } } */
+type WithAssetUrl = { asset?: { url?: string } };
+
+/** Return a usable URL from either a SanityImageSource or an {asset:{url}} shape */
+function toUrl(
+  src?: SanityImageSource | WithAssetUrl | null
+): string | undefined {
+  if (!src) return "/sunset-safari.webp";
+
+  if (
+    typeof src === "object" &&
+    src !== null &&
+    "_ref" in src &&
+    typeof (src as { _ref: unknown })._ref === "string"
+  ) {
+    return urlFor(src as SanityImageSource);
+  }
+
+  if (typeof src === "object" && src !== null && "asset" in src) {
+    const asset = (src as WithAssetUrl).asset;
+
+    if (asset && typeof asset === "object") {
+      if ("_ref" in asset && typeof asset._ref === "string") {
+        return urlFor(src as SanityImageSource);
+      }
+
+      if ("url" in asset && typeof asset.url === "string") {
+        return asset.url;
+      }
+    }
+  }
+
+  return "/sunset-safari.webp"; // fallback
+}
+
+function isResponsiveItem(x: unknown): x is HeroAssetResponsive {
+  if (typeof x !== "object" || x === null) return false;
+  const o = x as Record<string, unknown>;
+  return (
+    o._type === "responsiveBackground" ||
+    "desktopImage" in o ||
+    "mobileImage" in o
+  );
+}
+
+/** Extract first desktop/mobile URLs from heroData (responsive or legacy) */
+function deriveBgUrls(items?: HeroData["backgroundImages"]): {
+  desktop?: string;
+  mobile?: string;
+  alt?: string;
+} {
+  if (!items || items.length === 0) return {};
+
+  const first = items[0];
+
+  // Responsive object
+  if (isResponsiveItem(first)) {
+    return {
+      desktop: toUrl(first.desktopImage ?? null),
+      mobile: toUrl(first.mobileImage ?? null),
+      alt: first.alt,
+    };
+  }
+
+  // Legacy single image
+  const legacy = first as HeroAssetLegacy;
+  const legacyUrl = toUrl(legacy.asset ?? null);
+  return { desktop: legacyUrl, mobile: legacyUrl, alt: legacy.alt };
+}
+
+/* -------------------- Controller -------------------- */
+export default function HeroController({ heroData }: { heroData?: HeroData }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [hero, setHero] = useState<HeroDoc | null>(null);
-  const [bgUrl, setBgUrl] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (!heroData) return;
-
-    const doc: HeroDoc = {
-      scope: "default",
-      pageLabel: undefined,
-      customScope: undefined,
-      headline: heroData.headline,
-      subheadline: heroData.subheadline,
-      action: "none",
-      backgroundImages: heroData.backgroundImages,
-      primaryCTA: heroData.primaryCTA,
-      secondaryCTA: heroData.secondaryCTA,
-    };
-
-    setHero(doc);
-
-    const first = doc.backgroundImages?.[0]?.asset;
-    if (first && typeof first === "object" && "url" in first && first.url) {
-      setBgUrl(first.url as string);
-    } else if (first) {
-      setBgUrl(urlFor(first as SanityImageSource));
-    } else {
-      setBgUrl(undefined);
-    }
-  }, [heroData]);
+  const [bgDesktop, setBgDesktop] = useState<string | undefined>(undefined);
+  const [bgMobile, setBgMobile] = useState<string | undefined>(undefined);
 
   const HIDE_ON: RegExp[] = [
     /^\/(sign-in|sign-up)/,
@@ -323,7 +383,7 @@ export default function HeroController({
   const hideHero = HIDE_ON.some((rx) => rx.test(pathname));
 
   useEffect(() => {
-    if (!heroData) return; // ✅ no fetch needed, data comes from ClientLayout
+    if (!heroData) return;
 
     const doc: HeroDoc = {
       scope: "default",
@@ -332,21 +392,21 @@ export default function HeroController({
       headline: heroData.headline,
       subheadline: heroData.subheadline,
       action: heroData.action || "none",
-      backgroundImages: heroData.backgroundImages,
+      backgroundImages: heroData.backgroundImages as (
+        | HeroAssetLegacy
+        | HeroAssetResponsive
+      )[],
       primaryCTA: heroData.primaryCTA,
       secondaryCTA: heroData.secondaryCTA,
     };
 
     setHero(doc);
+    console.log("🔍 heroData.backgroundImages", heroData.backgroundImages);
 
-    const first = doc.backgroundImages?.[0]?.asset;
-    if (first && typeof first === "object" && "url" in first && first.url) {
-      setBgUrl(first.url as string);
-    } else if (first) {
-      setBgUrl(urlFor(first as SanityImageSource));
-    } else {
-      setBgUrl(undefined);
-    }
+    const { desktop, mobile } = deriveBgUrls(heroData.backgroundImages);
+    console.log("✅ derived background URLs:", { desktop, mobile });
+    setBgDesktop(desktop);
+    setBgMobile(mobile);
   }, [heroData]);
 
   const onType = useCallback(
@@ -373,7 +433,6 @@ export default function HeroController({
     }
   }, [initialQ]);
 
-  /* ---- Early return moved AFTER all hooks above ---- */
   if (hideHero) return null;
 
   if (!hero) {
@@ -387,7 +446,9 @@ export default function HeroController({
 
   return (
     <HeroView
-      bgUrl={bgUrl}
+      bgUrlDesktop={bgDesktop}
+      bgUrlMobile={bgMobile}
+      alt={heroData?.backgroundImages?.[0]?.alt}
       pageLabel={hero.pageLabel}
       headline={hero.headline}
       sub={hero.subheadline}

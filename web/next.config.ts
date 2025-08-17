@@ -2,9 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import withPWA from "next-pwa";
+import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const baseConfig = {
   reactStrictMode: true,
 
   eslint: {
@@ -16,7 +17,7 @@ const nextConfig = {
       { protocol: "https", hostname: "cdn.sanity.io", pathname: "/**" },
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
       { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
-    ] satisfies import("next/dist/shared/lib/image-config").RemotePattern[],
+    ] as RemotePattern[],
   },
 
   env: {
@@ -28,46 +29,61 @@ const nextConfig = {
   },
 };
 
-const runtimeCaching = [
-  // 1) HTML navigations: keep last-browsed pages available offline
+// 🔧 Add Cache-Control headers for homepage
+const headers = async () => [
   {
-    urlPattern: (ctx: { request: Request }) => ctx.request.mode === "navigate",
+    source: "/",
+    headers: [
+      {
+        key: "Cache-Control",
+        value: "public, s-maxage=600, stale-while-revalidate=59",
+      },
+    ],
+  },
+];
+
+// ⚙️ Runtime caching rules for PWA
+const runtimeCaching = [
+  {
+    urlPattern: (ctx: unknown) => {
+      const request = (ctx as { request: Request }).request;
+      return request.mode === "navigate";
+    },
     handler: "NetworkFirst",
     options: {
       cacheName: "html-pages",
-      networkTimeoutSeconds: 3, // use cache if network is slow/offline
+      networkTimeoutSeconds: 3,
       expiration: {
         maxEntries: 80,
-        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        maxAgeSeconds: 7 * 24 * 60 * 60,
       },
-      // only cache same-origin HTML
       matchOptions: { ignoreVary: true },
     },
   },
-
-  // 2) Same-origin static assets (JS/CSS): fast updates when online, cached when offline
   {
-    urlPattern: (ctx: { url: URL; request: Request }) =>
-      ctx.url.origin === self.location.origin &&
-      (ctx.request.destination === "script" ||
-        ctx.request.destination === "style" ||
-        ctx.request.destination === "worker"),
-
+    urlPattern: (ctx: unknown) => {
+      const { url, request } = ctx as { url: URL; request: Request };
+      return (
+        url.origin === self.location.origin &&
+        ["script", "style", "worker"].includes(request.destination)
+      );
+    },
     handler: "StaleWhileRevalidate",
     options: {
       cacheName: "static-assets",
       expiration: {
         maxEntries: 200,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        maxAgeSeconds: 30 * 24 * 60 * 60,
       },
     },
   },
-
-  // 3) Same-origin images: keep recent images available offline
   {
-    urlPattern: (ctx: { url: URL; request: Request }) =>
-      ctx.url.origin === self.location.origin &&
-      ctx.request.destination === "image",
+    urlPattern: (ctx: unknown) => {
+      const { url, request } = ctx as { url: URL; request: Request };
+      return (
+        url.origin === self.location.origin && request.destination === "image"
+      );
+    },
     handler: "StaleWhileRevalidate",
     options: {
       cacheName: "images",
@@ -79,13 +95,22 @@ const runtimeCaching = [
   },
 ];
 
-export default withPWA({
+// 🔌 Wrap withPWA
+const withPWAConfig = withPWA({
   dest: "public",
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
   runtimeCaching,
   fallbacks: {
-    html: "/offline.html", // used if no cached page exists yet
+    html: "/offline.html",
   },
-})(nextConfig);
+});
+
+// 🧩 Merge and export
+const finalConfig = {
+  ...withPWAConfig(baseConfig),
+  headers,
+};
+
+export default finalConfig;

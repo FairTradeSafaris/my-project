@@ -82,8 +82,11 @@ export default function JourneyCard({
             width={400}
             height={256}
             className="w-full h-64 object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            priority={isFeatured} // optional: prioritize above-the-fold featured cards
           />
         )}
+
         <div className="absolute top-2 right-2 bg-[#d2b48c] text-black text-sm font-bold px-4 py-1 rounded shadow-md z-10">
           {priceBadge}
         </div>

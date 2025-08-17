@@ -9,7 +9,7 @@ import LeadMagnetGate from "@/components/LeadMagnetGate";
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import GlobalBookingPortal from "@/components/GlobalBookingPortal";
-import Head from "next/head";
+
 import ClerkClientWrapper from "@/components/ClerkClientWrapper"; // ✅ FIXED
 
 const poppins = Poppins({
@@ -44,18 +44,6 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Head>
-        <link
-          rel="preconnect"
-          href="https://clerk.demo.fairtradesafaris.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preconnect"
-          href="https://jw917r14.api.sanity.io"
-          crossOrigin="anonymous"
-        />
-      </Head>
       <body className={`${poppins.variable} font-sans`}>
         <ClerkClientWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

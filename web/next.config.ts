@@ -2,10 +2,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import withPWA from "next-pwa";
+import type { NextConfig } from "next";
 import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
-/** @type {import('next').NextConfig} */
-const baseConfig = {
+// ✅ Base config
+const baseConfig: NextConfig = {
   reactStrictMode: true,
 
   eslint: {
@@ -27,28 +28,47 @@ const baseConfig = {
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
+
+  modularizeImports: {
+    "@mui/material": {
+      transform: "@mui/material/{{member}}",
+    },
+    "@mui/icons-material": {
+      transform: "@mui/icons-material/{{member}}",
+    },
+    lodash: {
+      transform: "lodash/{{member}}",
+    },
+    "date-fns": {
+      transform: "date-fns/{{member}}",
+    },
+  },
+
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+    reactRemoveProperties: true,
+  },
+
+  async headers() {
+    return [
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=600, stale-while-revalidate=59",
+          },
+        ],
+      },
+    ];
+  },
 };
 
-// 🔧 Add Cache-Control headers for homepage
-const headers = async () => [
-  {
-    source: "/",
-    headers: [
-      {
-        key: "Cache-Control",
-        value: "public, s-maxage=600, stale-while-revalidate=59",
-      },
-    ],
-  },
-];
-
-// ⚙️ Runtime caching rules for PWA
+// ✅ Runtime caching (no type needed)
 const runtimeCaching = [
   {
-    urlPattern: (ctx: unknown) => {
-      const request = (ctx as { request: Request }).request;
-      return request.mode === "navigate";
-    },
+    urlPattern: ({ request }: { request: Request }) =>
+      request.mode === "navigate",
     handler: "NetworkFirst",
     options: {
       cacheName: "html-pages",
@@ -61,13 +81,9 @@ const runtimeCaching = [
     },
   },
   {
-    urlPattern: (ctx: unknown) => {
-      const { url, request } = ctx as { url: URL; request: Request };
-      return (
-        url.origin === self.location.origin &&
-        ["script", "style", "worker"].includes(request.destination)
-      );
-    },
+    urlPattern: ({ url, request }: { url: URL; request: Request }) =>
+      url.origin === self.location.origin &&
+      ["script", "style", "worker"].includes(request.destination),
     handler: "StaleWhileRevalidate",
     options: {
       cacheName: "static-assets",
@@ -78,12 +94,8 @@ const runtimeCaching = [
     },
   },
   {
-    urlPattern: (ctx: unknown) => {
-      const { url, request } = ctx as { url: URL; request: Request };
-      return (
-        url.origin === self.location.origin && request.destination === "image"
-      );
-    },
+    urlPattern: ({ url, request }: { url: URL; request: Request }) =>
+      url.origin === self.location.origin && request.destination === "image",
     handler: "StaleWhileRevalidate",
     options: {
       cacheName: "images",
@@ -95,8 +107,8 @@ const runtimeCaching = [
   },
 ];
 
-// 🔌 Wrap withPWA
-const withPWAConfig = withPWA({
+// ✅ Wrap and export final config with PWA
+const finalConfig = withPWA({
   dest: "public",
   register: true,
   skipWaiting: true,
@@ -105,12 +117,6 @@ const withPWAConfig = withPWA({
   fallbacks: {
     html: "/offline.html",
   },
-});
-
-// 🧩 Merge and export
-const finalConfig = {
-  ...withPWAConfig(baseConfig),
-  headers,
-};
+})(baseConfig);
 
 export default finalConfig;

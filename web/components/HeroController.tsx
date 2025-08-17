@@ -374,7 +374,12 @@ export default function HeroController({
   }, [initialQ]);
 
   /* ---- Early return moved AFTER all hooks above ---- */
-  if (hideHero || !hero) return null;
+  if (hideHero) return null;
+
+  if (!hero) {
+    // Reserve vertical space while hero is loading to prevent CLS
+    return <div className="min-h-[520px] sm:min-h-[640px]" />;
+  }
 
   const action: ActionMode = hero.action || "none";
   const showHomeFilters = action === "homeFilters";

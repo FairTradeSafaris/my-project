@@ -40,7 +40,6 @@ export type Destination = {
   rating?: number | null;
   reviews?: number | null;
   flagImage?: string | null;
-  region?: string | null;
   tags?: string[] | null;
   mapLocation?: string | null;
   gallery?: string[] | null;
@@ -74,6 +73,43 @@ function Portal({ children }: { children: React.ReactNode }) {
 // ----------------------------------------------------------------------------
 // Component
 // ----------------------------------------------------------------------------
+import type {
+  PortableTextComponents,
+  PortableTextBlockComponent,
+  PortableTextListComponent,
+  PortableTextMarkComponent,
+} from "@portabletext/react";
+
+const portableTextComponents: PortableTextComponents = {
+  block: {
+    h1: (({ children }) => (
+      <h1 className="text-3xl font-bold mt-6 mb-4">{children}</h1>
+    )) as PortableTextBlockComponent,
+    h2: (({ children }) => (
+      <h2 className="text-2xl font-semibold mt-5 mb-3">{children}</h2>
+    )) as PortableTextBlockComponent,
+    normal: (({ children }) => (
+      <p className="mb-4">{children}</p>
+    )) as PortableTextBlockComponent,
+  },
+  list: {
+    bullet: (({ children }) => (
+      <ul className="list-disc pl-6 mb-4">{children}</ul>
+    )) as PortableTextListComponent,
+    number: (({ children }) => (
+      <ol className="list-decimal pl-6 mb-4">{children}</ol>
+    )) as PortableTextListComponent,
+  },
+  marks: {
+    strong: (({ children }) => (
+      <strong className="font-semibold">{children}</strong>
+    )) as PortableTextMarkComponent,
+    em: (({ children }) => (
+      <em className="italic">{children}</em>
+    )) as PortableTextMarkComponent,
+  },
+};
+
 export default function DestinationClient({
   initialDestinations = [],
 }: {
@@ -612,11 +648,6 @@ export default function DestinationClient({
                 <h3 className="text-2xl sm:text-3xl font-semibold text-white">
                   {selected?.title}
                 </h3>
-                {selected?.region && (
-                  <p className="text-white/80 text-sm mt-1">
-                    {selected.region}
-                  </p>
-                )}
               </div>
               <button
                 type="button"
@@ -679,7 +710,10 @@ export default function DestinationClient({
                     Travel Information
                   </h4>
                   <div className="prose prose-neutral max-w-none">
-                    <PortableText value={selected.travelInfo} />
+                    <PortableText
+                      value={selected.travelInfo}
+                      components={portableTextComponents}
+                    />
                   </div>
                 </section>
               )}
@@ -690,7 +724,10 @@ export default function DestinationClient({
                     Highlights
                   </h4>
                   <div className="prose prose-neutral max-w-none">
-                    <PortableText value={selected.highlights} />
+                    <PortableText
+                      value={selected.highlights}
+                      components={portableTextComponents}
+                    />
                   </div>
                 </section>
               )}
@@ -713,7 +750,10 @@ export default function DestinationClient({
                         ) : null}
                         {sec.content ? (
                           <div className="prose prose-neutral max-w-none">
-                            <PortableText value={sec.content} />
+                            <PortableText
+                              value={sec.content}
+                              components={portableTextComponents}
+                            />
                           </div>
                         ) : null}
                       </div>

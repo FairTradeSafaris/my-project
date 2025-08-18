@@ -93,7 +93,7 @@ export type CollapsedMap = {
 // ─────────────────────────────────────────────────────────
 export type Destination = {
   title: string;
-  flag?: string;
+  image?: string | null; // ✅ This must be added
   travelInfo?: PortableTextBlock[] | null;
   highlights?: PortableTextBlock[] | null;
   practicalStuff?:
@@ -104,5 +104,3 @@ export type Destination = {
     | null;
   mapLocation?: string | null;
 };
-
-export type FilterKey = keyof Filters;

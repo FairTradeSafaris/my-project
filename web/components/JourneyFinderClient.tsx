@@ -1007,13 +1007,15 @@ export default function JourneyFinderClient() {
 
                           const destination = await sanityClient.fetch(
                             `*[_type == "destination" && title == $title][0]{
-        title,
-        travelInfo,
-        highlights,
-        practicalStuff,
-        mapLocation,
-        "flag": flagImage.asset->url
-      }`,
+  title,
+  travelInfo,
+  highlights,
+  practicalStuff,
+  mapLocation,
+  "flag": flagImage.asset->url,
+  "image": heroImage.asset->url
+}
+`,
                             { title: countryTitle }
                           );
 
@@ -1024,6 +1026,10 @@ export default function JourneyFinderClient() {
                             );
                             return;
                           }
+                          console.log(
+                            "🖼 Destination image URL:",
+                            destination.image
+                          );
 
                           setDrawerState({
                             open: true,

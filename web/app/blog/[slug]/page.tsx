@@ -61,26 +61,28 @@ export async function generateStaticParams() {
 }
 
 async function getPost(slug: string): Promise<BlogPost | null> {
-  // ✅ Project flat {url, alt} for every image shape
   const query = groq`*[_type == "blog" && slug.current == $slug][0]{
     _id,
     title,
     summary,
     publishedAt,
+
     // cover image
     "coverImage": {
       "url": coverImage.asset->url,
       "alt": coverImage.alt
     },
-    // hero block (if you use heroImage object inside content too)
-    heroImage{
+
+    // top-level hero (may be removed later)
+    heroImage {
       text,
       alignment,
-      image{
-        "url": asset->url,
-          "alt": alt
+      "image": {
+        "url": image.asset->url,
+        "alt": image.alt
       }
     },
+
     // optional hero gallery pointer
     "heroGalleryImage": heroGalleryImage->{
       alt,
@@ -88,24 +90,40 @@ async function getPost(slug: string): Promise<BlogPost | null> {
       "imageId": image.asset->_id
     },
 
-    // CONTENT: normalize all images
-    content[]{
+    // ✅ CONTENT: normalize all images, including heroBlock
+    content[] {
       ...,
 
+      // ✅ heroBlock (top-of-page banner block)
+      _type == "heroBlock" => {
+        ...,
+        text,
+        alignment,
+        "image": {
+          "url": image.asset->url,
+          "alt": image.alt
+        },
+        galleryImage->{
+          alt,
+          "imageUrl": image.asset->url,
+          "imageId": image.asset->_id
+        }
+      },
+
       // simple image blocks
-      image{
+      image {
         "url": asset->url,
-          "alt": alt
+        "alt": alt
       },
 
       // text+image block
       _type == "textImage" => {
         ...,
-        image{
+        image {
           "url": asset->url,
-            "alt": alt
+          "alt": alt
         },
-        galleryImage->{
+        galleryImage-> {
           alt,
           "imageUrl": image.asset->url,
           "imageId": image.asset->_id
@@ -115,20 +133,20 @@ async function getPost(slug: string): Promise<BlogPost | null> {
       // gallery block: array of flat items
       _type == "galleryBlock" => {
         ...,
-        "images": images[]{
+        "images": images[] {
           "url": asset->url,
-            "alt": alt
+          "alt": alt
         }
       },
 
       // smart carousel
       _type == "smartCarousel" => {
         ...,
-        "slides": slides[]{
+        "slides": slides[] {
           ...,
-          image{
+          image {
             "url": asset->url,
-              "alt": alt
+            "alt": alt
           }
         }
       }
@@ -184,6 +202,12 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const post = await getPost(slug);
+  if (!post) {
+    console.log("❌ No post found for slug:", slug);
+    return { title: "Not Found" };
+  }
+  console.log("✅ HERO IMAGE DEBUG:", JSON.stringify(post.heroImage, null, 2));
+
   if (!post) return { title: "Not Found" };
   return { title: post.title, description: post.summary };
 }
@@ -203,21 +227,7 @@ export default async function BlogPost({
 
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen px-0">
-      {(post.heroImage?.image?.url || post.heroGalleryImage?.imageUrl) && (
-        <div
-          className="relative w-full h-[300px] sm:h-[400px] flex items-center justify-center"
-          style={{
-            backgroundImage: `url(${post.heroImage?.image?.url || post.heroGalleryImage?.imageUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          <div className="bg-black/50 w-full h-full absolute inset-0" />
-          <h1 className="relative z-10 text-3xl sm:text-5xl text-white font-bold px-4 text-center">
-            {post.title}
-          </h1>
-        </div>
-      )}
+      {/* heroBlock now rendered inline via BlogContent */}
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-4 gap-10 mt-10">
         <div className="lg:col-span-3">

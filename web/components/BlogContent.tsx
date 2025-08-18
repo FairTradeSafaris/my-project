@@ -89,7 +89,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
     <div className="space-y-0 font-sans text-base sm:text-lg text-gray-800 leading-relaxed">
       {blocks?.map((block: any, index: number) => {
         switch (block._type) {
-          case "heroImage": {
+          case "heroBlock": {
             const imageUrl =
               getUrl(block.image) || block.galleryImage?.imageUrl || null;
 

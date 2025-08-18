@@ -1,5 +1,3 @@
-// types/block.ts
-
 export type SanityImage = {
   asset: {
     _ref?: string;
@@ -27,8 +25,24 @@ export type PortableTextBlock = {
 // Optional: Enum for stricter typing
 export type ImageSize = "sm" | "md" | "lg" | "full";
 
-// ✅ Individual block types
+// ✅ New: Content Block Hero (used in content[])
+export type HeroBlock = {
+  _type: "heroBlock";
+  image?: {
+    url?: string;
+    alt?: string;
+  };
+  galleryImage?: {
+    image: SanityImage;
+    alt?: string;
+    imageUrl?: string;
+    imageId?: string;
+  };
+  text?: string;
+  alignment?: string;
+};
 
+// ✅ Still valid: Optional top-level HeroImage (if still in use elsewhere)
 export type HeroImageBlock = {
   _type: "heroImage";
   image?: SanityImage;
@@ -116,6 +130,7 @@ export type TableBlock = {
 
 // ✅ Unified Block type for rendering
 export type Block =
+  | HeroBlock
   | HeroImageBlock
   | TextImageBlock
   | QuoteBlock

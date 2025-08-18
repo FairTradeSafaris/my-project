@@ -297,14 +297,16 @@ export default function BlogIndexPage() {
                 className="bg-white rounded-md shadow-md overflow-hidden"
               >
                 {post.coverImage && (
-                  <Image
-                    src={post.coverImage}
-                    alt={post.alt || post.title}
-                    width={256}
-                    height={256}
-                    className="w-full h-64 object-cover"
-                  />
+                  <div className="relative w-full aspect-[1/1]">
+                    <Image
+                      src={post.coverImage}
+                      alt={post.alt || post.title}
+                      fill
+                      className="object-cover rounded-t-md"
+                    />
+                  </div>
                 )}
+
                 <div className="p-4">
                   <p className="text-xs text-orange-600 font-bold mb-1">
                     {new Date(post.publishedAt).toLocaleDateString()} •{" "}

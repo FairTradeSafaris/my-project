@@ -104,3 +104,4 @@ export type Destination = {
     | null;
   mapLocation?: string | null;
 };
+export type FilterKey = keyof Filters;

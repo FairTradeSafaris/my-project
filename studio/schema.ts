@@ -17,15 +17,14 @@ import sitePages from './schemas/sitePages'
 import ambassador from './schemas/ambassador'
 import globalsettings from './schemas/globalSettings'
 import comments from './schemas/comments'
-import privacyPolicy from './schemas/privacyPolicy'
-import table from './schemas/objects/table'
+
 import {galleryImage} from './schemas/galleryImages'
 import videoTestimonial from './schemas/videoTestimonial'
 
 // 🆕 Modular Content Blocks
 import heroImage from './schemas/blocks/heroImage'
 import heroBlock from './schemas/blocks/heroBlock'
-
+import privacyPolicy from './schemas/privacyPolicy'
 import textImage from './schemas/blocks/textImage'
 import quoteBlock from './schemas/blocks/quoteBlock'
 import galleryBlock from './schemas/blocks/galleryBlock'
@@ -57,7 +56,6 @@ const schemaTypes = [
   hero,
   journey,
   blockContent,
-  table,
   country,
   region,
   featuredJourney,

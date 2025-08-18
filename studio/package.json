@@ -17,6 +17,7 @@
   "dependencies": {
     "@sanity/code-input": "^5.2.0",
     "@sanity/color-input": "^4.0.6",
+    "@sanity/table": "^1.1.4",
     "@sanity/vision": "^4.4.1",
     "esbuild": "^0.25.9",
     "lucide-react": "^0.525.0",

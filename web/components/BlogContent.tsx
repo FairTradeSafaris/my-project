@@ -332,16 +332,17 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 </div>
               </section>
             );
-
           case "table":
+            if (!block?.data?.rows?.length) return null;
+
             return (
               <div
                 key={index}
                 className="overflow-x-auto my-8 rounded-lg border border-gray-300"
               >
-                <table className="min-w-full table-auto text-sm text-left">
+                <table className="min-w-full table-auto text-sm text-left border-collapse">
                   <tbody>
-                    {block.rows.map((row: any, rowIndex: number) => (
+                    {block.data.rows.map((row: any[], rowIndex: number) => (
                       <tr
                         key={rowIndex}
                         className={
@@ -350,32 +351,24 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                             : "bg-white"
                         }
                       >
-                        {row.cells.map((cell: any, cellIndex: number) => (
+                        {row.map((cell: any, cellIndex: number) => (
                           <td
                             key={cellIndex}
                             className="border px-4 py-3 align-top"
                           >
-                            <PortableText
-                              value={
-                                typeof cell === "string"
-                                  ? [
-                                      {
-                                        _type: "block",
-                                        children: [
-                                          { _type: "span", text: cell },
-                                        ],
-                                      },
-                                    ]
-                                  : cell
-                              }
-                              components={{
-                                block: {
-                                  normal: ({ children }) => (
-                                    <p className="text-sm">{children}</p>
-                                  ),
-                                },
-                              }}
-                            />
+                            {Array.isArray(cell) ? (
+                              <PortableText
+                                value={cell}
+                                components={portableComponents}
+                              />
+                            ) : typeof cell === "object" && cell._type ? (
+                              <PortableText
+                                value={[cell]}
+                                components={portableComponents}
+                              />
+                            ) : (
+                              <p>{String(cell)}</p>
+                            )}
                           </td>
                         ))}
                       </tr>

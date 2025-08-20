@@ -66,7 +66,6 @@ export default function NavbarMobile() {
   const [promoCard, setPromoCard] = useState<FeatureCard | null>(null);
   const [ready, setReady] = useState(false);
 
-  // Fetch Sanity menu data
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -94,7 +93,6 @@ export default function NavbarMobile() {
     };
   }, []);
 
-  // Lock scroll when menu is open
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = menuOpen ? "hidden" : "auto";
@@ -114,10 +112,10 @@ export default function NavbarMobile() {
 
   return (
     <>
-      {/* Persistent Sticky Mobile Header */}
+      {/* Sticky Mobile Header */}
       <header
         className={cx(
-          "fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 md:hidden",
+          "fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 lg:hidden",
           "backdrop-blur bg-white/90 dark:bg-neutral-900/85",
           "border-b border-black/5 dark:border-white/10"
         )}
@@ -129,7 +127,6 @@ export default function NavbarMobile() {
             scrolled ? "h-14" : "h-16"
           )}
         >
-          {/* Logo + Badge */}
           <div className="flex items-center gap-3">
             <Link href="/" aria-label="Fair Trade Safaris" className="shrink-0">
               <div className="w-11 h-11 rounded-xl shadow-sm bg-[#d7ccc8] dark:bg-[#1f1410] grid place-items-center">
@@ -156,7 +153,6 @@ export default function NavbarMobile() {
             </Link>
           </div>
 
-          {/* Right Icons: Search + Menu */}
           <div className="flex items-center gap-3">
             <Link
               href="/journey"
@@ -177,7 +173,6 @@ export default function NavbarMobile() {
         </div>
       </header>
 
-      {/* Mobile Menu Sheet */}
       <AnimatePresence>
         {menuOpen && ready && (
           <motion.div
@@ -187,7 +182,7 @@ export default function NavbarMobile() {
             exit="exit"
             variants={sheetVariants}
             transition={{ duration: reduceMotion ? 0 : 0.15 }}
-            className="fixed inset-0 z-[9998] bg-white dark:bg-neutral-900 md:hidden"
+            className="fixed inset-0 z-[9998] bg-white dark:bg-neutral-900 lg:hidden"
           >
             <MobileMenuSheet
               onClose={() => setMenuOpen(false)}

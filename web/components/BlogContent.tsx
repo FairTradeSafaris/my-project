@@ -333,7 +333,12 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               </section>
             );
           case "table":
-            if (!block?.data?.rows?.length) return null;
+            if (!block?.data?.rows?.length) {
+              console.log("⚠️ Table block has no rows:", block);
+              return null;
+            }
+
+            console.log("✅ Table block rows:", block.data.rows);
 
             return (
               <div

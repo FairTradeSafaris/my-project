@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { client } from "@/lib/sanity";
-
+import { useBreakpoint } from "@/lib/useBreakpoint";
 // Split navs (client components)
 import NavbarMobile from "@/components/NavbarMobile";
 import NavbarDesktop from "@/components/NavbarDesktop";
@@ -51,6 +51,8 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const screenWidth = useBreakpoint();
+  const isMobile = screenWidth !== null && screenWidth < 1280;
 
   const hideUI = pathname === "/project-portal";
 
@@ -194,12 +196,15 @@ export default function ClientLayout({
       {/* Global nav (mobile + desktop) */}
       {!hideUI && ready && (
         <>
-          <NavbarMobile />
-          <NavbarDesktop
-            navSections={navSections}
-            featureCards={featureCards}
-            promoCard={promoCard || undefined}
-          />
+          {isMobile ? (
+            <NavbarMobile />
+          ) : (
+            <NavbarDesktop
+              navSections={navSections}
+              featureCards={featureCards}
+              promoCard={promoCard || undefined}
+            />
+          )}
         </>
       )}
 

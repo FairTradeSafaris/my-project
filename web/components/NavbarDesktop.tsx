@@ -1,4 +1,3 @@
-// components/NavbarDesktop.tsx
 "use client";
 
 import Link from "next/link";
@@ -63,7 +62,7 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
     <div
       className={cx(
         "fixed z-[60] top-0 left-4 px-2 pt-2 pb-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out",
-        "rounded-b-2xl rounded-t-none hidden md:flex items-center justify-center",
+        "rounded-b-2xl rounded-t-none hidden xl:flex items-center justify-center",
         "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
       )}
       style={{ width: size.box, height: size.box }}
@@ -88,7 +87,6 @@ export default function NavbarDesktop({
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  // lock body scroll when desktop menu is open
   useEffect(() => {
     const prev = document.documentElement.style.overflow;
     if (open) document.documentElement.style.overflow = "hidden";
@@ -103,14 +101,14 @@ export default function NavbarDesktop({
 
       <nav
         className={cx(
-          "hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[92vw] max-w-4xl px-3",
+          "hidden lg:flex fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[92vw] max-w-4xl px-3",
           "items-center justify-between gap-6",
           "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
-          scrolled ? "py-1" : "py-3",
+          scrolled ? "py-1 sm:py-1.5" : "py-3 sm:py-4",
           "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white"
         )}
       >
-        <div className="flex items-center gap-3 pl-4 pt-2 md:pt-0">
+        <div className="flex items-center gap-3 pl-4 pt-2 sm:pt-0">
           <Link
             href="/"
             className="flex items-center"
@@ -141,7 +139,7 @@ export default function NavbarDesktop({
           </Link>
         </div>
 
-        <div className="flex items-center gap-4 md:gap-6 pr-3">
+        <div className="flex items-center gap-4 sm:gap-6 pr-3">
           <Link href="/journey" title="Search" className="p-2 rounded-xl">
             <Search size={20} />
           </Link>
@@ -166,37 +164,31 @@ export default function NavbarDesktop({
         </div>
       </nav>
 
-      {/* Desktop full-screen sheet (reuses MobileMenuSheet content) */}
-      {/* Desktop compact menu (3 columns) */}
-      {/* Desktop compact menu (ALL sections left • Featured middle • Promo right) */}
       <AnimatePresence>
         {open && (
           <>
-            {/* soft backdrop */}
             <motion.div
               key="desk-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.12 }}
-              className="hidden md:block fixed inset-0 z-40 bg-black/30"
+              className="hidden sm:block fixed inset-0 z-40 bg-black/30"
               onClick={() => setOpen(false)}
               aria-hidden="true"
             />
 
-            {/* centered floating panel */}
             <motion.div
               key="desk-panel"
               initial={{ y: -8, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -8, opacity: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.18 }}
-              className="hidden md:block fixed left-1/2 -translate-x-1/2 z-50 mt-28 w-[92vw] max-w-6xl"
+              className="hidden sm:block fixed left-1/2 -translate-x-1/2 z-50 mt-28 w-[92vw] max-w-6xl"
               role="dialog"
               aria-modal="true"
             >
               <div className="rounded-3xl shadow-2xl ring-1 ring-black/10 backdrop-blur bg-white/85 dark:bg-neutral-900/80 border border-white/40 dark:border-white/10">
-                {/* dynamic grid: if Featured or Promo missing, collapse to 2 or 1 cols */}
                 <div
                   className={[
                     "p-6 lg:p-8 gap-6 grid",
@@ -207,7 +199,6 @@ export default function NavbarDesktop({
                         : "grid-cols-1",
                   ].join(" ")}
                 >
-                  {/* LEFT: all nav sections (scroll if tall) */}
                   <div className="min-w-0">
                     <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
                       Navigation
@@ -229,11 +220,7 @@ export default function NavbarDesktop({
                                     href={item.href}
                                     onClick={() => setOpen(false)}
                                   >
-                                    <span
-                                      className="block text-sm px-3 py-2 rounded-xl transition
-                                text-neutral-900 dark:text-neutral-100
-                                hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70"
-                                    >
+                                    <span className="block text-sm px-3 py-2 rounded-xl transition text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70">
                                       {item.title}
                                     </span>
                                   </Link>
@@ -246,7 +233,6 @@ export default function NavbarDesktop({
                     </div>
                   </div>
 
-                  {/* MIDDLE: Featured (minimal image + text) */}
                   {!!featureCards?.length && (
                     <div className="min-w-0">
                       <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
@@ -282,7 +268,6 @@ export default function NavbarDesktop({
                     </div>
                   )}
 
-                  {/* RIGHT: Promo (edge-to-edge) */}
                   {promoCard?.title && (
                     <div className="min-w-0">
                       <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
@@ -313,7 +298,6 @@ export default function NavbarDesktop({
                   )}
                 </div>
 
-                {/* bottom action */}
                 <div className="flex justify-end px-6 lg:px-8 pb-5 -mt-2">
                   <button
                     onClick={() => setOpen(false)}

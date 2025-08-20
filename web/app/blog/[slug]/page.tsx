@@ -90,6 +90,13 @@ async function getPost(slug: string): Promise<BlogPost | null> {
       "imageId": image.asset->_id
     },
 
+    // ✅ Pull author reference
+    author->{
+      name,
+      bio,
+      "image": image.asset->url
+    },
+
     // ✅ CONTENT: normalize all images, including heroBlock
     content[] {
       ...,

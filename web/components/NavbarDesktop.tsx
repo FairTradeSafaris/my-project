@@ -7,6 +7,7 @@ import { Menu, Search, User, X } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
+import { usePathname } from "next/navigation";
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -84,6 +85,8 @@ export default function NavbarDesktop({
   promoCard?: FeatureCard | null;
 }) {
   const scrolled = useScrolled(40);
+  const pathname = usePathname();
+  const hideBadge = pathname.startsWith("/journey");
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
@@ -97,7 +100,7 @@ export default function NavbarDesktop({
 
   return (
     <>
-      <DesktopRoundBadge scrolled={scrolled} />
+      {!hideBadge && <DesktopRoundBadge scrolled={scrolled} />}
 
       <nav
         className={cx(

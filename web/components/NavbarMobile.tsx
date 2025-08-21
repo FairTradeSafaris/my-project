@@ -1,4 +1,3 @@
-// components/NavbarMobile.tsx
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -70,15 +69,12 @@ export default function NavbarMobile() {
     let cancelled = false;
     (async () => {
       try {
-        const data = await client.fetch(`
-          *[_type == "megaMenu"][0]{
-            navSections[]{ heading, links[]{ title, href } },
-            featureCards[]{ title, description, alt, link, image{asset->{url}} },
-            promoCard{ title, description, alt, link, image{asset->{url}} }
-          }
-        `);
+        const data = await client.fetch(`*[_type == "megaMenu"][0]{
+          navSections[]{ heading, links[]{ title, href } },
+          featureCards[]{ title, description, alt, link, image{asset->{url}} },
+          promoCard{ title, description, alt, link, image{asset->{url}} }
+        }`);
         if (cancelled) return;
-
         setNavSections(data?.navSections || []);
         setFeatureCards(data?.featureCards || []);
         setPromoCard(data?.promoCard || null);
@@ -115,7 +111,7 @@ export default function NavbarMobile() {
       {/* Sticky Mobile Header */}
       <header
         className={cx(
-          "fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 lg:hidden",
+          "fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 xl:hidden",
           "backdrop-blur bg-white/90 dark:bg-neutral-900/85",
           "border-b border-black/5 dark:border-white/10"
         )}
@@ -182,7 +178,7 @@ export default function NavbarMobile() {
             exit="exit"
             variants={sheetVariants}
             transition={{ duration: reduceMotion ? 0 : 0.15 }}
-            className="fixed inset-0 z-[9998] bg-white dark:bg-neutral-900 lg:hidden"
+            className="fixed inset-0 z-[9998] bg-white dark:bg-neutral-900 xl:hidden"
           >
             <MobileMenuSheet
               onClose={() => setMenuOpen(false)}

@@ -575,26 +575,33 @@ export default function DestinationClient({
       {/* ---------- GALLERY MODAL ---------- */}
       {galleryOpen && selected?.gallery?.length ? (
         <Portal>
+          {/* Modal backdrop */}
           <div
-            className="fixed inset-0 bg-black/70 z-[1400]"
+            className="fixed inset-0 bg-black/70 z-[9998]"
             onClick={() => setGalleryOpen(false)}
           />
-          <div className="fixed inset-0 z-[1410] flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 bg-black/60 backdrop-blur-sm">
+
+          {/* Modal content */}
+          <div className="fixed inset-0 z-[9999] flex flex-col">
+            {/* Modal header with close button */}
+            <div className="relative px-4 py-3 bg-black/60 backdrop-blur-sm">
               <div className="flex items-center gap-2 text-white">
                 <Images size={18} />
                 <span className="font-semibold">
                   Photo Highlights — {selected.title}
                 </span>
               </div>
+
               <button
                 onClick={() => setGalleryOpen(false)}
-                className="w-9 h-9 grid place-items-center rounded-full bg-white/90 text-neutral-800 hover:bg-white"
+                className="fixed top-4 right-4 z-[10000] w-10 h-10 rounded-full bg-white text-black hover:bg-neutral-200 font-bold text-lg shadow-md"
                 aria-label="Close gallery"
               >
-                ✕
+                ×
               </button>
             </div>
+
+            {/* Gallery content */}
             <div className="flex-1 overflow-x-auto overflow-y-hidden">
               <div className="h-full w-max flex gap-4 p-4 snap-x snap-mandatory">
                 {selected.gallery.map((img, i) => (

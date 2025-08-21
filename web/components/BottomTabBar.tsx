@@ -23,68 +23,6 @@ const helperMessages: Record<HelperKey, string[]> = {
   account: ["Sign in to personalize", "Track your bookings"],
 };
 
-function MultiSelectDropdown({
-  label,
-  options,
-  selected,
-  setSelected,
-}: {
-  label: string;
-  options: string[];
-  selected: string[];
-  setSelected: (val: string[]) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleSelection = (option: string) => {
-    setSelected(
-      selected.includes(option)
-        ? selected.filter((item) => item !== option)
-        : [...selected, option]
-    );
-  };
-
-  const handleBlur = () => {
-    setTimeout(() => setIsOpen(false), 100);
-  };
-
-  return (
-    <div className="relative w-full" onBlur={handleBlur}>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-3 pl-4 pr-10 text-left shadow-sm focus:outline-none text-base text-black"
-        >
-          {selected.length > 0 ? selected.join(", ") : <span>{label}</span>}
-          <ChevronUpDownIcon className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
-        </button>
-
-        {isOpen && (
-          <div className="absolute bottom-full mb-2 z-[9999] w-full rounded-xl bg-white shadow-2xl max-h-[300px] overflow-auto border border-gray-200 text-black">
-            {options.map((option) => (
-              <div
-                key={option}
-                className="flex items-center px-4 py-3 hover:bg-gray-100 cursor-pointer"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => toggleSelection(option)}
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.includes(option)}
-                  readOnly
-                  className="mr-2 pointer-events-none"
-                />
-                <span className="text-base">{option}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function BottomTabBar() {
   const { isSignedIn } = useUser();
   const router = useRouter();
@@ -359,5 +297,68 @@ export default function BottomTabBar() {
         </SignedOut>
       </nav>
     </>
+  );
+}
+
+// 👇 Move MultiSelectDropdown down here
+function MultiSelectDropdown({
+  label,
+  options,
+  selected,
+  setSelected,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  setSelected: (val: string[]) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleSelection = (option: string) => {
+    setSelected(
+      selected.includes(option)
+        ? selected.filter((item) => item !== option)
+        : [...selected, option]
+    );
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => setIsOpen(false), 100);
+  };
+
+  return (
+    <div className="relative w-full" onBlur={handleBlur}>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative w-full cursor-pointer rounded-md border border-black/10 bg-white py-3 pl-4 pr-10 text-left shadow-sm focus:outline-none text-base text-black"
+        >
+          {selected.length > 0 ? selected.join(", ") : <span>{label}</span>}
+          <ChevronUpDownIcon className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
+        </button>
+
+        {isOpen && (
+          <div className="absolute bottom-full mb-2 z-[9999] w-full rounded-xl bg-white shadow-2xl max-h-[300px] overflow-auto border border-gray-200 text-black">
+            {options.map((option) => (
+              <div
+                key={option}
+                className="flex items-center px-4 py-3 hover:bg-gray-100 cursor-pointer"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => toggleSelection(option)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(option)}
+                  readOnly
+                  className="mr-2 pointer-events-none"
+                />
+                <span className="text-base">{option}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

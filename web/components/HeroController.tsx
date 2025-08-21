@@ -453,7 +453,23 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
       headline={hero.headline}
       sub={hero.subheadline}
     >
-      {showHomeFilters ? <HomeFilters /> : null}
+      {showHomeFilters && (
+        <>
+          <HomeFilters />
+
+          {/* Mobile trigger button */}
+          <div className="md:hidden mt-4 w-full flex justify-center">
+            <button
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("fts:open-search-sheet"))
+              }
+              className="text-sm px-4 py-2 border border-white text-white rounded-full backdrop-blur-sm bg-white/10 hover:bg-white/20 transition"
+            >
+              Explore Safaris
+            </button>
+          </div>
+        </>
+      )}
 
       {showTypeSearch ? (
         <>

@@ -1,4 +1,3 @@
-// app/contact/ContactPageClient.tsx
 "use client";
 
 import { useMemo, useState } from "react";
@@ -10,11 +9,15 @@ import {
   RiWhatsappLine,
   RiArrowRightLine,
 } from "react-icons/ri";
+import { urlFor } from "@/lib/sanity";
+import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 type ContactInfo = {
   phone?: string;
   whatsappNumber?: string;
   email?: string;
+  lineArtImage?: SanityImageSource;
+  bookingLink?: string;
 };
 
 export default function ContactPageClient({
@@ -43,6 +46,14 @@ export default function ContactPageClient({
     return `https://wa.me/${withCountry}`;
   }, [contactInfo?.whatsappNumber]);
 
+  const lineArtImageUrl = contactInfo?.lineArtImage
+    ? urlFor(contactInfo.lineArtImage).url()
+    : "/buffalo.png";
+
+  const bookingLink =
+    contactInfo?.bookingLink ||
+    "https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris";
+
   const IconWrap = ({ children }: { children: React.ReactNode }) => (
     <div
       className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
@@ -54,7 +65,6 @@ export default function ContactPageClient({
 
   const iconSize = 20;
 
-  // Equal-height tile class
   const tileClass =
     "min-h-44 md:min-h-56 rounded-2xl border shadow-sm flex flex-col items-center justify-center text-center p-4 hover:shadow-md transition";
 
@@ -63,15 +73,11 @@ export default function ContactPageClient({
       {/* Heading */}
       <section className="max-w-6xl mx-auto px-4 pt-12 pb-6">
         <div className="flex items-end justify-start gap-3 md:gap-4">
-          {/* Bigger buffalo */}
           <img
-            src="/buffalo.png"
-            alt=""
-            aria-hidden="true"
+            src={lineArtImageUrl}
+            alt="Decorative Line Art"
             className="h-16 md:h-20 lg:h-24 pointer-events-none select-none"
           />
-
-          {/* Aligned to buffalo's bottom */}
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 leading-none">
             Contact Us
           </h1>
@@ -80,16 +86,14 @@ export default function ContactPageClient({
 
       {/* Main */}
       <section className="max-w-6xl mx-auto px-4 pb-4">
-        {/* Make both columns the same height */}
         <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] md:items-stretch gap-6 md:gap-8">
-          {/* LEFT: Tiles card (no scrollbar, clips buffalo) */}
+          {/* LEFT */}
           <div
             className="relative overflow-hidden rounded-2xl p-6 md:p-6 shadow-lg border"
             style={{ background: tileBg, borderColor: cardBorder }}
           >
-            {/* Tiles */}
             <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {/* Discovery Call */}
+              {/* Booking */}
               <button
                 type="button"
                 onClick={() => setBookingOpen(true)}
@@ -175,7 +179,7 @@ export default function ContactPageClient({
             </div>
           </div>
 
-          {/* RIGHT: Form (stretches to same height as left) */}
+          {/* RIGHT */}
           <div
             className="rounded-2xl p-6 md:p-8 shadow-lg border"
             style={{ background: tileBg, borderColor: cardBorder }}
@@ -213,7 +217,7 @@ export default function ContactPageClient({
             </div>
 
             <iframe
-              src="https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"
+              src={bookingLink}
               className="w-full h-[calc(100%-56px)]"
               style={{ border: "none" }}
               allowFullScreen

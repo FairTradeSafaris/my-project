@@ -354,8 +354,8 @@ export default function JourneyFinderClient() {
         (interest: { title?: string; category?: string }) => {
           const normalizedCategory = {
             signature: "Signature Safari Experience",
-            style: "Travel Style",
-            feature: "Trip Feature",
+            style: "Travel Interest",
+            feature: "Trip Activity",
           }[interest.category?.toLowerCase() || ""];
 
           if (normalizedCategory === "Travel Style" && interest.title) {

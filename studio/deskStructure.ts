@@ -6,7 +6,7 @@ export const myStructure = (S: StructureBuilder) =>
   S.list()
     .title('Content')
     .items([
-      // Home Page Group
+      // 🏠 Home Page
       S.listItem()
         .title('🏠 Home Page')
         .child(
@@ -23,7 +23,7 @@ export const myStructure = (S: StructureBuilder) =>
             ]),
         ),
 
-      // Blog
+      // 📝 Blog Setup
       S.listItem()
         .title('📝 Blog Setup')
         .child(
@@ -32,11 +32,11 @@ export const myStructure = (S: StructureBuilder) =>
             .items([
               S.documentTypeListItem('blog').title('📝 Blog'),
               S.documentTypeListItem('comment').title('💬 Comments'),
-              S.documentTypeListItem('author').title('💬 Author'),
+              S.documentTypeListItem('author').title('✍️ Author'),
             ]),
         ),
 
-      // People Group
+      // 👥 People
       S.listItem()
         .title('👥 People')
         .child(
@@ -48,7 +48,7 @@ export const myStructure = (S: StructureBuilder) =>
             ]),
         ),
 
-      // Content Blocks
+      // 📦 Modular Blocks
       S.listItem()
         .title('📦 Modular Blocks')
         .child(
@@ -68,7 +68,7 @@ export const myStructure = (S: StructureBuilder) =>
             ]),
         ),
 
-      // Settings
+      // ⚙️ Settings
       S.listItem()
         .title('⚙️ Settings')
         .child(
@@ -78,10 +78,11 @@ export const myStructure = (S: StructureBuilder) =>
               S.documentTypeListItem('globalSettings').title('Global Settings'),
               S.documentTypeListItem('megaMenu').title('Mega Menu'),
               S.documentTypeListItem('privacyPolicy').title('Privacy Policy'),
+              S.documentTypeListItem('footer').title('Footer'),
             ]),
         ),
 
-      // Geography
+      // 🌍 Destinations
       S.listItem()
         .title('🌍 Destinations')
         .child(
@@ -96,43 +97,83 @@ export const myStructure = (S: StructureBuilder) =>
             ]),
         ),
 
-      // Comments
+      // 📬 Contact Us
+      S.listItem()
+        .title('📬 Contact Us')
+        .child(
+          S.editor()
+            .id('contactSettings')
+            .schemaType('contactSettings')
+            .documentId('contactSettings'),
+        ),
 
-      // Catch-all: Show all remaining types not listed above
-      ...S.documentTypeListItems().filter(
-        (listItem) =>
-          ![
-            'hero',
-            'whyChoose',
-            'foundersPromise',
-            'ctaBanner',
-            'journey',
-            'testimonial',
-            'sitePages',
-            'blog',
-            'teamMember',
-            'ambassador',
-            'heroImage',
-            'textImage',
-            'quoteBlock',
-            'galleryBlock',
-            'videoEmbed',
-            'textBlock',
-            'ctaBlock',
-            'mapBlock',
-            'zohoForm',
-            'smartCarousel',
-            'globalsettings',
-            'megaMenu',
-            'privacyPolicy',
-            'destination',
-            'region',
-            'country',
-            'featuredJourney',
-            'dest_slug',
-            'comment',
-            'author',
-          ].includes(listItem.getId() ?? ''),
-      ),
+      // 📨 Lead Forms
+      S.listItem()
+        .title('📨 Lead Forms')
+        .child(
+          S.list()
+            .title('Forms')
+            .items([
+              S.documentTypeListItem('leadMagnetClaim').title('Lead Magnet Form'),
+              S.documentTypeListItem('travelInterest').title('Travel Interest Form'),
+            ]),
+        ),
+
+      // 📚 Media & Testimonials
+      S.listItem()
+        .title('📚 Media & Testimonials')
+        .child(
+          S.list()
+            .title('Media & Testimonials')
+            .items([
+              S.documentTypeListItem('videoTestimonial').title('Video Testimonials'),
+              S.documentTypeListItem('galleryImage').title('Gallery Images'),
+              S.documentTypeListItem('book').title('Books'),
+            ]),
+        ),
+
+      // 🌍 Travel & Trip Details
+      S.listItem()
+        .title('🌍 Travel Details')
+        .child(
+          S.list()
+            .title('Trips & Experiences')
+            .items([S.documentTypeListItem('trip').title('Trip Info')]),
+        ),
+
+      // ❓ FAQs
+      S.listItem()
+        .title('❓ FAQs')
+        .child(
+          S.list()
+            .title('FAQs')
+            .items([
+              S.documentTypeListItem('faqQuestion').title('FAQ Questions'),
+              S.documentTypeListItem('faqCategory').title('FAQ Categories'),
+            ]),
+        ),
+
+      // ❌ Hide orphaned types
+      // Remove this block if you want to debug types not listed above
+      // ...S.documentTypeListItems().filter(
+      //   (listItem) =>
+      //     ![
+      //       'hero', 'whyChoose', 'foundersPromise', 'ctaBanner',
+      //       'journey', 'testimonial', 'sitePages',
+      //       'blog', 'comment', 'author',
+      //       'teamMember', 'ambassador',
+      //       'heroImage', 'textImage', 'quoteBlock', 'galleryBlock',
+      //       'videoEmbed', 'textBlock', 'ctaBlock', 'mapBlock',
+      //       'zohoForm', 'smartCarousel',
+      //       'globalSettings', 'megaMenu', 'privacyPolicy',
+      //       'footer', 'developerPortal',
+      //       'destination', 'region', 'country', 'featuredJourney', 'dest_slug',
+      //       'contactSettings', 'leadMagnetClaim', 'travelInterest',
+      //       'videoTestimonial', 'galleryImage', 'book',
+      //       'trip',
+      //       'faqQuestion', 'faqCategory'
+      //     ].includes(listItem.getId() ?? ''),
+      // ),
     ])
+
 export default myStructure

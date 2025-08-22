@@ -85,6 +85,15 @@ export const myStructure = (S: StructureBuilder) =>
 
               // ✅ Add Filter Labels here
               S.documentTypeListItem('filterLabels').title('Filter Labels'),
+              S.listItem()
+                .title('Travel Interests')
+                .schemaType('travelInterest')
+                .child(
+                  S.documentList()
+                    .title('Travel Interests')
+                    .filter('_type == "travelInterest"')
+                    .defaultOrdering([{field: 'sortOrder', direction: 'asc'}]),
+                ),
             ]),
         ),
 

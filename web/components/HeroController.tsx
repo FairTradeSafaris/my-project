@@ -150,7 +150,8 @@ function HomeFilters() {
           luxuryRaw: (string | null | undefined)[];
         } = await sanityClient.fetch(
           `{
-            "interests": *[_type == "travelInterest" && isTopInterest == true][0...5] { title },
+            "interests": *[_type == "travelInterest" && isTopInterest == true] | order(sortOrder asc) { title },
+
             "luxuryRaw": *[_type == "journey"].star
           }`
         );

@@ -102,6 +102,11 @@ export default function JourneyFinderClient() {
   });
   const [optionsJourneys, setOptionsJourneys] = useState<Journey[]>([]);
   const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
+  const [filterLabels, setFilterLabels] = useState<{
+    signature: string;
+    style: string;
+    feature: string;
+  } | null>(null);
 
   const [selectedFilters, setSelectedFilters] = useState<Filters>({
     region: "",
@@ -180,6 +185,19 @@ export default function JourneyFinderClient() {
         }
       });
   }, [visibleCount]);
+  useEffect(() => {
+    sanityClient
+      .fetch(
+        `*[_type == "filterLabels"][0]{
+        signature,
+        style,
+        feature
+      }`
+      )
+      .then((data) => {
+        setFilterLabels(data);
+      });
+  }, []);
 
   // Fetch option data
   useEffect(() => {
@@ -354,8 +372,8 @@ export default function JourneyFinderClient() {
         (interest: { title?: string; category?: string }) => {
           const normalizedCategory = {
             signature: "Signature Safari Experience",
-            style: "Travel Interest",
-            feature: "Trip Activity",
+            style: "Travel Style",
+            feature: "Trip Feature",
           }[interest.category?.toLowerCase() || ""];
 
           if (normalizedCategory === "Travel Style" && interest.title) {
@@ -651,7 +669,7 @@ export default function JourneyFinderClient() {
     return [Math.min(...ps), Math.max(...ps)];
   }, [filterOptions.prices]);
 
-  const toggleType = (type: string) => {
+  const onToggleType = (type: string) => {
     setSelectedFilters((prev) => ({
       ...prev,
       types: prev.types.includes(type)
@@ -725,7 +743,7 @@ export default function JourneyFinderClient() {
     setTimeout(() => setFiltersReady(true), 0);
   };
 
-  const toggleStyle = (value: string) => {
+  const onToggleStyle = (value: string) => {
     setSelectedFilters((prev) => ({
       ...prev,
       style: prev.style.includes(value)
@@ -740,7 +758,7 @@ export default function JourneyFinderClient() {
     }, 300);
   };
 
-  const toggleFeature = (value: string) => {
+  const onToggleFeature = (value: string) => {
     setSelectedFilters((prev) => ({
       ...prev,
       feature: prev.feature.includes(value)
@@ -813,15 +831,16 @@ export default function JourneyFinderClient() {
               onSetSimpleFilter={setSimpleFilter}
               onToggleStar={toggleStar}
               onToggleSignature={toggleSignature}
-              onToggleStyle={toggleStyle}
-              onToggleFeature={toggleFeature}
-              onToggleType={toggleType}
+              onToggleStyle={onToggleStyle}
+              onToggleFeature={onToggleFeature}
+              onToggleType={onToggleType}
               onDurationChange={(r) =>
                 setSelectedFilters((p) => ({ ...p, duration: r }))
               }
               onPriceChange={(r) =>
                 setSelectedFilters((p) => ({ ...p, price: r }))
               }
+              filterLabels={filterLabels}
             />
 
             <button
@@ -865,15 +884,16 @@ export default function JourneyFinderClient() {
             onSetSimpleFilter={setSimpleFilter}
             onToggleStar={toggleStar}
             onToggleSignature={toggleSignature}
-            onToggleStyle={toggleStyle}
-            onToggleFeature={toggleFeature}
-            onToggleType={toggleType}
+            onToggleStyle={onToggleStyle}
+            onToggleFeature={onToggleFeature}
+            onToggleType={onToggleType}
             onDurationChange={(r) =>
               setSelectedFilters((p) => ({ ...p, duration: r }))
             }
             onPriceChange={(r) =>
               setSelectedFilters((p) => ({ ...p, price: r }))
             }
+            filterLabels={filterLabels}
           />
         </aside>
 

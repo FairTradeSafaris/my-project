@@ -45,6 +45,7 @@ import faqQuestion from './schemas/faqQuestion'
 import faqCategory from './schemas/faqCategory'
 import travelInterest from './schemas/journeys/travelInterest'
 import contactSettings from './schemas/contactSettings'
+import filterLabels from './schemas/settings/filterLabels'
 
 const schemaTypes = [
   blog,
@@ -92,6 +93,7 @@ const schemaTypes = [
   faqCategory,
   travelInterest,
   contactSettings,
+  filterLabels,
 ]
 
 // ✅ This is the only change:

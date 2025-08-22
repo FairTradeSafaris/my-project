@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 let cachedAccessToken: string | null = null;
-let tokenExpiresAt: number = 0; // timestamp in ms
+let tokenExpiresAt: number = 0;
 
 async function refreshAccessToken() {
   const refreshToken = process.env.ZOHO_REFRESH_TOKEN!;
@@ -17,9 +17,7 @@ async function refreshAccessToken() {
 
   const res = await fetch(
     `https://accounts.zoho.com/oauth/v2/token?${params.toString()}`,
-    {
-      method: "POST",
-    }
+    { method: "POST" }
   );
 
   if (!res.ok) {
@@ -29,7 +27,6 @@ async function refreshAccessToken() {
 
   const json = await res.json();
   cachedAccessToken = json.access_token;
-  // expire 5 minutes early to avoid edge cases
   tokenExpiresAt = Date.now() + (json.expires_in - 300) * 1000;
 
   return cachedAccessToken;
@@ -45,12 +42,12 @@ async function getAccessToken() {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { email, file_url, file_name } = data;
+    const { email, file_url, file_name, title, startDate, endDate } = data;
 
-    if (!email || !file_url) {
+    if (!email || !file_url || !title) {
       return new Response(
         JSON.stringify({
-          error: "Missing required fields: email and file_url",
+          error: "Missing required fields: email, file_url, or title",
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
@@ -60,14 +57,13 @@ export async function POST(request: NextRequest) {
     const sanityProjectId = process.env.SANITY_PROJECT_ID!;
     const sanityDataset = process.env.SANITY_DATASET!;
 
-    // 1. Get Zoho Access Token (auto-refresh)
     const zohoAccessToken = await getAccessToken();
 
-    // 2. Query Sanity for trip with matching email
-    const query = `*[_type == "trip" && clientEmail == $email][0]{_id}`;
+    // Look up trip by clientEmail AND title
+    const query = `*[_type == "trip" && clientEmail == $email && title == $title][0]{_id}`;
     const sanityQueryUrl = `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/query/${sanityDataset}?query=${encodeURIComponent(
       query
-    )}&$email="${encodeURIComponent(email)}"`;
+    )}&$email="${encodeURIComponent(email)}"&$title="${encodeURIComponent(title)}"`;
 
     const sanityQueryResp = await fetch(sanityQueryUrl, {
       headers: { Authorization: `Bearer ${sanityToken}` },
@@ -81,12 +77,14 @@ export async function POST(request: NextRequest) {
     const sanityQueryResult = await sanityQueryResp.json();
     let tripId = sanityQueryResult.result?._id;
 
-    // 3. If no trip, create one
+    // Create trip if not found
     if (!tripId) {
       const createDoc = {
         _type: "trip",
         clientEmail: email,
-        title: `Trip for ${email}`,
+        title,
+        startDate: startDate ? new Date(startDate).toISOString() : undefined,
+        endDate: endDate ? new Date(endDate).toISOString() : undefined,
         documents: [],
       };
 
@@ -114,7 +112,7 @@ export async function POST(request: NextRequest) {
       tripId = createResult.results[0].id;
     }
 
-    // 4. Download file from Zoho
+    // Download file from Zoho
     const fileResp = await fetch(file_url, {
       headers: { Authorization: `Zoho-oauthtoken ${zohoAccessToken}` },
     });
@@ -126,14 +124,12 @@ export async function POST(request: NextRequest) {
 
     const fileBuffer = await fileResp.arrayBuffer();
 
-    // 5. Upload file to Sanity assets
+    // Upload file to Sanity assets
     const uploadResp = await fetch(
       `https://${sanityProjectId}.api.sanity.io/v2021-06-07/assets/files/${sanityDataset}`,
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${sanityToken}`,
-        },
+        headers: { Authorization: `Bearer ${sanityToken}` },
         body: fileBuffer,
       }
     );
@@ -146,7 +142,7 @@ export async function POST(request: NextRequest) {
     const uploadResult = await uploadResp.json();
     const assetId = uploadResult.document._id;
 
-    // 6. Patch Trip doc to add document reference
+    // Patch trip to add file to `documents[]`
     const patchResp = await fetch(
       `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
       {
@@ -166,7 +162,7 @@ export async function POST(request: NextRequest) {
                   items: [
                     {
                       _type: "object",
-                      label: "other", // or pass label in webhook if you want
+                      label: "other",
                       file: {
                         _type: "file",
                         asset: {

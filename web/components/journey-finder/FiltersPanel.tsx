@@ -42,6 +42,11 @@ type Props = {
   ) => void;
   onDurationChange: (range: [number, number]) => void;
   onPriceChange: (range: [number, number]) => void;
+  filterLabels: {
+    signature: string;
+    style: string;
+    feature: string;
+  } | null;
 };
 
 export default function FiltersPanel({
@@ -64,13 +69,9 @@ export default function FiltersPanel({
   onSetSimpleFilter,
   onDurationChange,
   onPriceChange,
+  filterLabels,
 }: Props) {
-  const groups: Array<{
-    label: string;
-    items: string[];
-    filterKey: FilterKey | "duration" | "price";
-    multi?: boolean;
-  }> = [
+  const groups = [
     { label: "Regions", items: filterOptions.regions, filterKey: "region" },
     {
       label: "Countries",
@@ -87,19 +88,19 @@ export default function FiltersPanel({
     { label: "Duration", items: [], filterKey: "duration" },
     { label: "Price", items: [], filterKey: "price" },
     {
-      label: "Signature Safari Experiences",
+      label: filterLabels?.signature || "Signature Safari Experiences",
       items: availableSignature,
       filterKey: "signature",
       multi: true,
     },
     {
-      label: "Travel Styles",
+      label: filterLabels?.style || "Travel Styles",
       items: availableStyle,
       filterKey: "style",
       multi: true,
     },
     {
-      label: "Trip Features",
+      label: filterLabels?.feature || "Trip Features",
       items: availableFeature,
       filterKey: "feature",
       multi: true,

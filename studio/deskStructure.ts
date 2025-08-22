@@ -2,6 +2,9 @@
 
 import {StructureBuilder} from 'sanity/desk'
 
+// ✅ Import the filterLabels schema
+import filterLabels from './schemas/settings/filterLabels'
+
 export const myStructure = (S: StructureBuilder) =>
   S.list()
     .title('Content')
@@ -79,6 +82,9 @@ export const myStructure = (S: StructureBuilder) =>
               S.documentTypeListItem('megaMenu').title('Mega Menu'),
               S.documentTypeListItem('privacyPolicy').title('Privacy Policy'),
               S.documentTypeListItem('footer').title('Footer'),
+
+              // ✅ Add Filter Labels here
+              S.documentTypeListItem('filterLabels').title('Filter Labels'),
             ]),
         ),
 
@@ -152,28 +158,6 @@ export const myStructure = (S: StructureBuilder) =>
               S.documentTypeListItem('faqCategory').title('FAQ Categories'),
             ]),
         ),
-
-      // ❌ Hide orphaned types
-      // Remove this block if you want to debug types not listed above
-      // ...S.documentTypeListItems().filter(
-      //   (listItem) =>
-      //     ![
-      //       'hero', 'whyChoose', 'foundersPromise', 'ctaBanner',
-      //       'journey', 'testimonial', 'sitePages',
-      //       'blog', 'comment', 'author',
-      //       'teamMember', 'ambassador',
-      //       'heroImage', 'textImage', 'quoteBlock', 'galleryBlock',
-      //       'videoEmbed', 'textBlock', 'ctaBlock', 'mapBlock',
-      //       'zohoForm', 'smartCarousel',
-      //       'globalSettings', 'megaMenu', 'privacyPolicy',
-      //       'footer', 'developerPortal',
-      //       'destination', 'region', 'country', 'featuredJourney', 'dest_slug',
-      //       'contactSettings', 'leadMagnetClaim', 'travelInterest',
-      //       'videoTestimonial', 'galleryImage', 'book',
-      //       'trip',
-      //       'faqQuestion', 'faqCategory'
-      //     ].includes(listItem.getId() ?? ''),
-      // ),
     ])
 
 export default myStructure

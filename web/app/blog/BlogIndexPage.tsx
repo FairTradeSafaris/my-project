@@ -6,6 +6,7 @@ import Link from "next/link";
 import { client } from "@/lib/sanity";
 import groq from "groq";
 import { useSearchParams, useRouter } from "next/navigation";
+import BlogPagination from "@/components/BlogPagination";
 
 // Types
 type BlogPostPreview = {
@@ -69,6 +70,27 @@ export default function BlogIndexPage() {
       selectedTag === "" || (post.tags || []).includes(selectedTag);
     return matchesSearch && matchesTag;
   });
+
+  const POSTS_PER_PAGE = 9;
+  const pageFromURL = parseInt(searchParams.get("page") || "1", 9);
+  const [currentPage, setCurrentPage] = useState<number>(pageFromURL);
+
+  useEffect(() => {
+    setCurrentPage(pageFromURL);
+  }, [pageFromURL]);
+
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+  const paginatedPosts = filteredPosts.slice(
+    (currentPage - 1) * POSTS_PER_PAGE,
+    currentPage * POSTS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (page > 1) params.set("page", page.toString());
+    else params.delete("page");
+    router.push(`?${params.toString()}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -290,7 +312,7 @@ export default function BlogIndexPage() {
 
           {/* All Posts */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post) => (
+            {paginatedPosts.map((post) => (
               <Link
                 key={post._id}
                 href={`/blog/${post.slug.current}`}
@@ -322,6 +344,16 @@ export default function BlogIndexPage() {
               </Link>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="mt-8">
+              <BlogPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
 
         <aside className="w-80 hidden lg:block">

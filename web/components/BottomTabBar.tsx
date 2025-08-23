@@ -62,7 +62,7 @@ export default function BottomTabBar() {
     sanityClient
       .fetch(
         `{
-      ""interests": *[_type == "travelInterest" && isTopInterest == true] | order(sortOrder asc) { title },
+      "interests": *[_type == "travelInterest" && isTopInterest == true] | order(sortOrder asc) { title },
       "luxuryRaw": *[_type == "journey"].star
     }`
       )

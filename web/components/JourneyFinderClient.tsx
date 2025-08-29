@@ -44,7 +44,7 @@ export default function JourneyFinderClient() {
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
+  const [searchTerm, setSearchTerm] = useState(searchParams?.get("q") ?? "");
   useEffect(() => {
     if (!filtersReady) return;
 

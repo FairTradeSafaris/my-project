@@ -119,7 +119,8 @@ export default function NavbarMobile() {
       >
         <div
           className={cx(
-            "flex items-center justify-between gap-3 px-4 transition-all duration-300",
+            "flex items-center justify-between px-4 transition-all duration-300",
+            "max-w-full overflow-hidden gap-2 sm:gap-3",
             scrolled ? "h-14" : "h-16"
           )}
         >

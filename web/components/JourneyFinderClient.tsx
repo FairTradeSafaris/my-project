@@ -4,10 +4,13 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { client as sanityClient } from "@/lib/sanity";
 import JourneyCard from "@/components/JourneyCard";
-
+import type { Destination } from "./journey-finder/types";
 // NEW
 import FiltersPanel from "./journey-finder/FiltersPanel";
 import CountryDrawer from "./journey-finder/CountryDrawer";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { Heart } from "lucide-react";
 
 import {
   Journey,
@@ -29,8 +32,15 @@ export default function JourneyFinderClient() {
   const [drawerState, setDrawerState] = useState<{
     open: boolean;
     journey: Journey | null;
-    destination?: any; // or a proper Destination type if defined
-  }>({ open: false, journey: null });
+    destination?: Destination;
+  }>({
+    open: false,
+    journey: null,
+  });
+
+  const { isSignedIn } = useUser();
+  const router = useRouter();
+  const [wishlisted, setWishlisted] = useState(false);
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
@@ -61,7 +71,7 @@ export default function JourneyFinderClient() {
     style: true,
     feature: true,
   });
-
+  const [showFeedback, setShowFeedback] = useState(false);
   const [isSearchSheetOpen, setIsSearchSheetOpen] = useState(false);
   useEffect(() => {
     const isModalOpen = selectedJourney !== null || drawerState.open;
@@ -926,6 +936,7 @@ export default function JourneyFinderClient() {
               filteredJourneys.map((j, index) => (
                 <JourneyCard
                   key={j.slug?.current || index}
+                  slug={j.slug?.current || ""}
                   title={j.title}
                   summary={j.summary}
                   imageUrl={j.heroUrl || ""}
@@ -940,7 +951,6 @@ export default function JourneyFinderClient() {
                   starIcon={j.starIcon}
                   region={j.region?.title || ""}
                   isFeatured={j.featuredOnHome === true}
-                  // ✅ This enables View Itinerary from the card
                   onViewItinerary={() => setSelectedJourney(j)}
                 />
               ))
@@ -1006,6 +1016,50 @@ export default function JourneyFinderClient() {
                     </div>
 
                     <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2">
+                      {/* ❤️ Wishlist Icon (single placement) */}
+                      <div className="relative group">
+                        <button
+                          onClick={() => {
+                            if (!isSignedIn) {
+                              router.push("/sign-in");
+                              return;
+                            }
+                            setWishlisted((prev) => !prev);
+                            setShowFeedback(true);
+                            setTimeout(() => setShowFeedback(false), 2000);
+                          }}
+                          aria-label={
+                            wishlisted
+                              ? "Remove from Wishlist"
+                              : "Save to Wishlist"
+                          }
+                          className="text-gray-800 hover:text-red-500 transition-colors"
+                        >
+                          <Heart
+                            className={`w-5 h-5 transition-all ${
+                              wishlisted
+                                ? "fill-red-500 text-red-500"
+                                : "text-gray-700"
+                            }`}
+                          />
+                        </button>
+
+                        {showFeedback && (
+                          <div className="absolute top-7 right-0 z-50 bg-black text-white text-xs px-2 py-1 rounded shadow">
+                            {wishlisted
+                              ? "Added to Wishlist"
+                              : "Removed from Wishlist"}
+                          </div>
+                        )}
+
+                        <div className="absolute top-7 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap block">
+                          {wishlisted
+                            ? "Remove from Wishlist"
+                            : "Save to Wishlist"}
+                        </div>
+                      </div>
+
+                      {/* 📦 Start Planning */}
                       <button
                         onClick={() =>
                           window.open(
@@ -1018,39 +1072,25 @@ export default function JourneyFinderClient() {
                         Start Planning
                       </button>
 
+                      {/* 🗺️ About This Country */}
                       <button
                         onClick={async () => {
                           if (!selectedJourney?.countries?.[0]?.title) return;
-
                           const countryTitle =
                             selectedJourney.countries[0].title;
-
                           const destination = await sanityClient.fetch(
                             `*[_type == "destination" && title == $title][0]{
-  title,
-  travelInfo,
-  highlights,
-  practicalStuff,
-  mapLocation,
-  "flag": flagImage.asset->url,
-  "image": heroImage.asset->url
-}
-`,
+          title,
+          travelInfo,
+          highlights,
+          practicalStuff,
+          mapLocation,
+          "flag": flagImage.asset->url,
+          "image": heroImage.asset->url
+        }`,
                             { title: countryTitle }
                           );
-
-                          if (!destination) {
-                            console.warn(
-                              "❌ No destination found for:",
-                              countryTitle
-                            );
-                            return;
-                          }
-                          console.log(
-                            "🖼 Destination image URL:",
-                            destination.image
-                          );
-
+                          if (!destination) return;
                           setDrawerState({
                             open: true,
                             journey: selectedJourney,
@@ -1062,9 +1102,10 @@ export default function JourneyFinderClient() {
                         About This Country
                       </button>
 
+                      {/* ✖️ Close Modal */}
                       <button
                         onClick={() => setSelectedJourney(null)}
-                        className="absolute top-2 right-3 sm:static text-lg font-bold text-gray-800 hover:text-black"
+                        className="text-lg font-bold text-gray-800 hover:text-black"
                         aria-label="Close"
                       >
                         &times;

@@ -223,6 +223,7 @@ export default async function Home() {
                     className="block"
                   >
                     <JourneyCard
+                      slug={j.slug?.current || ""} // ✅ Add this line
                       title={j.title}
                       summary={j.summary}
                       imageUrl={j.heroImage.asset.url}

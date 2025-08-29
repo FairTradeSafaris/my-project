@@ -1,3 +1,4 @@
+// NavbarDesktop.tsx
 "use client";
 
 import Link from "next/link";
@@ -8,6 +9,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
 import { usePathname } from "next/navigation";
+import { useBreakpoint } from "@/lib/useBreakpoint";
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -58,15 +60,33 @@ function BadgeVisual({ size }: { size: number }) {
 }
 
 function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
-  const size = scrolled ? { box: 96, img: 76 } : { box: 150, img: 125 };
+  const screenWidth = useBreakpoint();
+
+  const size = (() => {
+    if (screenWidth === null) {
+      return { box: 96, img: 76 };
+    }
+
+    if (screenWidth >= 1280) {
+      return scrolled ? { box: 96, img: 76 } : { box: 150, img: 125 };
+    } else if (screenWidth >= 1024) {
+      return scrolled ? { box: 80, img: 64 } : { box: 120, img: 100 };
+    } else {
+      return scrolled ? { box: 64, img: 52 } : { box: 100, img: 84 };
+    }
+  })();
+
   return (
     <div
       className={cx(
-        "fixed z-[60] top-0 left-4 px-2 pt-2 pb-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out",
-        "rounded-b-2xl rounded-t-none hidden xl:flex items-center justify-center",
-        "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
+        "flex items-center justify-center",
+        "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]",
+        "rounded-b-2xl rounded-t-none transition-all duration-300 ease-in-out"
       )}
-      style={{ width: size.box, height: size.box }}
+      style={{
+        width: `${size.box}px`,
+        height: `${size.box}px`,
+      }}
     >
       <Link href="/" aria-label="Fair Trade Safaris">
         <BadgeVisual size={size.img} />
@@ -85,6 +105,49 @@ export default function NavbarDesktop({
   promoCard?: FeatureCard | null;
 }) {
   const scrolled = useScrolled(40);
+  const screenWidth = useBreakpoint();
+
+  const layoutSizes = (() => {
+    if (screenWidth === null) {
+      return {
+        logo: { width: 180, height: 40, padding: "py-3" },
+        topOffset: 18,
+      };
+    }
+
+    if (screenWidth >= 1280) {
+      return scrolled
+        ? {
+            logo: { width: 180, height: 40, padding: "py-2.5" },
+            topOffset: 18,
+          }
+        : {
+            logo: { width: 240, height: 60, padding: "py-3.5" },
+            topOffset: 30,
+          };
+    } else if (screenWidth >= 1024) {
+      return scrolled
+        ? {
+            logo: { width: 160, height: 36, padding: "py-2.5" },
+            topOffset: 16,
+          }
+        : {
+            logo: { width: 220, height: 54, padding: "py-3" },
+            topOffset: 26,
+          };
+    } else {
+      return scrolled
+        ? {
+            logo: { width: 140, height: 32, padding: "py-2" },
+            topOffset: 12,
+          }
+        : {
+            logo: { width: 200, height: 44, padding: "py-2.5" },
+            topOffset: 20,
+          };
+    }
+  })();
+
   const pathname = usePathname();
   const hideBadge = pathname.startsWith("/journey");
   const [open, setOpen] = useState(false);
@@ -100,72 +163,86 @@ export default function NavbarDesktop({
 
   return (
     <>
-      {!hideBadge && <DesktopRoundBadge scrolled={scrolled} />}
+      {!hideBadge && (
+        <div className="fixed top-0 left-4 z-[60]">
+          <DesktopRoundBadge scrolled={scrolled} />
+        </div>
+      )}
 
-      <nav
-        className={cx(
-          "hidden lg:flex fixed top-4 left-1/2 -translate-x-1/2 z-40 w-[92vw] max-w-4xl px-3",
-          "items-center justify-between gap-6",
-          "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
-          scrolled ? "py-1 sm:py-1.5" : "py-3 sm:py-4",
-          "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white"
-        )}
+      <div
+        className="hidden md:flex fixed left-0 right-0 mx-auto z-40 w-[88vw] max-w-[1100px] lg:w-[84vw] lg:max-w-6xl px-4"
+        style={{ top: `${layoutSizes.topOffset}px` }}
       >
-        <div className="flex items-center gap-3 pl-4 pt-2 sm:pt-0">
-          <Link
-            href="/"
-            className="flex items-center"
-            aria-label="Fair Trade Safaris"
-          >
-            <Image
-              src="/logos/logo-light.png"
-              alt="Fair Trade Safaris"
-              width={scrolled ? 180 : 260}
-              height={scrolled ? 40 : 60}
-              className={cx(
-                "block dark:hidden object-contain transition-all duration-300 ease-in-out",
-                scrolled ? "scale-100" : "scale-105"
-              )}
-              priority
-            />
-            <Image
-              src="/logos/logo-dark.png"
-              alt="Fair Trade Safaris"
-              width={scrolled ? 180 : 260}
-              height={scrolled ? 40 : 60}
-              className={cx(
-                "hidden dark:block object-contain transition-all duration-300 ease-in-out",
-                scrolled ? "scale-100" : "scale-105"
-              )}
-              priority
-            />
-          </Link>
-        </div>
+        <div
+          className={cx(
+            "flex w-full items-center justify-between gap-4",
+            "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
+            layoutSizes.logo.padding,
+            "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white",
+            "px-6"
+          )}
+        >
+          <div className="flex items-center gap-2 min-w-0 max-w-[60%] flex-shrink">
+            <Link
+              href="/"
+              className="flex items-center max-w-full"
+              aria-label="Fair Trade Safaris"
+            >
+              <Image
+                src="/logos/logo-light.png"
+                alt="Fair Trade Safaris"
+                width={layoutSizes.logo.width}
+                height={layoutSizes.logo.height}
+                className={cx(
+                  "block dark:hidden object-contain transition-all duration-300 ease-in-out",
+                  scrolled ? "scale-100" : "scale-105"
+                )}
+                priority
+              />
 
-        <div className="flex items-center gap-4 sm:gap-6 pr-3">
-          <Link href="/journey" title="Search" className="p-2 rounded-xl">
-            <Search size={20} />
-          </Link>
-          <SignedIn>
-            <CustomUserMenu />
-          </SignedIn>
-          <SignedOut>
-            <Link href="/sign-in" title="My Journey" className="p-2 rounded-xl">
-              <User size={20} />
+              <Image
+                src="/logos/logo-dark.png"
+                alt="Fair Trade Safaris"
+                width={layoutSizes.logo.width}
+                height={layoutSizes.logo.height}
+                className={cx(
+                  "hidden dark:block object-contain transition-all duration-300 ease-in-out",
+                  scrolled ? "scale-100" : "scale-105"
+                )}
+                priority
+              />
             </Link>
-          </SignedOut>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            title={open ? "Close Menu" : "Open Menu"}
-            onClick={() => setOpen((v) => !v)}
-            className="transition-transform duration-200 p-2 rounded-xl"
-            aria-expanded={open}
-            aria-controls="desktop-menu-sheet"
-          >
-            {open ? <X size={22} /> : <Menu size={22} />}
-          </motion.button>
+          </div>
+
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-end">
+            <Link href="/journey" title="Search" className="p-2 rounded-xl">
+              <Search size={20} />
+            </Link>
+            <SignedIn>
+              <CustomUserMenu />
+            </SignedIn>
+            <SignedOut>
+              <Link
+                href="/sign-in"
+                title="My Journey"
+                className="p-2 rounded-xl"
+              >
+                <User size={20} />
+              </Link>
+            </SignedOut>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              title={open ? "Close Menu" : "Open Menu"}
+              onClick={() => setOpen((v) => !v)}
+              className="transition-transform duration-200 p-2 rounded-xl"
+              aria-expanded={open}
+              aria-controls="desktop-menu-sheet"
+            >
+              {open ? <X size={22} /> : <Menu size={22} />}
+            </motion.button>
+          </div>
         </div>
-      </nav>
+      </div>
 
       <AnimatePresence>
         {open && (
@@ -187,32 +264,31 @@ export default function NavbarDesktop({
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -8, opacity: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.18 }}
-              className="hidden sm:block fixed left-1/2 -translate-x-1/2 z-50 mt-28 w-[92vw] max-w-6xl"
+              className="hidden sm:block fixed left-1/2 -translate-x-1/2 z-50 mt-28 w-[94vw] max-w-6xl"
               role="dialog"
               aria-modal="true"
             >
               <div className="rounded-3xl shadow-2xl ring-1 ring-black/10 backdrop-blur bg-white/85 dark:bg-neutral-900/80 border border-white/40 dark:border-white/10">
                 <div
                   className={[
-                    "p-6 lg:p-8 gap-6 grid",
+                    "p-4 md:p-6 gap-4 grid",
                     featureCards?.length && promoCard?.title
-                      ? "grid-cols-3"
+                      ? "grid-cols-[auto_1fr_1fr]"
                       : featureCards?.length || promoCard?.title
                         ? "grid-cols-2"
                         : "grid-cols-1",
                   ].join(" ")}
                 >
-                  <div className="min-w-0">
+                  <div className="w-max min-w-fit">
                     <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
                       Navigation
                     </h4>
-
                     <div className="max-h-[62vh] overflow-y-auto pr-2">
-                      <div className="space-y-6">
+                      <div className="space-y-1.5">
                         {navSections.map((section, sIdx) => (
                           <div key={`sec-${sIdx}`} className="min-w-0">
                             {section.heading && (
-                              <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-2">
+                              <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-0.5">
                                 {section.heading}
                               </div>
                             )}
@@ -223,7 +299,7 @@ export default function NavbarDesktop({
                                     href={item.href}
                                     onClick={() => setOpen(false)}
                                   >
-                                    <span className="block text-sm px-3 py-2 rounded-xl transition text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70">
+                                    <span className="block text-sm px-1.5 py-0.5 rounded-lg transition text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70">
                                       {item.title}
                                     </span>
                                   </Link>
@@ -241,7 +317,7 @@ export default function NavbarDesktop({
                       <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
                         Featured
                       </h4>
-                      <ul className="space-y-3">
+                      <ul className="space-y-2">
                         {featureCards.slice(0, 4).map((card, idx) => (
                           <li key={`feat-${idx}`}>
                             <Link
@@ -250,7 +326,7 @@ export default function NavbarDesktop({
                               className="group flex items-center gap-3 rounded-2xl p-2 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70 transition"
                             >
                               <Image
-                                src={card.image.asset.url}
+                                src={`${card.image.asset.url}?w=112&h=112&fit=crop`}
                                 alt={card.alt}
                                 width={56}
                                 height={56}
@@ -301,7 +377,7 @@ export default function NavbarDesktop({
                   )}
                 </div>
 
-                <div className="flex justify-end px-6 lg:px-8 pb-5 -mt-2">
+                <div className="flex justify-end px-6 pb-3 -mt-2">
                   <button
                     onClick={() => setOpen(false)}
                     className="text-sm px-3 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"

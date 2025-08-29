@@ -101,9 +101,11 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
   return (
     <div
       className={cx(
-        "fixed z-[60] top-0 left-4 px-2 pt-2 pb-1 shadow-md backdrop-blur-md transition-all duration-300 ease-in-out",
-        "rounded-b-2xl rounded-t-none hidden md:flex items-center justify-center",
-        "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white"
+        "hidden md:grid fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl",
+        "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl",
+        "border-4 border-red-500 rounded-3xl px-8 py-6",
+        "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8",
+        "items-start content-stretch"
       )}
       style={{ width: size.box, height: size.box }}
     >
@@ -488,7 +490,7 @@ export default function Navbar({
                       <Link
                         href={promoCard.link}
                         onClick={() => setMenuOpen(false)}
-                        className="block rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+                        className="group flex flex-col h-full rounded-xl overflow-hidden hover:shadow-md transition border-4 border-red-500"
                       >
                         <Image
                           src={promoCard?.image?.asset?.url || "/fallback.jpg"}
@@ -518,6 +520,7 @@ export default function Navbar({
       </AnimatePresence>
 
       {/* DESKTOP MEGA MENU */}
+      {/* DESKTOP MEGA MENU */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -528,13 +531,14 @@ export default function Navbar({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.18 }}
             className={cx(
-              "hidden md:flex fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl",
+              "hidden md:flex flex-wrap justify-between items-stretch gap-5",
+              "fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl",
               "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl",
-              "border border-gray-200 dark:border-neutral-700 rounded-3xl p-8 gap-8",
-              "max-h-[80vh] overflow-y-auto"
+              "border-4 border-red-500 rounded-3xl px-6 py-4"
             )}
           >
-            <div className="w-1/3 flex flex-col gap-4">
+            {/* Navigation Sections */}
+            <div className="flex flex-col gap-4 min-w-[180px] flex-1">
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                 Explore
               </h3>
@@ -545,14 +549,14 @@ export default function Navbar({
                       {section.heading}
                     </p>
                   )}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 mb-4">
                     {section.links.map((item, linkIdx) => (
                       <Link
                         key={`desk-link-${sectionIdx}-${linkIdx}`}
                         href={item.href}
+                        onClick={() => setMenuOpen(false)}
                       >
                         <span
-                          onClick={() => setMenuOpen(false)}
                           className={cx(
                             "text-sm px-3 py-2 rounded-md transition block",
                             pathname === item.href
@@ -569,15 +573,17 @@ export default function Navbar({
               ))}
             </div>
 
+            {/* Featured Cards */}
             {featureCards.length > 0 && (
-              <div className="w-1/3 flex flex-col gap-4">
+              <div className="flex flex-col gap-4 min-w-[200px] flex-1">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                   Featured
                 </h3>
-                {featureCards.slice(0, 2).map((card, idx) => (
+                {featureCards.slice(0, 3).map((card, idx) => (
                   <Link
                     key={`desk-feature-${card.title}-${idx}`}
                     href={card.link}
+                    onClick={() => setMenuOpen(false)}
                     className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/70 dark:hover:bg-neutral-800 transition"
                   >
                     <Image
@@ -587,10 +593,7 @@ export default function Navbar({
                       height={60}
                       className="w-[60px] h-[60px] object-cover rounded-lg shadow-sm"
                     />
-                    <div
-                      onClick={() => setMenuOpen(false)}
-                      className="flex flex-col cursor-pointer"
-                    >
+                    <div className="flex flex-col">
                       <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
                         {card.title}
                       </h4>
@@ -603,31 +606,31 @@ export default function Navbar({
               </div>
             )}
 
+            {/* Promo Card */}
             {promoCard?.link && (
-              <div className="w-1/3 flex flex-col gap-3">
+              <div className="flex flex-col gap-4 min-w-[220px] flex-1">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
                   Special Offer
                 </h3>
                 <Link
                   href={promoCard.link}
-                  className="group block rounded-xl overflow-hidden hover:shadow-md transition border border-gray-200 dark:border-neutral-700"
+                  onClick={() => setMenuOpen(false)}
+                  className="group block rounded-xl overflow-hidden hover:shadow-md transition border-4 border-red-500"
                 >
-                  <div onClick={() => setMenuOpen(false)}>
-                    <Image
-                      src={promoCard?.image?.asset?.url || "/fallback.jpg"}
-                      alt={promoCard?.alt || "Special Offer"}
-                      width={400}
-                      height={200}
-                      className="w-full h-36 object-cover"
-                    />
-                    <div className="p-4 bg-white dark:bg-neutral-900">
-                      <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
-                        {promoCard.title}
-                      </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                        {promoCard.description}
-                      </p>
-                    </div>
+                  <Image
+                    src={promoCard?.image?.asset?.url || "/fallback.jpg"}
+                    alt={promoCard?.alt || "Special Offer"}
+                    width={400}
+                    height={200}
+                    className="w-full h-36 object-cover"
+                  />
+                  <div className="p-4 bg-white dark:bg-neutral-900 h-full">
+                    <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
+                      {promoCard.title}
+                    </h4>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                      {promoCard.description}
+                    </p>
                   </div>
                 </Link>
               </div>

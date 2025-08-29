@@ -426,7 +426,8 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
     [hero?.action]
   );
 
-  const initialQ = searchParams.get("q") ?? "";
+  const initialQ = searchParams?.get("q") ?? "";
+
   useEffect(() => {
     if (inputRef.current && initialQ && inputRef.current.value === "") {
       inputRef.current.value = initialQ;

@@ -1,8 +1,8 @@
-export const runtime = "nodejs"; // ✅ Important line
+export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import { updateWishlist } from "@/lib/server/wishlist";
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -22,18 +22,12 @@ export async function POST(req: Request) {
     (item: unknown): item is string => typeof item === "string"
   );
 
-  console.log("🔁 Updating wishlist for user:", userId, "→", wishlist);
-
   try {
-    await clerkClient.users.updateUser(userId, {
-      publicMetadata: { wishlist },
-    });
-
-    const updatedUser = await clerkClient.users.getUser(userId);
+    const updatedWishlist = await updateWishlist(userId, wishlist);
 
     return NextResponse.json({
       success: true,
-      wishlist: updatedUser.publicMetadata?.wishlist || [],
+      wishlist: updatedWishlist,
     });
   } catch (err) {
     console.error("❌ Error updating wishlist:", err);

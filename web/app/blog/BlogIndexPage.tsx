@@ -55,6 +55,8 @@ export default function BlogIndexPage() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!searchParams) return;
+
     const tagFromURL = searchParams.get("tag") || "";
     setSelectedTag(tagFromURL);
     const qFromURL = searchParams.get("q") || "";

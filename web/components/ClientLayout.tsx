@@ -53,7 +53,7 @@ export default function ClientLayout({
 }) {
   const pathname = usePathname();
   const screenWidth = useBreakpoint();
-  const hideUI = pathname === "/project-portal";
+  const hideUI = pathname?.toLowerCase() === "/project-portal";
 
   const [hasMounted, setHasMounted] = useState(false);
   const [navSections, setNavSections] = useState<NavSection[]>([]);

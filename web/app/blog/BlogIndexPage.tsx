@@ -74,7 +74,9 @@ export default function BlogIndexPage() {
   });
 
   const POSTS_PER_PAGE = 9;
-  const pageFromURL = parseInt(searchParams.get("page") || "1", 9);
+  const pageFromURL = searchParams
+    ? parseInt(searchParams.get("page") || "1", 10)
+    : 1;
   const [currentPage, setCurrentPage] = useState<number>(pageFromURL);
 
   useEffect(() => {

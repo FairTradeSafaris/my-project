@@ -61,8 +61,8 @@ export default function ClientLayout({
   const [promoCard, setPromoCard] = useState<PromoCard | null>(null);
   const [ready, setReady] = useState(false);
   const [heroData, setHeroData] = useState<HeroData | undefined>(undefined);
-
   const pageKey = useMemo(() => {
+    if (!pathname) return "home";
     const seg = pathname.split("/").filter(Boolean)[0];
     return seg || "home";
   }, [pathname]);

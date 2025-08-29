@@ -223,13 +223,12 @@ export default function BlogIndexPage() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const params = new URLSearchParams(searchParams.toString());
+              const params = new URLSearchParams(
+                searchParams?.toString() || ""
+              );
 
               if (searchQuery) params.set("q", searchQuery);
               else params.delete("q");
-
-              if (selectedTag) params.set("tag", selectedTag);
-              else params.delete("tag");
 
               router.push(`?${params.toString()}`);
             }}

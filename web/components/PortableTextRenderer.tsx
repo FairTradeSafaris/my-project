@@ -1,17 +1,18 @@
 // components/PortableTextRenderer.tsx
 
 import { PortableText, PortableTextComponents } from "@portabletext/react";
+import type { PortableTextBlock } from "@portabletext/types";
 
-// Your custom table block structure
+// Define custom table block type (if used)
 type TableBlock = {
   _type: "table";
   rows: { cells: string[] }[];
 };
 
-// Define how to render custom blocks and marks
+// PortableText component mappings
 const components: PortableTextComponents = {
   block: {
-    normal: ({ children }) => <p className="mb-4">{children}</p>, // Add spacing between paragraphs
+    normal: ({ children }) => <p className="mb-4">{children}</p>,
   },
   marks: {
     link: ({ children, value }) => {
@@ -60,7 +61,11 @@ const components: PortableTextComponents = {
   },
 };
 
-// Export the PortableTextRenderer component
-export default function PortableTextRenderer({ value }: { value: any[] }) {
+// ✅ Export the properly typed component
+export default function PortableTextRenderer({
+  value,
+}: {
+  value: PortableTextBlock[];
+}) {
   return <PortableText value={value} components={components} />;
 }

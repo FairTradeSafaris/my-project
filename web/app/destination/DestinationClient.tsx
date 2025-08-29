@@ -237,13 +237,15 @@ export default function DestinationClient({
   // URL panel helpers
   const openPanel = (q: string) => {
     setUserPausedUntil(Date.now() + PANEL_PAUSE_MS);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || "");
+
     params.set("q", q);
     params.set("open", "true");
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
   const closePanel = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || "");
+
     params.delete("q");
     params.delete("open");
     const next = params.toString();

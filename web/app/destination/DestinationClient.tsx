@@ -248,7 +248,7 @@ export default function DestinationClient({
 
     params.delete("q");
     params.delete("open");
-    const next = params.toString() ?? "";
+    const next: string = params.toString();
     const url = next.length > 0 ? `${pathname}?${next}` : pathname;
     router.push(url, { scroll: false });
 

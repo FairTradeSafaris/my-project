@@ -90,7 +90,7 @@ export default function BlogIndexPage() {
   );
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || "");
     if (page > 1) params.set("page", page.toString());
     else params.delete("page");
     router.push(`?${params.toString()}`);

@@ -2,7 +2,7 @@ export const runtime = "nodejs"; // ✅ Important line
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import clerkClient from "@clerk/clerk-sdk-node";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 
 export async function POST(req: Request) {
   const { userId } = await auth();

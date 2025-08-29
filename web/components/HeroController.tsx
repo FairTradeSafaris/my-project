@@ -380,7 +380,7 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
     /^\/api/,
     /^\/project-portal/,
   ];
-  const hideHero = HIDE_ON.some((rx) => rx.test(pathname));
+  const hideHero = pathname ? HIDE_ON.some((rx) => rx.test(pathname)) : false;
 
   useEffect(() => {
     if (!heroData) return;

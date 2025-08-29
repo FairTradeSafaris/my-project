@@ -219,7 +219,7 @@ export default function HeroWithSearch({
   // Close helper: also cleans ?start=1 and unlocks scroll
   const closeMobileForm = () => {
     setShowForm(false);
-    const sp = new URLSearchParams(searchParams.toString());
+    const sp = new URLSearchParams(searchParams?.toString() || "");
     sp.delete("start");
     router.replace(`${pathname}?${sp.toString()}`.replace(/\?$/, ""), {
       scroll: false,

@@ -8,9 +8,15 @@ import type { RemotePattern } from "next/dist/shared/lib/image-config";
 // ✅ Base config
 const baseConfig: NextConfig = {
   reactStrictMode: true,
+
   serverExternalPackages: ["@clerk/clerk-sdk-node"],
-  eslint: {
-    ignoreDuringBuilds: true,
+
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push("@clerk/clerk-sdk-node");
+    }
+    return config;
   },
 
   images: {

@@ -162,7 +162,9 @@ export default function BlogIndexPage() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const params = new URLSearchParams(searchParams.toString());
+              const params = new URLSearchParams(
+                searchParams?.toString() || ""
+              );
 
               if (searchQuery) params.set("q", searchQuery);
               else params.delete("q");
@@ -171,7 +173,6 @@ export default function BlogIndexPage() {
               else params.delete("tag");
 
               router.push(`?${params.toString()}`);
-              setShowBlogSearch(false);
             }}
           >
             <input

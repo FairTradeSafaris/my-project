@@ -137,8 +137,8 @@ export default function DestinationClient({
   const prefersReducedMotion = usePrefersReducedMotion();
 
   // Journey drawer (URL-driven)
-  const isOpen = searchParams.get("open") === "true";
-  const journeyQuery = searchParams.get("q") || "";
+  const isOpen = searchParams?.get("open") === "true";
+  const journeyQuery = searchParams?.get("q") || "";
 
   // panels / sheets
   const [aboutOpen, setAboutOpen] = useState(false);

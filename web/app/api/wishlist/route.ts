@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { updateWishlist } from "@/lib/server/wishlist.node";
+import { updateWishlist } from "@/lib/server/wishlist";
 
 export async function POST(req: Request) {
   const { userId } = await auth();

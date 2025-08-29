@@ -1,3 +1,4 @@
+"use server";
 import { clerkClient } from "@clerk/clerk-sdk-node";
 
 export async function updateWishlist(userId: string, wishlist: string[]) {

@@ -9,6 +9,10 @@ import type { RemotePattern } from "next/dist/shared/lib/image-config";
 const baseConfig: NextConfig = {
   reactStrictMode: true,
 
+  experimental: {
+    serverComponentsExternalPackages: ["@clerk/clerk-sdk-node"],
+  },
+
   eslint: {
     ignoreDuringBuilds: true,
   },

@@ -197,8 +197,9 @@ export default function HeroWithSearch({
   // Auto-open mobile sheet if ?start=1 or #start is present
   useEffect(() => {
     const shouldStart =
-      searchParams.get("start") === "1" ||
+      searchParams?.get("start") === "1" ||
       (typeof window !== "undefined" && window.location.hash.includes("start"));
+
     if (!isDesktop && shouldStart) setShowForm(true);
   }, [searchParams, isDesktop]);
 

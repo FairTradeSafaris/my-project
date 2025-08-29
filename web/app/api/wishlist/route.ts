@@ -1,3 +1,5 @@
+export const runtime = "nodejs"; // ✅ Important line
+
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import clerkClient from "@clerk/clerk-sdk-node";
@@ -20,16 +22,13 @@ export async function POST(req: Request) {
     (item: unknown): item is string => typeof item === "string"
   );
 
-  // 🪵 Debug log – see what's being sent
   console.log("🔁 Updating wishlist for user:", userId, "→", wishlist);
 
   try {
-    // ✅ Save to Clerk publicMetadata
     await clerkClient.users.updateUser(userId, {
       publicMetadata: { wishlist },
     });
 
-    // 🔄 Get updated user data
     const updatedUser = await clerkClient.users.getUser(userId);
 
     return NextResponse.json({

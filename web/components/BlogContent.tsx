@@ -23,7 +23,7 @@ const getUrl = (img: ImageLike): string | null => {
   if (img.asset?._ref) return urlFor({ asset: { _ref: img.asset._ref } }).url();
   try {
     // If it's any other valid Sanity source, let urlFor try
-    // @ts-ignore
+
     return urlFor(img).url();
   } catch {
     return null;

@@ -248,8 +248,9 @@ export default function DestinationClient({
 
     params.delete("q");
     params.delete("open");
-    const next = params.toString();
+    const next = params.toString() || "";
     router.push(next ? `${pathname}?${next}` : pathname, { scroll: false });
+
     setUserPausedUntil(Date.now() + RESUME_GRACE_MS);
   };
 

@@ -1,12 +1,14 @@
 "use server";
 
-import clerkClient from "@clerk/clerk-sdk-node";
+import { clerkClient } from "@clerk/nextjs/server";
 
 export async function updateWishlist(userId: string, wishlist: string[]) {
-  await clerkClient.users.updateUser(userId, {
+  const client = await clerkClient();
+
+  await client.users.updateUserMetadata(userId, {
     publicMetadata: { wishlist },
   });
 
-  const updatedUser = await clerkClient.users.getUser(userId);
+  const updatedUser = await client.users.getUser(userId);
   return updatedUser.publicMetadata?.wishlist || [];
 }

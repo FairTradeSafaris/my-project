@@ -14,7 +14,7 @@
     "not dead"
   ],
   "dependencies": {
-    "@clerk/nextjs": "^6.28.1",
+    "@clerk/nextjs": "^6.31.6",
     "@fontsource/poppins": "^5.2.6",
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",

@@ -149,7 +149,8 @@ export default function NavbarDesktop({
   })();
 
   const pathname = usePathname();
-  const hideBadge = pathname.startsWith("/journey");
+  const hideBadge = pathname?.startsWith("/journey") ?? false;
+
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 

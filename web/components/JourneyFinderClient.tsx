@@ -48,7 +48,7 @@ export default function JourneyFinderClient() {
   useEffect(() => {
     if (!filtersReady) return;
 
-    const qParam = searchParams.get("q");
+    const qParam = searchParams?.get("q");
 
     if (justClearedRef.current) {
       justClearedRef.current = false; // skip once

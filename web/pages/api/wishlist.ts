@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { updateWishlist } from "@/lib/server/wishlist";
 
 export default async function handler(
@@ -12,7 +12,7 @@ export default async function handler(
       .json({ success: false, error: "Method Not Allowed" });
   }
 
-  const { userId } = await auth();
+  const { userId } = getAuth(req);
 
   if (!userId) {
     return res.status(401).json({ success: false, error: "Unauthorized" });

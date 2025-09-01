@@ -1,6 +1,6 @@
 // components/GlobalBookingPortal.tsx
 "use client";
-
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { OPEN_BOOK_SHEET } from "./BottomTabBar";
@@ -59,9 +59,11 @@ export default function GlobalBookingPortal() {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:pr-10">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <img
+              <Image
                 src="/logos/logo-top.png"
                 alt="Fair Trade Safaris"
+                width={120}
+                height={40}
                 className="h-10 w-auto"
               />
               <div>

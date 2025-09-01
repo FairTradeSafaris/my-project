@@ -125,16 +125,18 @@ export default function ScriptInjector({
       });
     });
 
+    // ✅ Take a snapshot of what was added in this render
+    const cleanupSnapshot = {
+      scripts: addedScripts,
+      links: addedLinks,
+    };
+
     createdEls.current.scripts = addedScripts;
     createdEls.current.links = addedLinks;
 
     return () => {
-      createdEls.current.scripts.forEach((el) =>
-        el.parentNode?.removeChild(el)
-      );
-      createdEls.current.links.forEach((el) => el.parentNode?.removeChild(el));
-      createdEls.current.scripts = [];
-      createdEls.current.links = [];
+      cleanupSnapshot.scripts.forEach((el) => el.parentNode?.removeChild(el));
+      cleanupSnapshot.links.forEach((el) => el.parentNode?.removeChild(el));
     };
   }, [normalized, cspNonce, target]);
 

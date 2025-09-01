@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 type Destination = {
   slug?: { current?: string };
@@ -49,11 +50,15 @@ export default function CountryTabs({
             >
               <span className="opacity-70 text-xs">#{i + 1}</span>
               {dest.flagImage ? (
-                <img
-                  src={dest.flagImage}
-                  alt=""
-                  className="w-5 h-3 rounded-[2px] object-cover"
-                />
+                <span className="relative w-5 h-3">
+                  <Image
+                    src={dest.flagImage}
+                    alt=""
+                    fill
+                    className="rounded-[2px] object-cover"
+                    sizes="20px"
+                  />
+                </span>
               ) : null}
               <span className="whitespace-nowrap">{dest.title}</span>
             </button>

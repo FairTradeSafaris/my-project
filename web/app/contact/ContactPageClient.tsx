@@ -11,7 +11,7 @@ import {
 } from "react-icons/ri";
 import { urlFor } from "@/lib/sanity";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
-
+import Image from "next/image";
 type ContactInfo = {
   phone?: string;
   whatsappNumber?: string;
@@ -73,10 +73,13 @@ export default function ContactPageClient({
       {/* Heading */}
       <section className="max-w-6xl mx-auto px-4 pt-12 pb-6">
         <div className="flex items-end justify-start gap-3 md:gap-4">
-          <img
+          <Image
             src={lineArtImageUrl}
             alt="Decorative Line Art"
+            width={96}
+            height={96}
             className="h-16 md:h-20 lg:h-24 pointer-events-none select-none"
+            unoptimized
           />
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 leading-none">
             Contact Us

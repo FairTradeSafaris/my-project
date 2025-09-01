@@ -11,6 +11,10 @@ import CountryDrawer from "./journey-finder/CountryDrawer";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
+import Image from "next/image";
+
+// ✅ adjust path if needed
 
 import {
   Journey,
@@ -38,10 +42,12 @@ export default function JourneyFinderClient() {
     journey: null,
   });
 
-  const { isSignedIn } = useUser();
   const router = useRouter();
-  const [wishlisted, setWishlisted] = useState(false);
+  const { isWishlisted, toggleWishlist, loading } = useWishlist(
+    selectedJourney?._id
+  );
 
+  const { isSignedIn } = useUser();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams?.get("q") ?? "");
@@ -554,19 +560,20 @@ export default function JourneyFinderClient() {
       groqFilters.length > 0
         ? `*[_type == "journey" && ${groqFilters.join(" && ")}]`
         : `*[_type == "journey"]`;
-
     sanityClient
       .fetch(
         `${groqWhere}{
-        title, summary, slug, duration, price,
-        "heroUrl": heroImage.asset->url,
-        alt, ctaText, wetuLink,
-        region->{ title }, countries[]->{ title, "flag": flag.asset->url },
-        star, "starIcon": starIcon.asset->url,
-        "interests": travelStyleRefs[]->{title, category, isTopInterest},
-        "featuredOnHome": featuredOnHome
-      }`
+    _id,
+    title, summary, slug, duration, price,
+    "heroUrl": heroImage.asset->url,
+    alt, ctaText, wetuLink,
+    region->{ title }, countries[]->{ title, "flag": flag.asset->url },
+    star, "starIcon": starIcon.asset->url,
+    "interests": travelStyleRefs[]->{title, category, isTopInterest},
+    "featuredOnHome": featuredOnHome
+  }`
       )
+
       .then((data: Journey[]) => {
         const filtered = data.filter((j) => {
           const text = `${j.title} ${j.summary}`.toLowerCase();
@@ -603,7 +610,6 @@ export default function JourneyFinderClient() {
   useEffect(() => {
     if (filtersReady) return;
 
-    // Wait until all relevant filterOptions are populated
     if (
       filterOptions.signature.length === 0 &&
       filterOptions.style.length === 0 &&
@@ -645,8 +651,6 @@ export default function JourneyFinderClient() {
     }));
 
     const queryParam = urlParams.get("q");
-
-    // ✅ Only open drawer if no search term is present
     if (openParam === "true" && !queryParam) {
       window.dispatchEvent(new CustomEvent("fts:open-search-sheet"));
     }
@@ -660,11 +664,11 @@ export default function JourneyFinderClient() {
 
     setFiltersReady(true);
   }, [
+    filtersReady,
     filterOptions.signature,
     filterOptions.style,
     filterOptions.feature,
     filterOptions.stars,
-    filtersReady,
   ]);
 
   const globalDurationRange = React.useMemo<[number, number]>(() => {
@@ -933,9 +937,10 @@ export default function JourneyFinderClient() {
           <div ref={journeysTopRef} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJourneys.length > 0 ? (
-              filteredJourneys.map((j, index) => (
+              filteredJourneys.map((j) => (
                 <JourneyCard
-                  key={j.slug?.current || index}
+                  key={j._id}
+                  journeyId={j._id} // ✅ REQUIRED for wishlist reference
                   slug={j.slug?.current || ""}
                   title={j.title}
                   summary={j.summary}
@@ -977,10 +982,13 @@ export default function JourneyFinderClient() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 flex-1">
                       <div className="flex items-center justify-center sm:justify-start">
-                        <img
+                        <Image
                           src="/logos/logo-top.png"
                           alt="Fair Trade Safaris"
+                          width={100} // You can tweak this as needed
+                          height={32}
                           className="h-7 sm:h-8 w-auto mx-auto sm:mx-0"
+                          priority
                         />
                       </div>
                       <div>
@@ -995,13 +1003,15 @@ export default function JourneyFinderClient() {
                           {selectedJourney.star && (
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => (
-                                <img
+                                <Image
                                   key={i}
                                   src={
                                     selectedJourney.starIcon ||
                                     "/default-star.svg"
                                   }
                                   alt="star"
+                                  width={16}
+                                  height={16}
                                   className={`w-4 h-4 ${
                                     i >= parseInt(selectedJourney.star || "0")
                                       ? "opacity-30"
@@ -1017,19 +1027,21 @@ export default function JourneyFinderClient() {
 
                     <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2">
                       {/* ❤️ Wishlist Icon (single placement) */}
+                      {/* ❤️ Wishlist Icon using centralized useWishlist hook */}
                       <div className="relative group">
                         <button
+                          disabled={loading}
                           onClick={() => {
                             if (!isSignedIn) {
                               router.push("/sign-in");
                               return;
                             }
-                            setWishlisted((prev) => !prev);
+                            toggleWishlist();
                             setShowFeedback(true);
                             setTimeout(() => setShowFeedback(false), 2000);
                           }}
                           aria-label={
-                            wishlisted
+                            isWishlisted
                               ? "Remove from Wishlist"
                               : "Save to Wishlist"
                           }
@@ -1037,7 +1049,7 @@ export default function JourneyFinderClient() {
                         >
                           <Heart
                             className={`w-5 h-5 transition-all ${
-                              wishlisted
+                              isWishlisted
                                 ? "fill-red-500 text-red-500"
                                 : "text-gray-700"
                             }`}
@@ -1046,14 +1058,14 @@ export default function JourneyFinderClient() {
 
                         {showFeedback && (
                           <div className="absolute top-7 right-0 z-50 bg-black text-white text-xs px-2 py-1 rounded shadow">
-                            {wishlisted
+                            {isWishlisted
                               ? "Added to Wishlist"
                               : "Removed from Wishlist"}
                           </div>
                         )}
 
                         <div className="absolute top-7 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap block">
-                          {wishlisted
+                          {isWishlisted
                             ? "Remove from Wishlist"
                             : "Save to Wishlist"}
                         </div>

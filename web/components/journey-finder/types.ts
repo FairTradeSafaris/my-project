@@ -4,6 +4,8 @@ import type { PortableTextBlock } from "@portabletext/types";
 // Journey Interface (with destination-level country fields)
 // ─────────────────────────────────────────────────────────
 export interface Journey {
+  _id: string; // ✅ Required for wishlist reference
+
   title: string;
   summary: string;
   slug?: { current: string };
@@ -24,7 +26,6 @@ export interface Journey {
     isTopInterest?: boolean;
   }[];
 
-  // ───── Countries (destination references with expanded fields) ─────
   countries?: {
     title: string;
     flag?: string;
@@ -39,7 +40,6 @@ export interface Journey {
     mapLocation?: string | null;
   }[];
 
-  // ───── Legacy fields (now moved into destination) ─────
   travelInfo?: PortableTextBlock[] | null;
   highlights?: PortableTextBlock[] | null;
   practicalStuff?:
@@ -88,12 +88,13 @@ export type CollapsedMap = {
   style: boolean;
   feature: boolean;
 };
+
 // ─────────────────────────────────────────────────────────
 // Destination (single country from a journey)
 // ─────────────────────────────────────────────────────────
 export type Destination = {
   title: string;
-  image?: string | null; // ✅ This must be added
+  image?: string | null;
   travelInfo?: PortableTextBlock[] | null;
   highlights?: PortableTextBlock[] | null;
   practicalStuff?:
@@ -104,4 +105,5 @@ export type Destination = {
     | null;
   mapLocation?: string | null;
 };
+
 export type FilterKey = keyof Filters;

@@ -34,3 +34,4 @@ export async function testSanityToken() {
     console.error("❌ Sanity token test failed:", error);
   }
 }
+testSanityToken(); // 👈 Call it directly for now

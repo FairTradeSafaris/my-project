@@ -2,6 +2,7 @@
 
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
+import Image from "next/image";
 
 type WhyChooseBlock = {
   sectionTitle: PortableTextBlock[];
@@ -31,14 +32,16 @@ export default function WhyChoose({ data }: WhyChooseProps) {
         {/* Left Image */}
         {sideImage?.asset?.url && (
           <div className="w-full aspect-[4/5] overflow-hidden rounded-xl shadow min-h-[300px] sm:min-h-[400px]">
-            <img
-              src={sideImage.asset.url}
-              alt={sideImage.alt || "Why Travel Visual"}
-              className="w-full h-full object-cover"
-              width={400}
-              height={500}
-              loading="lazy"
-            />
+            <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl shadow min-h-[300px] sm:min-h-[400px]">
+              <Image
+                src={sideImage.asset.url}
+                alt={sideImage.alt || "Why Travel Visual"}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                loading="lazy"
+              />
+            </div>
           </div>
         )}
 
@@ -72,12 +75,12 @@ export default function WhyChoose({ data }: WhyChooseProps) {
             <div key={index} className="flex items-start gap-4 sm:gap-5">
               {item.icon?.asset?.url && (
                 <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center bg-[#f0eee9] shadow-sm">
-                  <img
+                  <Image
                     src={item.icon.asset.url}
                     alt={item.icon.alt || item.title || "Icon"}
-                    className="h-8 w-8 sm:h-9 sm:w-9 md:h-12 md:w-12 object-contain"
-                    width={48}
-                    height={48}
+                    width={40}
+                    height={40}
+                    className="object-contain"
                     loading="lazy"
                   />
                 </div>

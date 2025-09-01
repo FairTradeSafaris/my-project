@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { client } from "../../lib/sanity";
 import type { PortableTextBlock } from "@portabletext/types";
 import PortableTextRenderer from "@/components/PortableTextRenderer";
-
+import Image from "next/image";
 // 📄 Section type
 type Section = {
   title: string;
@@ -67,11 +67,16 @@ export default function ProjectPortal() {
       {!entered ? (
         <div className="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center px-4">
           <div className="text-center mb-8">
-            <img
-              src="/alexive-logo.jpeg"
-              alt="Alexive Logo"
-              className="h-16 mx-auto mb-2"
-            />
+            <div className="h-16 w-16 mx-auto mb-2 relative">
+              <Image
+                src="/alexive-logo.jpeg"
+                alt="Alexive Logo"
+                layout="fill"
+                objectFit="contain"
+                priority
+              />
+            </div>
+
             <h1 className="text-2xl font-bold text-gray-800">
               FTS Project Console
             </h1>

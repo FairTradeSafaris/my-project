@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Africa from "@react-map/africa";
 import { motion, AnimatePresence } from "framer-motion";
 import { client as sanityClient } from "../lib/sanity";
+import Image from "next/image";
 
 interface DestinationData {
   title: string;
@@ -116,9 +117,11 @@ export default function DestinationMap() {
 
             {destination.heroImage?.asset?.url && (
               <div className="mt-6 rounded overflow-hidden">
-                <img
+                <Image
                   src={destination.heroImage.asset.url}
                   alt="Destination hero"
+                  width={800} // Approximate width
+                  height={500} // Approximate height
                   className="w-full h-auto rounded"
                 />
               </div>

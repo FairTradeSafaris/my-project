@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import type { Destination } from "./types";
+import Image from "next/image";
 
 type Props = {
   destination: Destination;
@@ -52,7 +53,7 @@ export default function CountryDrawer({ destination, onClose }: Props) {
         className="fixed right-0 top-0 h-[100dvh] w-full sm:w-[640px] md:w-[800px] lg:w-[1024px] bg-white shadow-2xl z-[100002] border-l border-gray-300 flex flex-col overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button (absolute top-right, above everything) */}
+        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-4 z-30 text-2xl font-bold text-white hover:text-white/80"
@@ -64,10 +65,12 @@ export default function CountryDrawer({ destination, onClose }: Props) {
         {/* Top Hero Banner */}
         {country?.image && (
           <div className="relative h-[220px] sm:h-[280px] md:h-[320px] w-full z-0">
-            <img
+            <Image
               src={country.image}
               alt={`${country.title} banner`}
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              className="object-cover"
+              priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 z-10">
@@ -78,7 +81,7 @@ export default function CountryDrawer({ destination, onClose }: Props) {
           </div>
         )}
 
-        {/* Header (after image) */}
+        {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b bg-[#f2e7db] z-10 relative">
           <div className="font-semibold text-gray-800 text-lg">
             About {countryTitle}

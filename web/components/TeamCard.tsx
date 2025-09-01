@@ -1,4 +1,7 @@
 // components/TeamGrid.tsx
+"use client";
+
+import Image from "next/image";
 import type { TeamMember } from "@/types/teamMember";
 
 export default function TeamGrid({ team }: { team: TeamMember[] }) {
@@ -18,11 +21,13 @@ export default function TeamGrid({ team }: { team: TeamMember[] }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {team.map((member) => (
             <div key={member.name} className="text-center group">
-              <div className="relative">
-                <img
+              <div className="relative w-24 h-24 md:w-28 md:h-28 mx-auto">
+                <Image
                   src={member.image}
                   alt={member.name}
-                  className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover mx-auto shadow-md group-hover:scale-105 transition"
+                  fill
+                  className="rounded-full object-cover shadow-md group-hover:scale-105 transition"
+                  sizes="(max-width: 768px) 96px, 112px"
                 />
                 {member.featured && (
                   <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#006778] text-white px-3 py-1 text-xs rounded-full shadow-lg">

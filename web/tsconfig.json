@@ -36,13 +36,14 @@
     ]
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "types" // ✅ <- THIS is what was missing
+    "next-env.d.ts",
+    "types",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next" // ✅ this fixes the build
   ]
 }

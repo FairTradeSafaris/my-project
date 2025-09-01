@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Binoculars, PhoneCall, Info, Star, Images } from "lucide-react";
 import Image from "next/image";
@@ -115,20 +115,19 @@ export default function DestinationClient({
 }: {
   initialDestinations?: Destination[];
 }) {
-  const destinations: Destination[] = Array.isArray(initialDestinations)
-    ? initialDestinations.filter(Boolean)
-    : [];
+  const destinations: Destination[] = useMemo(() => {
+    return Array.isArray(initialDestinations)
+      ? initialDestinations.filter(Boolean)
+      : [];
+  }, [initialDestinations]);
 
-  // Normalize for CountryTabs to avoid the slug null type error
-  const tabItems: TabDestination[] = useMemo(
-    () =>
-      destinations.map((d) => ({
-        title: d.title,
-        slug: d.slug ?? undefined, // null -> undefined
-        flagImage: d.flagImage ?? undefined, // null -> undefined
-      })),
-    [destinations]
-  );
+  const tabItems: TabDestination[] = useMemo(() => {
+    return destinations.map((d) => ({
+      title: d.title,
+      slug: d.slug ?? undefined,
+      flagImage: d.flagImage ?? undefined,
+    }));
+  }, [destinations]);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -243,7 +242,7 @@ export default function DestinationClient({
     params.set("open", "true");
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
-  const closePanel = () => {
+  const closePanel = useCallback(() => {
     const params = new URLSearchParams(searchParams?.toString() || "");
 
     params.delete("q");
@@ -253,7 +252,7 @@ export default function DestinationClient({
     router.push(url as string, { scroll: false });
 
     setUserPausedUntil(Date.now() + RESUME_GRACE_MS);
-  };
+  }, [searchParams, pathname, router]);
 
   const anyOverlayOpen = aboutOpen || bookingOpen || galleryOpen || isOpen;
   useEffect(() => {
@@ -279,7 +278,7 @@ export default function DestinationClient({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [galleryOpen, aboutOpen, bookingOpen, isOpen]);
+  }, [galleryOpen, aboutOpen, bookingOpen, isOpen, closePanel]);
 
   if (!destinations.length) {
     return (
@@ -337,12 +336,13 @@ export default function DestinationClient({
                 >
                   <span className="text-[var(--background)]">#{i + 1}</span>
                   {dest.flagImage && (
-                    <img
+                    <Image
                       src={dest.flagImage}
-                      alt=""
+                      alt={`${dest.title} flag`}
+                      width={24}
+                      height={16}
                       className="w-6 h-4 object-cover rounded-[2px]"
                       loading="lazy"
-                      decoding="async"
                     />
                   )}
                   <span className="truncate">{dest.title}</span>
@@ -673,9 +673,11 @@ export default function DestinationClient({
             <div className="flex-1 overflow-y-auto">
               <div className="px-6 pt-6 flex items-center gap-3">
                 {selected?.flagImage ? (
-                  <img
+                  <Image
                     src={selected.flagImage}
                     alt={`${selected.title} flag`}
+                    width={32}
+                    height={20}
                     className="w-8 h-5 object-contain border border-neutral-200"
                   />
                 ) : null}
@@ -697,9 +699,11 @@ export default function DestinationClient({
                 <section className="px-6 mt-6">
                   <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 flex gap-4 items-start">
                     {selected.didYouKnowImage && (
-                      <img
+                      <Image
                         src={selected.didYouKnowImage}
                         alt="Did you know"
+                        width={128}
+                        height={96}
                         className="w-32 h-24 object-cover rounded-lg border border-yellow-100"
                       />
                     )}
@@ -871,9 +875,11 @@ export default function DestinationClient({
           >
             <div className="flex items-center justify-between px-4 py-3 border-b bg-[#f2e7db]">
               <div className="flex items-center gap-3">
-                <img
+                <Image
                   src="/logos/logo-top.png"
                   alt="Fair Trade Safaris"
+                  width={120}
+                  height={32}
                   className="h-8 w-auto"
                 />
                 <span className="text-sm font-semibold text-gray-800">

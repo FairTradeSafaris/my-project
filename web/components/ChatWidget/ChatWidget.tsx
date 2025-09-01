@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import Image from "next/image";
 const avatars = [
   "/avatars/giraffe.svg",
   "/avatars/elephant.svg",
@@ -41,10 +41,12 @@ export default function ChatWidget() {
       </div>
       <div className="relative w-16 h-16 rounded-full bg-[#d8c3a5] shadow-lg">
         {avatar && (
-          <img
+          <Image
             src={avatar}
             alt="Chat Avatar"
-            className="absolute inset-0 p-1.5 rounded-full object-contain"
+            fill
+            className="p-1.5 rounded-full object-contain"
+            sizes="64px"
           />
         )}
       </div>

@@ -240,18 +240,30 @@ export default function HeroWithSearch({
   const sheetRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!showForm) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeMobileForm();
-    const onDown = (e: MouseEvent) => {
-      if (sheetRef.current && !sheetRef.current.contains(e.target as Node))
-        closeMobileForm();
+
+    const close = () => {
+      setShowForm(false);
+      const sp = new URLSearchParams(searchParams?.toString() || "");
+      sp.delete("start");
+      router.replace(`${pathname}?${sp.toString()}`.replace(/\?$/, ""), {
+        scroll: false,
+      });
     };
+
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    const onDown = (e: MouseEvent) => {
+      if (sheetRef.current && !sheetRef.current.contains(e.target as Node)) {
+        close();
+      }
+    };
+
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onDown);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onDown);
     };
-  }, [showForm]);
+  }, [showForm, searchParams, pathname, router]);
 
   const sharedFormProps: SearchFormProps = {
     destinations,

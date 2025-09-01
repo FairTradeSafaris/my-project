@@ -58,14 +58,14 @@ export default function useTestimonials() {
     fetchHeading();
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => next(), 6000);
-    return () => clearInterval(interval);
-  }, [testimonials, currentIndex, isMobile]);
-
   const next = () => {
     setCurrentIndex((prev) => (prev + CARDS_PER_VIEW) % testimonials.length);
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => next(), 6000);
+    return () => clearInterval(interval);
+  }, [next]);
 
   const prev = () => {
     setCurrentIndex(

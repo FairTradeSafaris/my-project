@@ -3,10 +3,16 @@ export const parseDurationDays = (d?: string) => {
   return m ? parseInt(m[1], 10) : 0;
 };
 
-export const parsePriceNumber = (p?: string) => {
-  if (!p) return 0;
-  const n = p.replace(/[^\d]/g, "");
-  return n ? parseInt(n, 10) : 0;
+export const parsePriceNumber = (p: unknown): number => {
+  if (typeof p === "number") return p;
+
+  if (typeof p === "string") {
+    const n = p.replace(/[^\d.]/g, "");
+    const num = parseFloat(n);
+    return isNaN(num) ? 0 : num;
+  }
+
+  return 0;
 };
 
 export const formatMoney = (n: number) =>

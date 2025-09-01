@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Gift, X } from "lucide-react";
+import Image from "next/image";
 
 type Claim = { bookTitle: string; bookUrl: string };
 
@@ -138,11 +139,14 @@ export default function LeadMagnet() {
                 </button>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:pr-10 gap-4">
-                <img
+                <Image
                   src="/logos/logo-top.png"
                   alt="Fair Trade Safaris"
+                  width={160} // ⚠️ Adjust based on actual dimensions
+                  height={40} // ⚠️ Adjust based on actual dimensions
                   className="h-10 w-auto"
                 />
+
                 <div>
                   <h2 className="text-base sm:text-lg font-semibold text-gray-800">
                     Discovery Call

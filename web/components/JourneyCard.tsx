@@ -5,31 +5,34 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import { useWishlist } from "@/hooks/useWishlist";
 
 type Props = {
+  journeyId: string;
   slug: string;
   title: string;
   summary?: string;
   imageUrl?: string;
   alt?: string;
-  price?: string;
+  price?: number | string; // <-- optional now
+
   duration?: string;
   region?: string;
   country?: string;
   starIcon?: string;
   star?: number;
   metaIcons?: React.ReactNode;
-  isFeatured: boolean;
+  isFeatured?: boolean;
   onViewItinerary?: () => void;
 };
 
 export default function JourneyCard({
-  slug,
+  journeyId,
   title,
   summary,
   imageUrl,
   alt,
-  price,
+  price: price,
   duration,
   region,
   starIcon,
@@ -37,89 +40,56 @@ export default function JourneyCard({
   isFeatured,
   onViewItinerary,
 }: Props) {
-  const { isSignedIn, user } = useUser();
   const router = useRouter();
+  const { user } = useUser();
+  const userId = user?.id ?? null;
 
   const [showMobileTooltip, setShowMobileTooltip] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showFullSummary, setShowFullSummary] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
-  const [wishlisted, setWishlisted] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  useEffect(() => {
-    if (Array.isArray(user?.publicMetadata?.wishlist)) {
-      const validWishlist = user.publicMetadata.wishlist.filter(
-        (item): item is string => typeof item === "string"
-      );
-      setWishlisted(validWishlist.includes(slug));
-    }
-  }, [user, slug]);
+  const { isWishlisted, toggleWishlist, loading } = useWishlist(journeyId);
 
   useEffect(() => {
-    const updateIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
     updateIsMobile();
     window.addEventListener("resize", updateIsMobile);
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
 
-  const isPriceOnRequest = (val?: string) => {
-    if (!val) return true;
-    const clean = val.trim().toLowerCase();
-    return clean === "price on request" || clean === "price on demand";
-  };
+  // Tolerant formatter: accepts number | string | undefined
+  const buildPriceBadge = (val?: number | string) => {
+    if (val === undefined || val === null || val === "")
+      return "Price on request";
 
-  const buildPriceBadge = (val?: string) => {
-    if (isPriceOnRequest(val)) return "Price on request";
-    const hasDollar = val?.trim().startsWith("$");
-    const numeric = (val || "").replace(/[^\d.,]/g, "");
-    if (!numeric) return "Price on request";
-    const amount = hasDollar ? `$${numeric.replace(/^\$/, "")}` : `$${numeric}`;
-    return `From ${amount} p/p sharing`;
+    const num =
+      typeof val === "string"
+        ? Number(val.replace(/[, ]+/g, "")) // "12,345" -> 12345
+        : val;
+
+    if (Number.isNaN(num) || num <= 0) return "Price on request";
+
+    return `From ${num.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+    })} p/p sharing`;
   };
 
   const priceBadge = buildPriceBadge(price);
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
-
-    if (!isSignedIn || !user) {
+    if (!userId) {
       router.push("/sign-in");
       return;
     }
-
-    const current = Array.isArray(user.publicMetadata.wishlist)
-      ? [...user.publicMetadata.wishlist]
-      : [];
-
-    const updated = wishlisted
-      ? current.filter((item: string) => item !== slug)
-      : [...current, slug];
-
-    try {
-      const res = await fetch("/api/wishlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wishlist: updated }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        console.error("❌ API Error:", error);
-        throw new Error("Failed to update");
-      }
-
-      const data = await res.json();
-      setWishlisted(data.wishlist?.includes(slug));
-
-      if (!isMobile) {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
-      }
-    } catch (err) {
-      console.error("❌ Failed to update wishlist in Clerk:", err);
+    await toggleWishlist();
+    if (!isMobile) {
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
     }
   };
 
@@ -127,12 +97,15 @@ export default function JourneyCard({
     <div className="w-full max-w-sm bg-transparent relative">
       {showToast && !isMobile && (
         <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-green-100 text-green-800 text-xs font-medium px-4 py-2 rounded shadow z-[9999]">
-          {wishlisted ? "Saved to your wishlist" : "Removed from wishlist"}
+          {isWishlisted
+            ? "Saved to your wishlist"
+            : "Removed from your wishlist"}
         </div>
       )}
 
+      {/* Guarantee height so the absolute badge always displays */}
       <div
-        className="relative rounded-t-lg overflow-hidden cursor-pointer"
+        className="relative rounded-t-lg overflow-hidden cursor-pointer h-64"
         onClick={(e) => {
           e.stopPropagation();
           onViewItinerary?.();
@@ -141,11 +114,14 @@ export default function JourneyCard({
         <button
           className="absolute top-2 left-2 z-20 bg-white/90 hover:bg-white text-black p-1 rounded-full shadow"
           onClick={handleWishlistToggle}
-          aria-label={wishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
+          disabled={loading}
+          aria-label={
+            isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"
+          }
         >
           <Heart
             className={`w-5 h-5 transition-all ${
-              wishlisted ? "fill-red-500 text-red-500" : "text-gray-700"
+              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-700"
             }`}
           />
         </button>
@@ -154,9 +130,8 @@ export default function JourneyCard({
           <Image
             src={imageUrl}
             alt={alt || "Journey image"}
-            width={400}
-            height={256}
-            className="w-full h-64 object-cover"
+            fill
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={isFeatured}
           />
@@ -220,10 +195,12 @@ export default function JourneyCard({
               </span>
               <div className="flex items-center gap-1">
                 {[...Array(star)].map((_, i) => (
-                  <img
+                  <Image
                     key={i}
                     src={starIcon || "/default-star.svg"}
                     alt="Luxury Star"
+                    width={16}
+                    height={16}
                     className="w-4 h-4"
                   />
                 ))}
@@ -294,9 +271,11 @@ export default function JourneyCard({
           >
             <div className="flex items-center justify-between px-4 py-3 border-b bg-[#f2e7db]">
               <div className="flex items-center gap-3">
-                <img
+                <Image
                   src="/logos/logo-top.png"
                   alt="Fair Trade Safaris"
+                  width={100} // or adjust based on your needs
+                  height={40}
                   className="h-8 w-auto"
                 />
                 <span className="text-sm font-semibold text-gray-800">
@@ -307,13 +286,14 @@ export default function JourneyCard({
               <button
                 className="text-black hover:text-red-500 transition-colors"
                 onClick={handleWishlistToggle}
+                disabled={loading}
                 aria-label={
-                  wishlisted ? "Remove from Wishlist" : "Save to Wishlist"
+                  isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"
                 }
               >
                 <Heart
                   className={`w-5 h-5 transition-all ${
-                    wishlisted ? "fill-red-500 text-red-500" : "text-gray-700"
+                    isWishlisted ? "fill-red-500 text-red-500" : "text-gray-700"
                   }`}
                 />
               </button>

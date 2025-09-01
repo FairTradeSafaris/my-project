@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { VideoTestimonial } from "./VideoTestimonials";
+import Image from "next/image";
 
 export default function VideoTestimonialCard({
   testimonial,
@@ -26,11 +27,15 @@ export default function VideoTestimonialCard({
         onClick={() => setOpen(true)}
       >
         {/* Thumbnail Image with Overlay */}
-        <img
-          src={testimonial.thumbnailUrl || "/fallback.jpg"}
-          alt={`Preview of ${testimonial.name}`}
-          className="w-full h-full object-cover aspect-square"
-        />
+        <div className="w-full aspect-square relative">
+          <Image
+            src={testimonial.thumbnailUrl || "/fallback.jpg"}
+            alt={`Preview of ${testimonial.name}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 400px"
+          />
+        </div>
         <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-white text-black p-2 rounded-full shadow-md">

@@ -23,8 +23,8 @@ export default defineType({
     defineField({
       name: 'price',
       title: 'Price Per Person (Sharing)',
-      type: 'string',
-      description: 'e.g. From $5,200 pp',
+      type: 'number', // ✅ switch to number
+      description: 'Enter price as a number only, e.g., 5200',
     }),
     defineField({
       name: 'heroImage',

@@ -1,5 +1,6 @@
 // app/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import groq from "groq";
 import { client } from "@/lib/sanity";
 import CommentFormWrapper from "@/components/CommentFormWrapper";
@@ -25,7 +26,13 @@ type BlogPost = {
   heroGalleryImage?: { imageUrl?: string; alt?: string; imageId?: string };
   content: Block[];
   likes?: number;
-  author?: { name: string; image?: string; bio?: string };
+  author?: {
+    name: string;
+    image?: string;
+    bio?: string;
+    slug?: string;
+  };
+
   tags?: string[];
 };
 
@@ -66,14 +73,10 @@ async function getPost(slug: string): Promise<BlogPost | null> {
     title,
     summary,
     publishedAt,
-
-    // cover image
     "coverImage": {
       "url": coverImage.asset->url,
       "alt": coverImage.alt
     },
-
-    // top-level hero (may be removed later)
     heroImage {
       text,
       alignment,
@@ -82,26 +85,19 @@ async function getPost(slug: string): Promise<BlogPost | null> {
         "alt": image.alt
       }
     },
-
-    // optional hero gallery pointer
     "heroGalleryImage": heroGalleryImage->{
       alt,
       "imageUrl": image.asset->url,
       "imageId": image.asset->_id
     },
-
-    // ✅ Pull author reference
     author->{
       name,
       bio,
-      "image": image.asset->url
+      "image": image.asset->url,
+      "slug": slug.current
     },
-
-    // ✅ CONTENT: normalize all images, including heroBlock
     content[] {
       ...,
-
-      // ✅ heroBlock (top-of-page banner block)
       _type == "heroBlock" => {
         ...,
         text,
@@ -116,14 +112,10 @@ async function getPost(slug: string): Promise<BlogPost | null> {
           "imageId": image.asset->_id
         }
       },
-
-      // simple image blocks
       image {
         "url": asset->url,
         "alt": alt
       },
-
-      // text+image block
       _type == "textImage" => {
         ...,
         image {
@@ -136,8 +128,6 @@ async function getPost(slug: string): Promise<BlogPost | null> {
           "imageId": image.asset->_id
         }
       },
-
-      // gallery block: array of flat items
       _type == "galleryBlock" => {
         ...,
         "images": images[] {
@@ -145,8 +135,6 @@ async function getPost(slug: string): Promise<BlogPost | null> {
           "alt": alt
         }
       },
-
-      // smart carousel
       _type == "smartCarousel" => {
         ...,
         "slides": slides[] {
@@ -159,7 +147,6 @@ async function getPost(slug: string): Promise<BlogPost | null> {
       }
     }
   }`;
-
   return await client.fetch(query, { slug });
 }
 
@@ -246,23 +233,38 @@ export default async function BlogPost({
         </div>
 
         <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center space-y-4">
-          {post.author?.image && (
-            <div className="flex justify-center">
-              <img
-                src={post.author.image}
-                alt={post.author.name}
-                className="w-28 h-28 rounded-full object-cover shadow-md border-2 border-amber-600"
-              />
-            </div>
+          {post.author?.slug && (
+            <Link
+              href={`/authors/${post.author.slug}`}
+              className="block text-center transition hover:bg-gray-50 rounded-lg p-4"
+            >
+              {post.author?.image && (
+                <div className="flex justify-center">
+                  <Image
+                    src={post.author.image}
+                    alt={post.author.name}
+                    width={112}
+                    height={112}
+                    className="rounded-full object-cover shadow-md border-2 border-amber-600"
+                    unoptimized
+                  />
+                </div>
+              )}
+              <div className="mt-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {post.author.name}
+                </h2>
+                {post.author?.bio && (
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-3">
+                    {post.author.bio}
+                  </p>
+                )}
+                <p className="mt-2 text-sm text-amber-700 font-medium hover:underline">
+                  View profile →
+                </p>
+              </div>
+            </Link>
           )}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              {post.author?.name || "Unknown Author"}
-            </h2>
-            {post.author?.bio && (
-              <p className="text-sm text-gray-600 mt-1">{post.author.bio}</p>
-            )}
-          </div>
 
           {Array.isArray(post.tags) && post.tags.length > 0 && (
             <div className="bg-white shadow p-4 rounded-lg">
@@ -295,12 +297,13 @@ export default async function BlogPost({
                       className="bg-white p-2 rounded shadow flex gap-3 items-center hover:bg-gray-50 transition"
                     >
                       {j.heroImage?.url && (
-                        <img
+                        <Image
                           src={j.heroImage.url}
                           alt={j.heroImage.alt || j.title}
                           width={60}
                           height={60}
                           className="rounded object-cover flex-shrink-0"
+                          unoptimized
                         />
                       )}
                       <div>
@@ -333,12 +336,13 @@ export default async function BlogPost({
                       className="bg-white p-2 rounded shadow flex gap-3 items-center hover:bg-gray-50 transition"
                     >
                       {b.coverImage && (
-                        <img
+                        <Image
                           src={b.coverImage}
                           alt={b.alt || b.title}
                           width={60}
                           height={60}
                           className="rounded object-cover flex-shrink-0"
+                          unoptimized
                         />
                       )}
                       <div>

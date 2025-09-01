@@ -123,14 +123,16 @@ export const myStructure = (S: StructureBuilder) =>
         ),
 
       // 📨 Lead Forms
+      // 🧑‍💼 User Activity (renamed from Lead Forms)
       S.listItem()
-        .title('📨 Lead Forms')
+        .title('🧑‍💼 User Activity')
         .child(
           S.list()
-            .title('Forms')
+            .title('User Activity')
             .items([
-              S.documentTypeListItem('leadMagnetClaim').title('Lead Magnet Form'),
+              S.documentTypeListItem('leadMagnetClaim').title('Lead Magnet Downloads'),
               S.documentTypeListItem('travelInterest').title('Travel Interest Form'),
+              S.documentTypeListItem('wishlist').title('User Wishlists'), // ✅ NEW
             ]),
         ),
 

@@ -3,6 +3,7 @@ export const revalidate = 60;
 import { client } from "@/lib/sanity";
 import type { TeamMember } from "@/types/teamMember";
 import { Mail, Linkedin } from "lucide-react";
+import Image from "next/image";
 
 export default async function TeamPage() {
   const team: TeamMember[] =
@@ -36,11 +37,15 @@ export default async function TeamPage() {
         <div className="max-w-6xl mx-auto">
           {/* Line Art + Heading */}
           <div className="text-center mb-16">
-            <img
-              src="/line-art-team.png"
-              alt="Line art"
-              className="mx-auto w-72 md:w-80 lg:w-96 opacity-90 mb-4 dark:invert"
-            />
+            <div className="mx-auto w-72 md:w-80 lg:w-96 relative h-20 opacity-90 mb-4 dark:invert">
+              <Image
+                src="/line-art-team.png"
+                alt="Line art"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
             <h3 className="text-3xl md:text-4xl font-extrabold text-[#3c2a1e] dark:text-[#fdf8f3] tracking-tight leading-tight">
               Meet the Humans Behind the Magic
             </h3>
@@ -59,11 +64,14 @@ export default async function TeamPage() {
                 />
 
                 <div className="flex flex-col items-center text-center px-6 -mt-12 pb-6">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-[#444] shadow-md"
-                  />
+                  <div className="w-28 h-28 relative rounded-full border-4 border-white dark:border-[#444] shadow-md overflow-hidden">
+                    <Image
+                      src={member.image}
+                      alt={member.name}
+                      fill
+                      className="object-cover rounded-full"
+                    />
+                  </div>
                   <h4 className="mt-6 text-lg font-semibold text-[#3c2a1e] dark:text-[#fdf8f3] leading-tight">
                     {member.name}
                   </h4>

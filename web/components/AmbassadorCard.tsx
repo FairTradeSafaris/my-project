@@ -4,6 +4,7 @@ import { SocialIcon } from "react-social-icons";
 import { PortableText } from "@portabletext/react";
 import type { Ambassador } from "@/types/ambassador";
 import { urlFor } from "../lib/sanity";
+import Image from "next/image";
 
 interface Props {
   amb: Ambassador;
@@ -75,11 +76,15 @@ export default function AmbassadorCard({ amb }: Props) {
             {/* Modal Content */}
             <div className="mb-4">
               {imageUrl && (
-                <img
-                  src={imageUrl}
-                  alt={amb.name}
-                  className="rounded-xl w-full object-cover aspect-[3/2] mb-4"
-                />
+                <div className="relative w-full aspect-[3/2] mb-4 rounded-xl overflow-hidden">
+                  <Image
+                    src={imageUrl}
+                    alt={amb.name}
+                    fill
+                    className="object-cover rounded-xl"
+                    sizes="(max-width: 768px) 100vw, 600px"
+                  />
+                </div>
               )}
               <h3 className="text-2xl font-serif font-bold text-[#5a3e2b] mb-1">
                 {amb.name}

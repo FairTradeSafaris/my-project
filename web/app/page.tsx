@@ -9,7 +9,7 @@ import FoundersPromise from "@/components/FoundersPromise";
 import type { FoundersPromiseBlock } from "@/types/types";
 
 import dynamic from "next/dynamic";
-
+import Image from "next/image";
 const WhyChoose = dynamic(() => import("@/components/WhyChoose"), {
   loading: () => <p>Loading section...</p>,
 });
@@ -223,7 +223,8 @@ export default async function Home() {
                     className="block"
                   >
                     <JourneyCard
-                      slug={j.slug?.current || ""} // ✅ Add this line
+                      journeyId={j._id}
+                      slug={j.slug?.current || ""}
                       title={j.title}
                       summary={j.summary}
                       imageUrl={j.heroImage.asset.url}
@@ -289,12 +290,13 @@ export default async function Home() {
               {/* Side Image */}
               {ctaBanner.sideImageUrl && (
                 <div className="w-full md:w-1/2 flex justify-center md:justify-start mb-8 md:mb-0">
-                  <img
+                  <Image
                     src={ctaBanner.sideImageUrl}
                     alt="CTA illustration"
-                    className="max-h-72 object-contain"
                     width={600}
                     height={400}
+                    className="max-h-72 object-contain"
+                    unoptimized
                   />
                 </div>
               )}

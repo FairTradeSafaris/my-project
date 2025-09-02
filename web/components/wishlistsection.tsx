@@ -1,4 +1,5 @@
 import JourneyCard from "./JourneyCard";
+import { useWishlist } from "@/hooks/useWishlist";
 
 type Journey = {
   _id: string;
@@ -29,6 +30,8 @@ type Props = {
 };
 
 export default function WishlistSection({ wishlistJourneys }: Props) {
+  const { wishlistIds } = useWishlist();
+
   return (
     <div className="mt-14">
       <h2 className="text-2xl font-bold mb-4">Your Wishlist</h2>
@@ -52,6 +55,7 @@ export default function WishlistSection({ wishlistJourneys }: Props) {
               country={journey.country?.title}
               star={journey.starRating}
               isFeatured={journey.isFeatured}
+              isWishlisted={wishlistIds.includes(journey._id)} // ✅ pass this directly
             />
           ))}
         </div>

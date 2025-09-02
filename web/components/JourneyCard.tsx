@@ -23,6 +23,7 @@ type Props = {
   metaIcons?: React.ReactNode;
   isFeatured?: boolean;
   onViewItinerary?: () => void;
+  isWishlisted?: boolean; // ✅ from WishlistSection
 };
 
 export default function JourneyCard({
@@ -31,13 +32,14 @@ export default function JourneyCard({
   summary,
   imageUrl,
   alt,
-  price: price,
+  price,
   duration,
   region,
   starIcon,
   star = 0,
   isFeatured,
   onViewItinerary,
+  isWishlisted,
 }: Props) {
   const router = useRouter();
   const { user } = useUser();
@@ -50,7 +52,8 @@ export default function JourneyCard({
   const [showToast, setShowToast] = useState(false);
   const [pendingWishlist, setPendingWishlist] = useState(false);
 
-  const { isWishlisted, toggleWishlist, loading } = useWishlist(journeyId);
+  // ✅ Use toggle only (isWishlisted is now passed in)
+  const { toggleWishlist, loading } = useWishlist(journeyId);
 
   useEffect(() => {
     const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
@@ -157,7 +160,9 @@ export default function JourneyCard({
         {summary && (
           <div className="mb-3">
             <p
-              className={`text-sm text-gray-600 transition-all duration-200 ease-in-out ${showFullSummary ? "" : "line-clamp-3"}`}
+              className={`text-sm text-gray-600 transition-all duration-200 ease-in-out ${
+                showFullSummary ? "" : "line-clamp-3"
+              }`}
             >
               {summary}
             </p>

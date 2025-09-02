@@ -1,7 +1,6 @@
 "use client";
 
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
-
 import { useEffect, useState } from "react";
 import { sanityClient } from "@/lib/client";
 import { groq } from "next-sanity";
@@ -16,7 +15,7 @@ const fetchWishlistJourneys = async (ids: string[]) => {
     title,
     slug,
     summary,
-   "heroUrl": heroImage.asset->url,
+    "heroUrl": heroImage.asset->url,
     price,
     duration,
     region,
@@ -68,20 +67,17 @@ type Trip = {
     };
   }[];
 };
+
 type WishlistJourney = {
   _id: string;
   title: string;
   slug?: { current: string };
   summary?: string;
-  heroUrl?: string; // ✅ ADD THIS
+  heroUrl?: string;
   price?: number;
   duration?: string;
-  region?: {
-    title?: string;
-  };
-  country?: {
-    title?: string;
-  };
+  region?: { title?: string };
+  country?: { title?: string };
   starRating?: number;
   isFeatured?: boolean;
 };
@@ -89,14 +85,16 @@ type WishlistJourney = {
 export default function ClientHomeContent() {
   const { user } = useUser();
   const email = user?.emailAddresses?.[0]?.emailAddress;
-  const { wishlistIds } = useWishlist(); // ✅ NEW
+  const { wishlistIds } = useWishlist();
+
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isOffline, setIsOffline] = useState(false);
   const [wishlistJourneys, setWishlistJourneys] = useState<WishlistJourney[]>(
     []
   );
-  // ✅ NEW
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
+  // ✅ Handle online/offline state
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
@@ -110,14 +108,34 @@ export default function ClientHomeContent() {
     };
   }, []);
 
+  // ✅ Wishlist: load from cache, then fetch fresh
   useEffect(() => {
-    if (!wishlistIds.length) return;
+    if (!user?.id || !wishlistIds.length) return;
 
-    fetchWishlistJourneys(wishlistIds).then((data) => {
-      setWishlistJourneys(data);
-    });
-  }, [wishlistIds]);
+    const cacheKey = `wishlist_${user.id}`;
+    const cached = localStorage.getItem(cacheKey);
 
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          setWishlistJourneys(parsed);
+        }
+      } catch (err) {
+        console.error("Failed to parse cached wishlist", err);
+      }
+    }
+
+    setWishlistLoading(true);
+    fetchWishlistJourneys(wishlistIds)
+      .then((data) => {
+        setWishlistJourneys(data);
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+      })
+      .finally(() => setWishlistLoading(false));
+  }, [user?.id, wishlistIds]);
+
+  // ✅ Load trips (cache + revalidate)
   useEffect(() => {
     if (!email) return;
 
@@ -149,8 +167,6 @@ export default function ClientHomeContent() {
   return (
     <div className="px-4 sm:px-8 lg:px-16 py-10 text-base sm:text-lg lg:text-xl max-w-7xl mx-auto space-y-10">
       <SignedIn>
-        {/* User info, trips UI... */}
-
         {isOffline && (
           <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md text-center text-sm font-medium shadow-md">
             You’re offline. Showing cached trip data.
@@ -170,10 +186,19 @@ export default function ClientHomeContent() {
           )}
         </div>
 
-        {/* ✅ NEW — WISHLIST SECTION */}
+        {/* ✅ Wishlist Section */}
         <div className="mt-14">
           <h2 className="text-2xl font-bold mb-4">Your Wishlist</h2>
-          {wishlistJourneys.length === 0 ? (
+          {wishlistLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-64 bg-gray-100 animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+          ) : wishlistJourneys.length === 0 ? (
             <p>You haven&apos;t saved any journeys yet.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -189,7 +214,7 @@ export default function ClientHomeContent() {
                   price={
                     typeof journey.price === "string"
                       ? journey.price
-                      : (journey.price ?? "") // fallback
+                      : (journey.price ?? "")
                   }
                   duration={journey.duration}
                   region={journey.region?.title}

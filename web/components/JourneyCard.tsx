@@ -14,8 +14,7 @@ type Props = {
   summary?: string;
   imageUrl?: string;
   alt?: string;
-  price?: number | string; // <-- optional now
-
+  price?: number | string;
   duration?: string;
   region?: string;
   country?: string;
@@ -49,6 +48,7 @@ export default function JourneyCard({
   const [showFullSummary, setShowFullSummary] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [pendingWishlist, setPendingWishlist] = useState(false);
 
   const { isWishlisted, toggleWishlist, loading } = useWishlist(journeyId);
 
@@ -59,18 +59,12 @@ export default function JourneyCard({
     return () => window.removeEventListener("resize", updateIsMobile);
   }, []);
 
-  // Tolerant formatter: accepts number | string | undefined
   const buildPriceBadge = (val?: number | string) => {
     if (val === undefined || val === null || val === "")
       return "Price on request";
-
     const num =
-      typeof val === "string"
-        ? Number(val.replace(/[, ]+/g, "")) // "12,345" -> 12345
-        : val;
-
+      typeof val === "string" ? Number(val.replace(/[, ]+/g, "")) : val;
     if (Number.isNaN(num) || num <= 0) return "Price on request";
-
     return `From ${num.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
@@ -86,7 +80,10 @@ export default function JourneyCard({
       router.push("/sign-in");
       return;
     }
+    setPendingWishlist(true);
     await toggleWishlist();
+    setPendingWishlist(false);
+
     if (!isMobile) {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2000);
@@ -103,7 +100,6 @@ export default function JourneyCard({
         </div>
       )}
 
-      {/* Guarantee height so the absolute badge always displays */}
       <div
         className="relative rounded-t-lg overflow-hidden cursor-pointer h-64"
         onClick={(e) => {
@@ -121,7 +117,11 @@ export default function JourneyCard({
         >
           <Heart
             className={`w-5 h-5 transition-all ${
-              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-700"
+              pendingWishlist
+                ? "fill-[#a35c2d] text-[#a35c2d]"
+                : isWishlisted
+                  ? "fill-red-500 text-red-500"
+                  : "text-gray-700"
             }`}
           />
         </button>
@@ -157,9 +157,7 @@ export default function JourneyCard({
         {summary && (
           <div className="mb-3">
             <p
-              className={`text-sm text-gray-600 transition-all duration-200 ease-in-out ${
-                showFullSummary ? "" : "line-clamp-3"
-              }`}
+              className={`text-sm text-gray-600 transition-all duration-200 ease-in-out ${showFullSummary ? "" : "line-clamp-3"}`}
             >
               {summary}
             </p>
@@ -274,7 +272,7 @@ export default function JourneyCard({
                 <Image
                   src="/logos/logo-top.png"
                   alt="Fair Trade Safaris"
-                  width={100} // or adjust based on your needs
+                  width={100}
                   height={40}
                   className="h-8 w-auto"
                 />
@@ -293,7 +291,11 @@ export default function JourneyCard({
               >
                 <Heart
                   className={`w-5 h-5 transition-all ${
-                    isWishlisted ? "fill-red-500 text-red-500" : "text-gray-700"
+                    pendingWishlist
+                      ? "fill-[#a35c2d] text-[#a35c2d]"
+                      : isWishlisted
+                        ? "fill-red-500 text-red-500"
+                        : "text-gray-700"
                   }`}
                 />
               </button>

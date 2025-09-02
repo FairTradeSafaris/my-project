@@ -153,33 +153,45 @@ export default function JourneyFinderClient() {
 
   // Fetch visible journeys
   useEffect(() => {
+    const cacheKey = `finder_journeys_${visibleCount}`;
     const query = new URLSearchParams(window.location.search);
     const queryTitle = query.get("q");
     const shouldOpen = query.get("open") === "true";
+
+    // 1. Try loading cached journeys
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          setAllJourneys((prev) => [
+            ...prev,
+            ...parsed.filter(
+              (j) => !prev.some((p) => p.slug?.current === j.slug?.current)
+            ),
+          ]);
+        }
+      } catch (err) {
+        console.error("Failed to parse cached journeys", err);
+      }
+    }
+
+    // 2. Always fetch fresh journeys from Sanity
     sanityClient
       .fetch(
         `*[_type == "journey"][0...${visibleCount}] {
-    title, summary, slug, duration, price,
-    "heroUrl": heroImage.asset->url,
-    alt, ctaText, wetuLink,
-    region->{ title },
-    countries[]->{
-      title,
-      "flag": flag.asset->url,
-      travelInfo,
-      highlights,
-      practicalStuff,
-      mapLocation
-    },
-    star, "starIcon": starIcon.asset->url,
-    "interests": travelStyleRefs[]->{title, category, isTopInterest},
-    "featuredOnHome": featuredOnHome
-  }`
+        title, summary, slug, duration, price,
+        "heroUrl": heroImage.asset->url,
+        alt, ctaText, wetuLink,
+        region->{ title },
+        countries[]->{ title, "flag": flag.asset->url },
+        star, "starIcon": starIcon.asset->url,
+        "interests": travelStyleRefs[]->{title, category, isTopInterest},
+        "featuredOnHome": featuredOnHome
+      }`
       )
-
       .then((data: Journey[]) => {
-        console.log("📦 Fetched visible journeys:", data);
-
+        // Update state
         setAllJourneys((prev) => [
           ...prev,
           ...data.filter(
@@ -187,6 +199,10 @@ export default function JourneyFinderClient() {
           ),
         ]);
 
+        // Update cache
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+
+        // If query param match
         if (queryTitle && shouldOpen) {
           const found = data.find(
             (j) => j.title.toLowerCase() === queryTitle.toLowerCase()
@@ -201,6 +217,7 @@ export default function JourneyFinderClient() {
         }
       });
   }, [visibleCount]);
+
   useEffect(() => {
     sanityClient
       .fetch(

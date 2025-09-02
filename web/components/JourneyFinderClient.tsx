@@ -31,7 +31,19 @@ import {
 export default function JourneyFinderClient() {
   const [visibleCount, setVisibleCount] = useState(9);
   const [filtersReady, setFiltersReady] = useState(false);
-  const [allJourneys, setAllJourneys] = useState<Journey[]>([]);
+  const [allJourneys, setAllJourneys] = useState<Journey[]>(() => {
+    const key = `wishlist_user_${typeof window !== "undefined" ? localStorage.getItem("user_id") : ""}`;
+    try {
+      const cached = localStorage.getItem(key);
+      if (!cached) return [];
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (err) {
+      console.warn("Failed to load cached wishlist journeys", err);
+    }
+    return [];
+  });
+
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
   const [drawerState, setDrawerState] = useState<{
     open: boolean;

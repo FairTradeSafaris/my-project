@@ -1,19 +1,20 @@
 // app/api/clerk/webhook/route.ts
+
 import { Webhook } from "svix";
 import { NextResponse } from "next/server";
 import { createZohoLead } from "@/lib/zoho/createLead";
-import { clerkClient } from "@clerk/clerk-sdk-node"; // ✅ correct Clerk import for backend
+import { clerkClient } from "@clerk/clerk-sdk-node";
 
 type ClerkUserCreatedEvent = {
   type: "user.created";
   data: {
-    id: string; // Clerk user ID
+    id: string;
   };
 };
 
 export async function POST(req: Request) {
   const payload = await req.text();
-  const headersList = req.headers;
+  const headers = req.headers;
 
   const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET || "");
 
@@ -21,9 +22,9 @@ export async function POST(req: Request) {
 
   try {
     evt = wh.verify(payload, {
-      "svix-id": headersList.get("svix-id")!,
-      "svix-timestamp": headersList.get("svix-timestamp")!,
-      "svix-signature": headersList.get("svix-signature")!,
+      "svix-id": headers.get("svix-id")!,
+      "svix-timestamp": headers.get("svix-timestamp")!,
+      "svix-signature": headers.get("svix-signature")!,
     }) as ClerkUserCreatedEvent;
   } catch (err) {
     console.error("❌ Clerk webhook verification failed:", err);
@@ -34,29 +35,33 @@ export async function POST(req: Request) {
 
   if (type === "user.created") {
     try {
-      const user = await clerkClient.users.getUser(data.id);
+      const clerkUser = await clerkClient.users.getUser(data.id);
 
-      const firstName = user.firstName || "";
-      const lastName = user.lastName || "";
-      const email = user.emailAddresses?.[0]?.emailAddress ?? "";
+      const firstName = clerkUser.firstName || "New";
+      const lastName = clerkUser.lastName || "Web User"; // 👈 Required by Zoho
+      const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
 
-      console.log("📬 Clerk signup received:", { firstName, lastName, email });
+      console.log("🆕 Clerk signup received:", {
+        firstName,
+        lastName,
+        email,
+      });
 
       const result = await createZohoLead({
         firstName,
         lastName,
         email,
-        phone: "",
+        phone: "", // Optional
         appointment: false,
         marketingConsent: false,
+        sourceChannel: "WebClient", // 👈 Custom field in Zoho
       });
 
-      console.log("✅ Zoho Lead created:", result);
-    } catch (err) {
-      console.error("❌ Failed to fetch user or create Zoho lead:", err);
+      console.log("✅ Zoho lead created:", result);
+    } catch (error) {
+      console.error("❌ Failed to handle Clerk user.created:", error);
+      return new NextResponse("Internal Server Error", { status: 500 });
     }
-  } else {
-    console.log("ℹ️ Ignored event type:", type);
   }
 
   return new NextResponse("OK", { status: 200 });

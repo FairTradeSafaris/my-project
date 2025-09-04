@@ -1,5 +1,3 @@
-// app/api/clerk/webhook/route.ts
-
 import { Webhook } from "svix";
 import { NextResponse } from "next/server";
 import { createZohoLead } from "@/lib/zoho/createLead";
@@ -13,14 +11,14 @@ type ClerkUserCreatedEvent = {
 };
 
 export async function POST(req: Request) {
-  const payload = await req.text();
-  const headers = req.headers;
-
-  const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET || "");
-
+  let payload: string;
   let evt: ClerkUserCreatedEvent;
 
   try {
+    payload = await req.text();
+    const headers = req.headers;
+
+    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET || "");
     evt = wh.verify(payload, {
       "svix-id": headers.get("svix-id")!,
       "svix-timestamp": headers.get("svix-timestamp")!,
@@ -35,7 +33,7 @@ export async function POST(req: Request) {
 
   if (type === "user.created") {
     try {
-      console.log("📩 Clerk user.created event received");
+      console.log("📩 Clerk user.created event received:", data);
 
       const clerkUser = await clerkClient.users.getUser(data.id);
       console.log("🔎 Clerk user fetched:", clerkUser);
@@ -44,25 +42,23 @@ export async function POST(req: Request) {
       const lastName = clerkUser.lastName || "Web User";
       const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
 
-      console.log("📦 Lead data prepared:", {
+      const leadPayload = {
         firstName,
         lastName,
         email,
-      });
-
-      const result = await createZohoLead({
-        firstName,
-        lastName,
-        email,
-        phone: "", // Optional
+        phone: "",
         appointment: false,
         marketingConsent: false,
         sourceChannel: "WebClient",
-      });
+      };
+
+      console.log("📦 Lead data prepared:", leadPayload);
+
+      const result = await createZohoLead(leadPayload);
 
       console.log("✅ Zoho lead created:", result);
     } catch (error: unknown) {
-      console.error("❌ Failed to handle Clerk user.created:");
+      console.error("❌ Failed to handle Clerk user.created webhook");
 
       if (error instanceof Error) {
         console.error("Error Message:", error.message);

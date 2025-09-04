@@ -29,6 +29,7 @@ export async function createZohoLead(lead: {
   phone?: string;
   appointment?: boolean;
   marketingConsent?: boolean;
+  sourceChannel?: string; // ✅ new optional field
 }) {
   const data = {
     First_Name: lead.firstName,
@@ -38,6 +39,7 @@ export async function createZohoLead(lead: {
     Description: `Appointment: ${lead.appointment ? "Yes" : "No"}, Marketing: ${
       lead.marketingConsent ? "Yes" : "No"
     }`,
+    Source_Channel: lead.sourceChannel || "WebClient", // ✅ default to WebClient if not provided
   };
 
   let response = await fetch("https://www.zohoapis.com/crm/v2/Leads", {
@@ -49,6 +51,7 @@ export async function createZohoLead(lead: {
     body: JSON.stringify({ data: [data] }),
   });
 
+  // 🔁 Retry once on token expiration
   if (response.status === 401) {
     await refreshAccessToken();
     response = await fetch("https://www.zohoapis.com/crm/v2/Leads", {

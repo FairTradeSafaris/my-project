@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     const firstName = user.first_name || "";
     const lastName = user.last_name || "";
-    const email = user.email_addresses?.[0]?.email_address || "";
+    const email = user.email_addresses?.[0]?.email_address ?? "";
 
     console.log("📬 New user.created webhook received:", {
       firstName,

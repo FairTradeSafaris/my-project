@@ -61,10 +61,16 @@ export async function POST(req: Request) {
       });
 
       console.log("✅ Zoho lead created:", result);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Failed to handle Clerk user.created:");
-      console.error("Error Message:", error.message);
-      console.error("Stack Trace:", error.stack);
+
+      if (error instanceof Error) {
+        console.error("Error Message:", error.message);
+        console.error("Stack Trace:", error.stack);
+      } else {
+        console.error("Unknown error:", error);
+      }
+
       return new NextResponse("Internal Server Error", { status: 500 });
     }
   }

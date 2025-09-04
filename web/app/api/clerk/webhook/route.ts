@@ -2,14 +2,12 @@
 import { Webhook } from "svix";
 import { NextResponse } from "next/server";
 import { createZohoLead } from "@/lib/zoho/createLead";
+import { clerkClient } from "@clerk/clerk-sdk-node"; // ✅ correct Clerk import for backend
 
-// ✅ Explicit type instead of `any`
 type ClerkUserCreatedEvent = {
   type: "user.created";
   data: {
-    first_name?: string;
-    last_name?: string;
-    email_addresses?: { email_address: string }[];
+    id: string; // Clerk user ID
   };
 };
 
@@ -35,31 +33,27 @@ export async function POST(req: Request) {
   const { type, data } = evt;
 
   if (type === "user.created") {
-    const user = data;
-
-    const firstName = user.first_name || "";
-    const lastName = user.last_name || "";
-    const email = user.email_addresses?.[0]?.email_address ?? "";
-
-    console.log("📬 New user.created webhook received:", {
-      firstName,
-      lastName,
-      email,
-    });
-
     try {
+      const user = await clerkClient.users.getUser(data.id);
+
+      const firstName = user.firstName || "";
+      const lastName = user.lastName || "";
+      const email = user.emailAddresses?.[0]?.emailAddress ?? "";
+
+      console.log("📬 Clerk signup received:", { firstName, lastName, email });
+
       const result = await createZohoLead({
         firstName,
         lastName,
         email,
-        phone: "", // Optional — Clerk doesn't include this by default
+        phone: "",
         appointment: false,
         marketingConsent: false,
       });
 
       console.log("✅ Zoho Lead created:", result);
     } catch (err) {
-      console.error("❌ Failed to create Zoho Lead:", err);
+      console.error("❌ Failed to fetch user or create Zoho lead:", err);
     }
   } else {
     console.log("ℹ️ Ignored event type:", type);

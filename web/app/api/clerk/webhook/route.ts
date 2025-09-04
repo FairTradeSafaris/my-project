@@ -35,13 +35,16 @@ export async function POST(req: Request) {
 
   if (type === "user.created") {
     try {
+      console.log("📩 Clerk user.created event received");
+
       const clerkUser = await clerkClient.users.getUser(data.id);
+      console.log("🔎 Clerk user fetched:", clerkUser);
 
       const firstName = clerkUser.firstName || "New";
-      const lastName = clerkUser.lastName || "Web User"; // 👈 Required by Zoho
+      const lastName = clerkUser.lastName || "Web User";
       const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
 
-      console.log("🆕 Clerk signup received:", {
+      console.log("📦 Lead data prepared:", {
         firstName,
         lastName,
         email,
@@ -54,12 +57,14 @@ export async function POST(req: Request) {
         phone: "", // Optional
         appointment: false,
         marketingConsent: false,
-        sourceChannel: "WebClient", // 👈 Custom field in Zoho
+        sourceChannel: "WebClient",
       });
 
       console.log("✅ Zoho lead created:", result);
-    } catch (error) {
-      console.error("❌ Failed to handle Clerk user.created:", error);
+    } catch (error: any) {
+      console.error("❌ Failed to handle Clerk user.created:");
+      console.error("Error Message:", error.message);
+      console.error("Stack Trace:", error.stack);
       return new NextResponse("Internal Server Error", { status: 500 });
     }
   }

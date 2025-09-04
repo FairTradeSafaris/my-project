@@ -23,7 +23,7 @@ type Props = {
   metaIcons?: React.ReactNode;
   isFeatured?: boolean;
   onViewItinerary?: () => void;
-  isWishlisted?: boolean; // ✅ from WishlistSection
+  isWishlisted?: boolean;
 };
 
 export default function JourneyCard({
@@ -39,7 +39,7 @@ export default function JourneyCard({
   star = 0,
   isFeatured,
   onViewItinerary,
-  isWishlisted,
+  isWishlisted = false,
 }: Props) {
   const router = useRouter();
   const { user } = useUser();
@@ -51,8 +51,8 @@ export default function JourneyCard({
   const [bookingOpen, setBookingOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [pendingWishlist, setPendingWishlist] = useState(false);
+  const [localWishlisted, setLocalWishlisted] = useState(isWishlisted);
 
-  // ✅ Use toggle only (isWishlisted is now passed in)
   const { toggleWishlist, loading } = useWishlist(journeyId);
 
   useEffect(() => {
@@ -86,6 +86,7 @@ export default function JourneyCard({
     setPendingWishlist(true);
     await toggleWishlist();
     setPendingWishlist(false);
+    setLocalWishlisted((prev) => !prev);
 
     if (!isMobile) {
       setShowToast(true);
@@ -93,11 +94,18 @@ export default function JourneyCard({
     }
   };
 
+  const getHeartColorClass = () => {
+    if (pendingWishlist) {
+      return "fill-[#a35c2d] text-[#a35c2d]";
+    }
+    return localWishlisted ? "fill-pink-500 text-pink-500" : "text-gray-700";
+  };
+
   return (
     <div className="w-full max-w-sm bg-transparent relative">
       {showToast && !isMobile && (
         <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-green-100 text-green-800 text-xs font-medium px-4 py-2 rounded shadow z-[9999]">
-          {isWishlisted
+          {localWishlisted
             ? "Saved to your wishlist"
             : "Removed from your wishlist"}
         </div>
@@ -115,18 +123,10 @@ export default function JourneyCard({
           onClick={handleWishlistToggle}
           disabled={loading}
           aria-label={
-            isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"
+            localWishlisted ? "Remove from Wishlist" : "Save to Wishlist"
           }
         >
-          <Heart
-            className={`w-5 h-5 transition-all ${
-              pendingWishlist
-                ? "fill-[#a35c2d] text-[#a35c2d]"
-                : isWishlisted
-                  ? "fill-red-500 text-red-500"
-                  : "text-gray-700"
-            }`}
-          />
+          <Heart className={`w-5 h-5 transition-all ${getHeartColorClass()}`} />
         </button>
 
         {imageUrl && (
@@ -291,17 +291,11 @@ export default function JourneyCard({
                 onClick={handleWishlistToggle}
                 disabled={loading}
                 aria-label={
-                  isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"
+                  localWishlisted ? "Remove from Wishlist" : "Save to Wishlist"
                 }
               >
                 <Heart
-                  className={`w-5 h-5 transition-all ${
-                    pendingWishlist
-                      ? "fill-[#a35c2d] text-[#a35c2d]"
-                      : isWishlisted
-                        ? "fill-red-500 text-red-500"
-                        : "text-gray-700"
-                  }`}
+                  className={`w-5 h-5 transition-all ${getHeartColorClass()}`}
                 />
               </button>
 

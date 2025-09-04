@@ -966,28 +966,50 @@ export default function JourneyFinderClient() {
           <div ref={journeysTopRef} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJourneys.length > 0 ? (
-              filteredJourneys.map((j) => (
-                <JourneyCard
-                  key={j._id}
-                  journeyId={j._id} // ✅ REQUIRED for wishlist reference
-                  slug={j.slug?.current || ""}
-                  title={j.title}
-                  summary={j.summary}
-                  imageUrl={j.heroUrl || ""}
-                  alt={j.alt || j.title}
-                  duration={j.duration || ""}
-                  price={
-                    parsePriceNumber(j.price) <= 1
-                      ? "Price on request"
-                      : j.price || ""
+              filteredJourneys.map((j) => {
+                const userId =
+                  typeof window !== "undefined"
+                    ? localStorage.getItem("user_id")
+                    : "";
+                const wishlistKey = `wishlist_user_${userId}`;
+                const cachedWishlist = localStorage.getItem(wishlistKey);
+                let wishlistedIds: string[] = [];
+
+                try {
+                  const parsed = JSON.parse(
+                    cachedWishlist || "[]"
+                  ) as Journey[];
+                  if (Array.isArray(parsed)) {
+                    wishlistedIds = parsed.map((item) => item._id);
                   }
-                  star={j.star ? parseInt(j.star) : 0}
-                  starIcon={j.starIcon}
-                  region={j.region?.title || ""}
-                  isFeatured={j.featuredOnHome === true}
-                  onViewItinerary={() => setSelectedJourney(j)}
-                />
-              ))
+                } catch (err) {
+                  console.warn("Failed to parse wishlist:", err);
+                }
+
+                return (
+                  <JourneyCard
+                    key={j._id}
+                    journeyId={j._id}
+                    slug={j.slug?.current || ""}
+                    title={j.title}
+                    summary={j.summary}
+                    imageUrl={j.heroUrl || ""}
+                    alt={j.alt || j.title}
+                    duration={j.duration || ""}
+                    price={
+                      parsePriceNumber(j.price) <= 1
+                        ? "Price on request"
+                        : j.price || ""
+                    }
+                    star={j.star ? parseInt(j.star) : 0}
+                    starIcon={j.starIcon}
+                    region={j.region?.title || ""}
+                    isFeatured={j.featuredOnHome === true}
+                    onViewItinerary={() => setSelectedJourney(j)}
+                    isWishlisted={wishlistedIds.includes(j._id)} // ✅ PASS THIS
+                  />
+                );
+              })
             ) : (
               <p className="text-gray-600">No journeys found.</p>
             )}

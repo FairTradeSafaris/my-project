@@ -91,6 +91,7 @@ export default defineType({
     }),
     defineField({
       name: 'featured',
+<<<<<<< HEAD
       title: '🌟 Featured This Month',
       type: 'boolean',
       initialValue: false,
@@ -98,3 +99,11 @@ export default defineType({
     }),
   ],
 })
+=======
+      title: 'Featured Ambassador',
+      type: 'boolean',
+      description: 'Highlight this ambassador in featured sections.',
+    }),
+  ],
+} as any)
+>>>>>>> detached-fixes

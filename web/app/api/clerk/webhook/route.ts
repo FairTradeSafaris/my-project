@@ -1,48 +1,53 @@
-import { Webhook } from "svix";
 import { NextResponse } from "next/server";
+import { Webhook } from "svix";
+import { Resend } from "resend";
 import { createZohoLead } from "@/lib/zoho/createLead";
-import { clerkClient } from "@clerk/clerk-sdk-node";
 
-type ClerkUserCreatedEvent = {
-  type: "user.created";
-  data: {
-    id: string;
-  };
+// Minimal shapes for Clerk data
+type ClerkEmail = { email_address?: string };
+type ClerkEventData = {
+  email_addresses?: ClerkEmail[];
+  first_name?: string | null;
+  last_name?: string | null;
 };
+type ClerkEvent = { type: string; data?: ClerkEventData };
 
 export async function POST(req: Request) {
-  let payload: string;
-  let evt: ClerkUserCreatedEvent;
+  console.log("✅ Webhook reached — parsing event");
 
-  try {
-    payload = await req.text();
-    const headers = req.headers;
+  const payload = await req.text();
 
-    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET || "");
-    evt = wh.verify(payload, {
-      "svix-id": headers.get("svix-id")!,
-      "svix-timestamp": headers.get("svix-timestamp")!,
-      "svix-signature": headers.get("svix-signature")!,
-    }) as ClerkUserCreatedEvent;
-  } catch (err) {
-    console.error("❌ Clerk webhook verification failed:", err);
-    return new NextResponse("Invalid signature", { status: 400 });
+  const svixId = req.headers.get("svix-id");
+  const svixTimestamp = req.headers.get("svix-timestamp");
+  const svixSignature = req.headers.get("svix-signature");
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    console.error("❌ Missing Svix headers");
+    return new NextResponse("Missing Svix headers", { status: 400 });
   }
 
-  const { type, data } = evt;
+  try {
+    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET || "");
+    const evt = wh.verify(payload, {
+      "svix-id": svixId,
+      "svix-timestamp": svixTimestamp,
+      "svix-signature": svixSignature,
+    }) as ClerkEvent;
 
-  if (type === "user.created") {
-    try {
-      console.log("📩 Clerk user.created event received:", data);
+    console.log("📩 Event received:", evt);
 
-      const clerkUser = await clerkClient.users.getUser(data.id);
-      console.log("🔎 Clerk user fetched:", clerkUser);
+    const email = evt.data?.email_addresses?.[0]?.email_address ?? "no-email";
+    const firstName = evt.data?.first_name ?? "New";
+    const lastName = evt.data?.last_name ?? "Web User";
 
-      const firstName = clerkUser.firstName || "New";
-      const lastName = clerkUser.lastName || "Web User";
-      const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
+    if (evt.type === "user.created") {
+      console.log("🚀 Creating Zoho lead with:", {
+        firstName,
+        lastName,
+        email,
+      });
 
-      const leadPayload = {
+      const zohoResult = await createZohoLead({
         firstName,
         lastName,
         email,
@@ -50,25 +55,63 @@ export async function POST(req: Request) {
         appointment: false,
         marketingConsent: false,
         sourceChannel: "WebClient",
-      };
+      });
 
-      console.log("📦 Lead data prepared:", leadPayload);
+      console.log("✅ Zoho lead created successfully:", zohoResult);
 
-      const result = await createZohoLead(leadPayload);
+      // ✅ Send email via Resend (clean HTML, no try/catch)
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: process.env.NOTIFY_EMAIL_FROM || "info@fairtradesafaris.com",
+        to: process.env.NOTIFY_EMAIL_TO || "devon@fairtradesafaris.com",
+        subject: `📥 New Clerk User: ${firstName} ${lastName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
+            <h2 style="color: #2e7d32;">🧾 New User Registration (via Clerk)</h2>
+            <p style="font-size: 16px;">A new user just registered via Clerk and has been added to Zoho CRM.</p>
 
-      console.log("✅ Zoho lead created:", result);
-    } catch (error: unknown) {
-      console.error("❌ Failed to handle Clerk user.created webhook");
+            <table style="width: 100%; margin-top: 20px;">
+              <tr>
+                <td style="padding: 8px 0;"><strong>First Name:</strong></td>
+                <td>${firstName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;"><strong>Last Name:</strong></td>
+                <td>${lastName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;"><strong>Email:</strong></td>
+                <td><a href="mailto:${email}">${email}</a></td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;"><strong>Source:</strong></td>
+                <td>WebClient (via Clerk Webhook)</td>
+              </tr>
+            </table>
 
-      if (error instanceof Error) {
-        console.error("Error Message:", error.message);
-        console.error("Stack Trace:", error.stack);
-      } else {
-        console.error("Unknown error:", error);
-      }
+            <p style="font-size: 14px; margin-top: 30px; color: #777;">
+              This message was generated automatically by your Clerk → Zoho integration.
+            </p>
+          </div>
+        `,
+      });
 
-      return new NextResponse("Internal Server Error", { status: 500 });
+      return NextResponse.json({
+        message: "Zoho lead created and email sent",
+        type: evt.type,
+        email,
+        firstName,
+        lastName,
+        zoho: zohoResult,
+      });
     }
+
+    return NextResponse.json({
+      message: "Event received but not processed",
+      type: evt.type,
+    });
+  } catch (err) {
+    console.error("❌ Invalid signature or failure:", err);
+    return new NextResponse("Invalid signature", { status: 400 });
   }
-  return new NextResponse("OK", { status: 200 });
 }

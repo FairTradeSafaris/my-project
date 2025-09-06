@@ -4,7 +4,6 @@ export default defineType({
   name: 'ambassador',
   title: 'Ambassadors & Collaborators',
   type: 'document',
-  __experimental_group: 'people',
   fields: [
     defineField({
       name: 'name',
@@ -90,5 +89,12 @@ export default defineType({
         },
       ],
     }),
+    defineField({
+      name: 'featured',
+      title: '🌟 Featured This Month',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Only one should be marked as featured at a time.',
+    }),
   ],
-} as any) // allows __experimental_group without TS error
+})

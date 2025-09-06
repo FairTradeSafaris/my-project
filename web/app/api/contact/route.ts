@@ -26,6 +26,48 @@ async function refreshAccessToken() {
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
+  // ✅ Send Resend email first
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  await resend.emails.send({
+    from: process.env.NOTIFY_EMAIL_FROM || "fromwebsite@fairtradesafaris.com",
+    to: process.env.NOTIFY_EMAIL_TO || "devon@fairtradesafaris.com",
+    subject: `📬 New Safari Inquiry from ${body.firstName} ${body.lastName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
+        <h2 style="color: #2e7d32;">🦁 New Safari Inquiry</h2>
+        <p style="font-size: 16px;">You’ve received a new message from the Fair Trade Safaris website.</p>
+
+        <table style="width: 100%; margin-top: 20px;">
+          <tr>
+            <td style="padding: 8px 0;"><strong>Name:</strong></td>
+            <td>${body.firstName} ${body.lastName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0;"><strong>Email:</strong></td>
+            <td><a href="mailto:${body.email}">${body.email}</a></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0;"><strong>Phone:</strong></td>
+            <td>${body.phone}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0;"><strong>Appointment Requested:</strong></td>
+            <td>${body.appointment ? "Yes" : "No"}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0;"><strong>Marketing Consent:</strong></td>
+            <td>${body.marketingConsent ? "Yes" : "No"}</td>
+          </tr>
+        </table>
+
+        <p style="font-size: 14px; margin-top: 30px; color: #777;">
+          This message was sent from <a href="https://fairtradesafaris.com" target="_blank">fairtradesafaris.com</a>.
+        </p>
+      </div>
+    `,
+  });
+
+  // 🧾 Create Zoho lead
   const lead = {
     First_Name: body.firstName,
     Last_Name: body.lastName,
@@ -45,7 +87,6 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({ data: [lead] }),
   });
 
-  // Retry once if the token is expired
   if (response.status === 401) {
     await refreshAccessToken();
     response = await fetch("https://www.zohoapis.com/crm/v2/Leads", {
@@ -58,22 +99,5 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // ✅ Lazy load Resend to avoid build-time crash
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
-  await resend.emails.send({
-    from: process.env.NOTIFY_EMAIL_FROM || "onboarding@resend.dev",
-    to: process.env.NOTIFY_EMAIL_TO || "devon@fairtradesafaris.com",
-    subject: "New Contact Form Submission",
-    html: `
-      <p><strong>Name:</strong> ${body.firstName} ${body.lastName}</p>
-      <p><strong>Email:</strong> ${body.email}</p>
-      <p><strong>Phone:</strong> ${body.phone}</p>
-      <p><strong>Appointment:</strong> ${body.appointment ? "Yes" : "No"}</p>
-      <p><strong>Marketing Consent:</strong> ${body.marketingConsent ? "Yes" : "No"}</p>
-    `,
-  });
-
-  const result = await response.json();
-  return NextResponse.json(result, { status: response.status });
+  return NextResponse.json(await response.json(), { status: response.status });
 }

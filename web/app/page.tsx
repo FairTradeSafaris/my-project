@@ -4,7 +4,7 @@ import { client as sanity } from "@/lib/sanity";
 import Link from "next/link";
 import type { PortableTextBlock } from "@portabletext/types";
 import JourneyCard from "@/components/JourneyCard";
-
+import FeaturedAmbassador from "@/components/FeaturedAmbassador";
 import FoundersPromise from "@/components/FoundersPromise";
 import type { FoundersPromiseBlock } from "@/types/types";
 
@@ -271,7 +271,7 @@ export default async function Home() {
               className="absolute bottom-0 left-0 w-full h-32 z-10 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(to top, #ffffff, rgba(255, 255, 255, 0))",
+                  "linear-gradient(to top, #fdf3e9, rgba(255, 255, 255, 0))",
               }}
             />
 
@@ -319,6 +319,7 @@ export default async function Home() {
             </div>
           </section>
         )}
+        <FeaturedAmbassador />
       </main>
     </>
   );

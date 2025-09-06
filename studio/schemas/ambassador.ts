@@ -90,5 +90,11 @@ export default defineType({
         },
       ],
     }),
+    defineField({
+      name: 'featured',
+      title: 'Featured Ambassador',
+      type: 'boolean',
+      description: 'Highlight this ambassador in featured sections.',
+    }),
   ],
-} as any) // allows __experimental_group without TS error
+} as any)

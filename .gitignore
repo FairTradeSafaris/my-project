@@ -1,20 +1,44 @@
-# Root-level ignores
-node_modules/
-.env
+# ─────────────────────────────
+# 🌱 Root-level Ignores
+# ─────────────────────────────
 
-# Build artifacts
+node_modules/
+.env*                # Ignores .env, .env.local, .env.production, etc.
+
+# ─────────────────────────────
+# 🔨 Build Artifacts
+# ─────────────────────────────
+
 .next/
 dist/
 out/
 build/
 
-# Editor + system-specific files
+# ─────────────────────────────
+# 🧠 Editor & OS Specific
+# ─────────────────────────────
+
 .DS_Store
 *.log
 .vscode/
 .idea/
 .history/
 
-# Redundant node_modules folder (still good to keep)
+# ─────────────────────────────
+# 📦 Nested Node Modules
+# ─────────────────────────────
+
 web/node_modules/
+
+# ─────────────────────────────
+# 🚀 Vercel Deployment Metadata
+# ─────────────────────────────
+
 .vercel
+
+# ─────────────────────────────
+# 🛠️ Optional: Turbo / Nx Caching (if used)
+# ─────────────────────────────
+
+.cache/
+turbo/

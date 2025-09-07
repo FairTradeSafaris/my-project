@@ -13,15 +13,14 @@ import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import Image from "next/image";
+import { useFilteredJourneys } from "@/hooks/useFilteredJourneys";
+import { useFilterOptions } from "@/hooks/useFilterOptions";
+import { useAvailableTags } from "@/hooks/useAvailableTags"; // ✅ Add this at top
+import { useWishlistGrid } from "@/hooks/useWishlistGrid";
 
 // ✅ adjust path if needed
 
-import {
-  Journey,
-  Filters,
-  FilterOptions,
-  FilterKey,
-} from "./journey-finder/types";
+import { Journey, Filters, FilterKey } from "./journey-finder/types";
 import {
   parseDurationDays,
   parsePriceNumber,
@@ -29,20 +28,25 @@ import {
 } from "./journey-finder/utils";
 
 export default function JourneyFinderClient() {
-  const [visibleCount, setVisibleCount] = useState(9);
-  const [filtersReady, setFiltersReady] = useState(false);
-  const [allJourneys, setAllJourneys] = useState<Journey[]>(() => {
-    const key = `wishlist_user_${typeof window !== "undefined" ? localStorage.getItem("user_id") : ""}`;
-    try {
-      const cached = localStorage.getItem(key);
-      if (!cached) return [];
-      const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed)) return parsed;
-    } catch (err) {
-      console.warn("Failed to load cached wishlist journeys", err);
-    }
-    return [];
-  });
+  const {
+    filterOptions,
+    optionsJourneys,
+    globalDurationRange,
+    globalPriceRange,
+  } = useFilterOptions();
+  const {
+    setVisibleCount,
+    filtersReady,
+    setFiltersReady,
+    allJourneys,
+    filteredJourneys,
+    selectedFilters,
+    setSelectedFilters,
+
+    setSearchTerm,
+    justClearedRef,
+  } = useFilteredJourneys();
+  const { wishlistedMap } = useWishlistGrid(filteredJourneys);
 
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
   const [drawerState, setDrawerState] = useState<{
@@ -62,13 +66,14 @@ export default function JourneyFinderClient() {
   const { isSignedIn } = useUser();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState(searchParams?.get("q") ?? "");
+
   useEffect(() => {
     if (!filtersReady) return;
 
     const qParam = searchParams?.get("q");
 
-    if (justClearedRef.current) {
+    const justCleared = justClearedRef.current;
+    if (justCleared) {
       justClearedRef.current = false; // skip once
       return;
     }
@@ -76,8 +81,10 @@ export default function JourneyFinderClient() {
     if (qParam) {
       setSearchTerm(qParam);
     }
-  }, [filtersReady, searchParams]);
-  const justClearedRef = useRef(false); // 👈 Add this here
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersReady, searchParams, setSearchTerm]);
+
   const [collapsed, setCollapsed] = useState({
     region: true,
     country: true,
@@ -118,117 +125,35 @@ export default function JourneyFinderClient() {
       window.removeEventListener("fts:close-search-sheet", closeHandler);
     };
   }, []);
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    regions: [],
-    countries: [],
-    signature: [], // ✅ add this
-    style: [],
-    feature: [], // ✅ add this
-    stars: [],
-    durations: [],
-    prices: [],
-  });
-  const [optionsJourneys, setOptionsJourneys] = useState<Journey[]>([]);
-  const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>([]);
+
   const [filterLabels, setFilterLabels] = useState<{
     signature: string;
     style: string;
     feature: string;
   } | null>(null);
 
-  const [selectedFilters, setSelectedFilters] = useState<Filters>({
-    region: "",
-    country: [],
-    star: [],
-    signature: [],
-    style: [],
-    feature: [],
-    types: [], // ✅ Add this line
-    duration: [0, 100],
-    price: [0, 999999],
-  });
-
   const journeysTopRef = useRef<HTMLDivElement | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-  // Infinite loader
+  // Infinite loader (fixed)
   useEffect(() => {
-    const node = loadMoreRef.current;
-    if (!node) return;
+    const target = loadMoreRef.current;
+    if (!target) return;
+
     const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry.isIntersecting) setVisibleCount((prev) => prev + 9);
+      if (entries[0].isIntersecting) {
+        setVisibleCount((prev) => prev + 9);
+      }
     });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+
+    observer.observe(target);
+
+    return () => {
+      observer.unobserve(target);
+      observer.disconnect();
+    };
+  }, [setVisibleCount]);
 
   // Fetch visible journeys
-  useEffect(() => {
-    const cacheKey = `finder_journeys_${visibleCount}`;
-    const query = new URLSearchParams(window.location.search);
-    const queryTitle = query.get("q");
-    const shouldOpen = query.get("open") === "true";
-
-    // 1. Try loading cached journeys
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) {
-          setAllJourneys((prev) => [
-            ...prev,
-            ...parsed.filter(
-              (j) => !prev.some((p) => p.slug?.current === j.slug?.current)
-            ),
-          ]);
-        }
-      } catch (err) {
-        console.error("Failed to parse cached journeys", err);
-      }
-    }
-
-    // 2. Always fetch fresh journeys from Sanity
-    sanityClient
-      .fetch(
-        `*[_type == "journey"][0...${visibleCount}] {
-        title, summary, slug, duration, price,
-        "heroUrl": heroImage.asset->url,
-        alt, ctaText, wetuLink,
-        region->{ title },
-        countries[]->{ title, "flag": flag.asset->url },
-        star, "starIcon": starIcon.asset->url,
-        "interests": travelStyleRefs[]->{title, category, isTopInterest},
-        "featuredOnHome": featuredOnHome
-      }`
-      )
-      .then((data: Journey[]) => {
-        // Update state
-        setAllJourneys((prev) => [
-          ...prev,
-          ...data.filter(
-            (j) => !prev.some((p) => p.slug?.current === j.slug?.current)
-          ),
-        ]);
-
-        // Update cache
-        localStorage.setItem(cacheKey, JSON.stringify(data));
-
-        // If query param match
-        if (queryTitle && shouldOpen) {
-          const found = data.find(
-            (j) => j.title.toLowerCase() === queryTitle.toLowerCase()
-          );
-          if (found) {
-            setSelectedJourney(found);
-            setSearchTerm("");
-            const url = new URL(window.location.href);
-            url.searchParams.delete("open");
-            window.history.replaceState({}, "", url.toString());
-          }
-        }
-      });
-  }, [visibleCount]);
 
   useEffect(() => {
     sanityClient
@@ -245,209 +170,65 @@ export default function JourneyFinderClient() {
   }, []);
 
   // Fetch option data
-  useEffect(() => {
-    sanityClient
-      .fetch(
-        `*[_type == "journey"][0...1000]{
-    region->{ title },
-    countries[]->{ title },
-    "interests": travelStyleRefs[]->{ title, category },
-    duration,
-    star,
-    price
-  }`
-      )
-
-      .then((data: Journey[]) => {
-        console.log(
-          "🧠 Journey interests in options fetch:",
-          data.map((j) => j.interests)
-        );
-        setOptionsJourneys(data);
-
-        const regions = Array.from(
-          new Set(data.map((j) => j.region?.title).filter(Boolean))
-        ) as string[];
-        const countries = Array.from(
-          new Set(
-            data
-              .flatMap((j) => (j.countries || []).map((c) => c.title))
-              .filter(Boolean)
-          )
-        ) as string[];
-
-        const signatureSet = new Set<string>();
-        const styleSet = new Set<string>();
-        const featureSet = new Set<string>();
-
-        data.forEach((j) => {
-          console.log("🔬 Interest categories for:", j.title, j.interests);
-          (j.interests || []).forEach(
-            (interest: { title?: string; category?: string }) => {
-              if (!interest?.title || !interest?.category) return;
-              const normalizedCategory = {
-                signature: "Signature Safari Experience",
-                style: "Travel Style",
-                feature: "Trip Feature",
-              }[interest.category?.toLowerCase() || ""];
-
-              switch (normalizedCategory) {
-                case "Signature Safari Experience":
-                  signatureSet.add(interest.title);
-                  break;
-                case "Travel Style":
-                  styleSet.add(interest.title);
-                  break;
-                case "Trip Feature":
-                  featureSet.add(interest.title);
-                  break;
-              }
-            }
-          );
-        });
-
-        const signature = Array.from(signatureSet).sort();
-        const style = Array.from(styleSet).sort();
-        const feature = Array.from(featureSet).sort();
-
-        const stars = Array.from(
-          new Set(
-            data
-              .map((j) => j.star)
-              .filter((s): s is string => typeof s === "string")
-          )
-        );
-
-        const durationNumbers = data
-          .map((j) => parseDurationDays(j.duration))
-          .filter((n) => Number.isFinite(n) && n > 0);
-
-        const priceNumbers = data
-          .map((j) => parsePriceNumber(j.price))
-          .filter((n) => Number.isFinite(n) && n > 1);
-
-        const minD = durationNumbers.length ? Math.min(...durationNumbers) : 0;
-        const maxD = durationNumbers.length ? Math.max(...durationNumbers) : 0;
-        const minP = priceNumbers.length ? Math.min(...priceNumbers) : 0;
-        const maxP = priceNumbers.length ? Math.max(...priceNumbers) : 0;
-
-        setFilterOptions({
-          regions,
-          countries,
-          signature,
-          style,
-          feature,
-          stars,
-          durations: durationNumbers,
-          prices: priceNumbers,
-        });
-        console.log("🧪 Parsed filter options:", {
-          style,
-          stars,
-          filterOptionsAfterSet: filterOptions,
-        });
-        setSelectedFilters((prev) => ({
-          ...prev,
-          duration: [minD, maxD],
-          price: [minP, maxP],
-        }));
-      });
-  }, []);
 
   // Pool after region/country
   const scopedPool = useMemo(() => {
     return optionsJourneys.filter((j) => {
-      const inRegion = selectedFilters.region
-        ? j.region?.title === selectedFilters.region
-        : true;
-      if (!inRegion) return false;
+      const { region, country, types, signature, style, feature } =
+        selectedFilters;
 
-      if (selectedFilters.country.length === 0) return true;
+      // ✅ Match region
+      if (region && j.region?.title !== region) return false;
 
-      const jc = new Set((j.countries || []).map((c) => c.title));
-      return selectedFilters.country.some((c) => jc.has(c));
+      // ✅ Match countries (if any selected)
+      if (country.length > 0) {
+        const jc = new Set((j.countries || []).map((c) => c.title));
+        if (!country.some((c) => jc.has(c))) return false;
+      }
+
+      // ✅ Match travel types
+      if (types.length > 0) {
+        const journeyTypes = j.types || [];
+        if (!types.some((t) => journeyTypes.includes(t))) return false;
+      }
+
+      // ✅ Match tags from interests
+      const interestMap = (j.interests || []).reduce<Record<string, string[]>>(
+        (acc, i) => {
+          const cat = i.category?.toLowerCase();
+          if (cat && i.title) {
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push(i.title);
+          }
+          return acc;
+        },
+        {}
+      );
+
+      const matches = (selected: string[], tagType: string) =>
+        selected.length === 0 ||
+        selected.some((s) => interestMap[tagType]?.includes(s));
+
+      if (
+        !matches(signature, "signature") ||
+        !matches(style, "style") ||
+        !matches(feature, "feature")
+      ) {
+        return false;
+      }
+
+      return true;
     });
-  }, [optionsJourneys, selectedFilters.region, selectedFilters.country]);
+  }, [optionsJourneys, selectedFilters]);
 
   const availableCountries = useMemo(() => {
-    const pool = selectedFilters.region
-      ? optionsJourneys.filter(
-          (j) => j.region?.title === selectedFilters.region
-        )
-      : optionsJourneys;
-
-    const cs = Array.from(
-      new Set(
-        pool
-          .flatMap((j) => (j.countries || []).map((c) => c.title))
-          .filter(Boolean)
-      )
-    ) as string[];
-
-    return cs.sort();
-  }, [optionsJourneys, selectedFilters.region]);
-
-  const availableSignature = useMemo(() => {
-    const s = new Set<string>();
-    scopedPool.forEach((j) =>
-      (j.interests || []).forEach(
-        (interest: { title?: string; category?: string }) => {
-          const normalizedCategory = {
-            signature: "Signature Safari Experience",
-            style: "Travel Style",
-            feature: "Trip Feature",
-          }[interest.category?.toLowerCase() || ""];
-
-          if (
-            normalizedCategory === "Signature Safari Experience" &&
-            interest.title
-          ) {
-            s.add(interest.title);
-          }
-        }
-      )
-    );
-    return Array.from(s).sort();
-  }, [scopedPool]);
-
-  const availableStyle = useMemo(() => {
-    const s = new Set<string>();
-    scopedPool.forEach((j) =>
-      (j.interests || []).forEach(
-        (interest: { title?: string; category?: string }) => {
-          const normalizedCategory = {
-            signature: "Signature Safari Experience",
-            style: "Travel Style",
-            feature: "Trip Feature",
-          }[interest.category?.toLowerCase() || ""];
-
-          if (normalizedCategory === "Travel Style" && interest.title) {
-            s.add(interest.title);
-          }
-        }
-      )
-    );
-    return Array.from(s).sort();
-  }, [scopedPool]);
-
-  const availableFeature = useMemo(() => {
-    const s = new Set<string>();
-    scopedPool.forEach((j) =>
-      (j.interests || []).forEach(
-        (interest: { title?: string; category?: string }) => {
-          const normalizedCategory = {
-            signature: "Signature Safari Experience",
-            style: "Travel Style",
-            feature: "Trip Feature",
-          }[interest.category?.toLowerCase() || ""];
-
-          if (normalizedCategory === "Trip Feature" && interest.title) {
-            s.add(interest.title);
-          }
-        }
-      )
-    );
-    return Array.from(s).sort();
+    const titles = new Set<string>();
+    for (const j of scopedPool) {
+      for (const c of j.countries || []) {
+        if (c.title) titles.add(c.title);
+      }
+    }
+    return [...titles].sort();
   }, [scopedPool]);
 
   const availableDurationRange = useMemo<[number, number]>(() => {
@@ -465,6 +246,11 @@ export default function JourneyFinderClient() {
     if (!ps.length) return [0, 0];
     return [Math.min(...ps), Math.max(...ps)];
   }, [scopedPool]);
+  const {
+    signature: availableSignature,
+    style: availableStyle,
+    feature: availableFeature,
+  } = useAvailableTags(scopedPool);
 
   const priceFilterEnabled = useMemo(
     () => availablePriceRange[0] > 0 && availablePriceRange[1] > 0,
@@ -550,6 +336,17 @@ export default function JourneyFinderClient() {
       const nextTypes = prev.types.filter((t) => availableStyle.includes(t));
       const nextDuration = availableDurationRange;
       const nextPrice = availablePriceRange;
+
+      const changed =
+        nextTypes.length !== prev.types.length ||
+        nextTypes.some((t, i) => t !== prev.types[i]) ||
+        nextDuration[0] !== prev.duration[0] ||
+        nextDuration[1] !== prev.duration[1] ||
+        nextPrice[0] !== prev.price[0] ||
+        nextPrice[1] !== prev.price[1];
+
+      if (!changed) return prev;
+
       return {
         ...prev,
         types: nextTypes,
@@ -557,81 +354,12 @@ export default function JourneyFinderClient() {
         price: nextPrice,
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFilters.country]);
-
-  // Fetch + client filter
-  useEffect(() => {
-    if (!filtersReady) return;
-
-    const groqFilters: string[] = [];
-    if (selectedFilters.region)
-      groqFilters.push(`region->title == "${selectedFilters.region}"`);
-    if (selectedFilters.country.length > 0)
-      groqFilters.push(
-        `count(countries[@->title in ${JSON.stringify(selectedFilters.country)}]) > 0`
-      );
-
-    if (selectedFilters.star.length > 0)
-      groqFilters.push(`star in ${JSON.stringify(selectedFilters.star)}`);
-
-    const interestFilters = ["signature", "style", "feature"].flatMap((key) =>
-      (selectedFilters[key as keyof Filters] as string[]).map(
-        (val) => `"${val}" in travelStyleRefs[]->title`
-      )
-    );
-
-    if (interestFilters.length > 0) {
-      groqFilters.push(`(${interestFilters.join(" || ")})`);
-    }
-
-    const groqWhere =
-      groqFilters.length > 0
-        ? `*[_type == "journey" && ${groqFilters.join(" && ")}]`
-        : `*[_type == "journey"]`;
-    sanityClient
-      .fetch(
-        `${groqWhere}{
-    _id,
-    title, summary, slug, duration, price,
-    "heroUrl": heroImage.asset->url,
-    alt, ctaText, wetuLink,
-    region->{ title }, countries[]->{ title, "flag": flag.asset->url },
-    star, "starIcon": starIcon.asset->url,
-    "interests": travelStyleRefs[]->{title, category, isTopInterest},
-    "featuredOnHome": featuredOnHome
-  }`
-      )
-
-      .then((data: Journey[]) => {
-        const filtered = data.filter((j) => {
-          const text = `${j.title} ${j.summary}`.toLowerCase();
-          const matchesSearch = text.includes(searchTerm.toLowerCase());
-          const journeyDuration = parseDurationDays(j.duration);
-          const priceValue = parsePriceNumber(j.price);
-
-          const matchesDuration =
-            journeyDuration >= selectedFilters.duration[0] &&
-            journeyDuration <= selectedFilters.duration[1];
-
-          const matchesPrice =
-            priceValue <= 1 ||
-            (priceValue >= selectedFilters.price[0] &&
-              priceValue <= selectedFilters.price[1]);
-
-          return matchesSearch && matchesDuration && matchesPrice;
-        });
-        setFilteredJourneys(filtered);
-        console.log("🔍 Filtering breakdown:");
-        console.log("Search term:", searchTerm);
-        console.log("Duration filter:", selectedFilters.duration);
-        console.log("Price filter:", selectedFilters.price);
-        console.log("Filtered result count:", filtered.length);
-        console.log("All fetched items:", data);
-
-        setAllJourneys(data);
-      });
-  }, [searchTerm, selectedFilters, filtersReady]);
+  }, [
+    availableStyle,
+    availableDurationRange,
+    availablePriceRange,
+    setSelectedFilters,
+  ]);
 
   // URL params → filters (once options ready)
   // ✅ URL params → filters (only once after filterOptions are ready)
@@ -684,13 +412,6 @@ export default function JourneyFinderClient() {
       window.dispatchEvent(new CustomEvent("fts:open-search-sheet"));
     }
 
-    console.log("✅ Filters applied from URL:", {
-      signature: interestToFilterMap.signature,
-      style: interestToFilterMap.style,
-      feature: interestToFilterMap.feature,
-      stars: validStars,
-    });
-
     setFiltersReady(true);
   }, [
     filtersReady,
@@ -698,19 +419,9 @@ export default function JourneyFinderClient() {
     filterOptions.style,
     filterOptions.feature,
     filterOptions.stars,
+    setFiltersReady,
+    setSelectedFilters,
   ]);
-
-  const globalDurationRange = React.useMemo<[number, number]>(() => {
-    const ds = filterOptions.durations.filter((n) => n > 0);
-    if (!ds.length) return [0, 0];
-    return [Math.min(...ds), Math.max(...ds)];
-  }, [filterOptions.durations]);
-
-  const globalPriceRange = React.useMemo<[number, number]>(() => {
-    const ps = filterOptions.prices.filter((n) => n > 1);
-    if (!ps.length) return [0, 0];
-    return [Math.min(...ps), Math.max(...ps)];
-  }, [filterOptions.prices]);
 
   const onToggleType = (type: string) => {
     setSelectedFilters((prev) => ({
@@ -827,7 +538,6 @@ export default function JourneyFinderClient() {
   };
 
   if (!allJourneys.length && !filterOptions.regions.length) {
-    console.log("⛔ No journeys or filters loaded yet.");
     return (
       <div style={{ padding: "2rem", color: "#444" }}>Loading journeys...</div>
     );
@@ -965,25 +675,15 @@ export default function JourneyFinderClient() {
 
           <div ref={journeysTopRef} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredJourneys.length > 0 ? (
-              filteredJourneys.map((j) => {
-                const userId =
-                  typeof window !== "undefined"
-                    ? localStorage.getItem("user_id")
-                    : "";
-                const wishlistKey = `wishlist_user_${userId}`;
-                const cachedWishlist = localStorage.getItem(wishlistKey);
-                let wishlistedIds: string[] = [];
+            {(() => {
+              if (filteredJourneys.length === 0) {
+                return <p className="text-gray-600">No journeys found.</p>;
+              }
 
-                try {
-                  const parsed = JSON.parse(
-                    cachedWishlist || "[]"
-                  ) as Journey[];
-                  if (Array.isArray(parsed)) {
-                    wishlistedIds = parsed.map((item) => item._id);
-                  }
-                } catch (err) {
-                  console.warn("Failed to parse wishlist:", err);
+              return filteredJourneys.map((j) => {
+                if (!j || !j._id) {
+                  console.warn("⚠️ Skipping journey with missing _id:", j);
+                  return null;
                 }
 
                 return (
@@ -1006,13 +706,11 @@ export default function JourneyFinderClient() {
                     region={j.region?.title || ""}
                     isFeatured={j.featuredOnHome === true}
                     onViewItinerary={() => setSelectedJourney(j)}
-                    isWishlisted={wishlistedIds.includes(j._id)} // ✅ PASS THIS
+                    isWishlisted={wishlistedMap[j._id] === true}
                   />
                 );
-              })
-            ) : (
-              <p className="text-gray-600">No journeys found.</p>
-            )}
+              });
+            })()}
           </div>
         </section>
       </section>

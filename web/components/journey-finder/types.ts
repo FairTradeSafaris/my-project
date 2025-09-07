@@ -20,6 +20,9 @@ export interface Journey {
   starIcon?: string;
   featuredOnHome?: boolean;
 
+  // ✅ NEW: Travel styles like "Honeymoon", "Family", etc.
+  types?: string[];
+
   interests?: {
     title: string;
     category: string;

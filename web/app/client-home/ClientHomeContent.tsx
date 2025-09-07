@@ -221,6 +221,7 @@ export default function ClientHomeContent() {
                   country={journey.country?.title}
                   star={journey.starRating}
                   isFeatured={journey.isFeatured ?? false}
+                  isWishlisted={wishlistIds.includes(journey._id)} // ✅ ADD THIS
                 />
               ))}
             </div>

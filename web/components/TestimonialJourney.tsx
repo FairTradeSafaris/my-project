@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { client } from "@/lib/sanity";
-
+import { useCallback } from "react"; // 👈 Add this with other imports
 export type Testimonial = {
   name: string;
   title?: string;
@@ -58,9 +58,9 @@ export default function useTestimonials() {
     fetchHeading();
   }, []);
 
-  const next = () => {
+  const next = useCallback(() => {
     setCurrentIndex((prev) => (prev + CARDS_PER_VIEW) % testimonials.length);
-  };
+  }, [CARDS_PER_VIEW, testimonials.length]);
 
   useEffect(() => {
     const interval = setInterval(() => next(), 6000);

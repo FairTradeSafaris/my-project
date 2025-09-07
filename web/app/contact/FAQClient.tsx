@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PortableText } from "@portabletext/react";
 import { PortableTextBlock } from "@portabletext/types";
 
 type FAQItem = {
   _id: string;
   question: string;
-  answer: PortableTextBlock[]; // ✅ FIXED
+  answer: PortableTextBlock[];
   keywords?: string[];
 };
 
@@ -19,11 +19,32 @@ type FAQCat = {
 
 export default function FAQClient({ categories }: { categories: FAQCat[] }) {
   const [selectedFAQ, setSelectedFAQ] = useState<FAQItem | null>(null);
-  const closeModal = () => setSelectedFAQ(null);
-
+  const [searchTerm, setSearchTerm] = useState("");
   const cardBorder = "#d8cfc4";
   const tileBg = "#f9f6f2";
   const commonSearches = categories.map((c) => c.title).slice(0, 6);
+
+  const closeModal = () => setSelectedFAQ(null);
+
+  const filteredCategories = useMemo(() => {
+    if (!searchTerm.trim()) return categories;
+
+    const term = searchTerm.toLowerCase();
+
+    return categories
+      .map((cat) => {
+        const filteredItems = cat.items.filter(
+          (item) =>
+            item.question.toLowerCase().includes(term) ||
+            item.keywords?.some((k) => k.toLowerCase().includes(term))
+        );
+
+        return filteredItems.length > 0
+          ? { ...cat, items: filteredItems }
+          : null;
+      })
+      .filter(Boolean) as FAQCat[];
+  }, [categories, searchTerm]);
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-12 font-sans">
@@ -45,6 +66,8 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
         <div className="px-6 md:px-8 pt-5">
           <div className="relative">
             <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-xl border px-4 py-3 pr-12 text-base focus:outline-none"
               style={{ borderColor: cardBorder }}
               placeholder="Ask about wildlife, lodges, ethics, or planning your perfect safari..."
@@ -61,6 +84,7 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
               {commonSearches.map((t) => (
                 <span
                   key={t}
+                  onClick={() => setSearchTerm(t)}
                   className="rounded-full border px-3 py-1 text-gray-700 hover:bg-[#f0ece6] cursor-pointer transition"
                   style={{ borderColor: cardBorder }}
                 >
@@ -73,33 +97,38 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
 
         {/* Categories Grid */}
         <div className="px-6 md:px-8 pb-8">
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((cat) => (
-              <div
-                key={cat._id}
-                className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm hover:shadow-md transition"
-                style={{ borderColor: cardBorder }}
-              >
-                <h3 className="font-semibold text-gray-900">{cat.title}</h3>
-
-                <ul
-                  className="mt-2 divide-y"
+          {filteredCategories.length > 0 ? (
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCategories.map((cat) => (
+                <div
+                  key={cat._id}
+                  className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm hover:shadow-md transition"
                   style={{ borderColor: cardBorder }}
                 >
-                  {cat.items?.map((q) => (
-                    <li key={q._id} className="py-2">
-                      <button
-                        className="text-sm text-left text-gray-900 hover:underline focus:outline-none"
-                        onClick={() => setSelectedFAQ(q)}
-                      >
-                        {q.question}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+                  <h3 className="font-semibold text-gray-900">{cat.title}</h3>
+                  <ul
+                    className="mt-2 divide-y"
+                    style={{ borderColor: cardBorder }}
+                  >
+                    {cat.items.map((q) => (
+                      <li key={q._id} className="py-2">
+                        <button
+                          className="text-sm text-left text-gray-900 hover:underline focus:outline-none"
+                          onClick={() => setSelectedFAQ(q)}
+                        >
+                          {q.question}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-6 text-center text-gray-500">
+              No FAQs matched your search.
+            </p>
+          )}
         </div>
       </div>
 

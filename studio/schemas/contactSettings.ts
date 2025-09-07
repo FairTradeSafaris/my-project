@@ -33,5 +33,12 @@ export default {
       },
       description: 'Upload the decorative line art (e.g., buffalo) used in the contact header.',
     },
+    {
+      name: 'backgroundImage',
+      title: 'Contact Page Background Image',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Used as the full-page background for the contact form',
+    },
   ],
 }

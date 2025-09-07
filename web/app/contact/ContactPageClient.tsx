@@ -11,13 +11,14 @@ import {
 } from "react-icons/ri";
 import { urlFor } from "@/lib/sanity";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import Image from "next/image";
+
 type ContactInfo = {
   phone?: string;
   whatsappNumber?: string;
   email?: string;
   lineArtImage?: SanityImageSource;
   bookingLink?: string;
+  backgroundImage?: SanityImageSource;
 };
 
 export default function ContactPageClient({
@@ -27,16 +28,17 @@ export default function ContactPageClient({
 }) {
   const [bookingOpen, setBookingOpen] = useState(false);
 
-  // Palette
-  const accent = "#a35c2d";
-  const bg = "#faf7f2";
-  const cardBorder = "#eee4d8";
-  const tileBg = "#ffffff";
-  const iconBg = "#f3eadf";
-
-  // Fallbacks
   const phone = contactInfo?.phone || "+1 234-9876-5400";
   const email = contactInfo?.email || "info@fairtradesafaris.com";
+
+  // Brand / palette
+  const accent = "#a35c2d";
+  const leftCardBg = "#d7ccc8e6"; // your updated sand tone
+  const iconBg = "#f3eadf";
+
+  // High-contrast text on sand
+  const textPrimary = "#3c2f2f"; // headings & row titles
+  const textSecondary = "#6b4f3f"; // subtitles (phone/email etc.)
 
   const whatsappHref = useMemo(() => {
     const raw = contactInfo?.whatsappNumber;
@@ -46,152 +48,139 @@ export default function ContactPageClient({
     return `https://wa.me/${withCountry}`;
   }, [contactInfo?.whatsappNumber]);
 
-  const lineArtImageUrl = contactInfo?.lineArtImage
-    ? urlFor(contactInfo.lineArtImage).url()
-    : "/buffalo.png";
+  const backgroundImageUrl = contactInfo?.backgroundImage
+    ? urlFor(contactInfo.backgroundImage).url()
+    : "";
 
   const bookingLink =
     contactInfo?.bookingLink ||
     "https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris";
 
-  const IconWrap = ({ children }: { children: React.ReactNode }) => (
-    <div
-      className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
-      style={{ backgroundColor: iconBg }}
-    >
-      {children}
-    </div>
-  );
-
-  const iconSize = 20;
-
-  const tileClass =
-    "min-h-44 md:min-h-56 rounded-2xl border shadow-sm flex flex-col items-center justify-center text-center p-4 hover:shadow-md transition";
-
   return (
-    <main className="text-black" style={{ backgroundColor: bg }}>
-      {/* Heading */}
-      <section className="max-w-6xl mx-auto px-4 pt-12 pb-6">
-        <div className="flex items-end justify-start gap-3 md:gap-4">
-          <Image
-            src={lineArtImageUrl}
-            alt="Decorative Line Art"
-            width={96}
-            height={96}
-            className="h-16 md:h-20 lg:h-24 pointer-events-none select-none"
-            unoptimized
-          />
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 leading-none">
-            Contact Us
-          </h1>
-        </div>
-      </section>
+    <main
+      className="text-white font-sans bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: `url('${backgroundImageUrl}')` }}
+    >
+      {/* Overlay tint for readability */}
+      <div className="absolute inset-0 bg-black/20 z-0" />
 
-      {/* Main */}
-      <section className="max-w-6xl mx-auto px-4 pb-4">
-        <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] md:items-stretch gap-6 md:gap-8">
-          {/* LEFT */}
+      {/* Content container (optimized spacing) */}
+      <div className="relative z-10 px-4 pt-6 md:pt-8 pb-6 md:pb-8">
+        <section className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          {/* LEFT: Contact Info Card */}
           <div
-            className="relative overflow-hidden rounded-2xl p-6 md:p-6 shadow-lg border"
-            style={{ background: tileBg, borderColor: cardBorder }}
+            className="rounded-xl p-6 md:p-8 flex flex-col justify-between shadow-xl h-full"
+            style={{ backgroundColor: leftCardBg }}
           >
-            <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {/* Booking */}
-              <button
-                type="button"
-                onClick={() => setBookingOpen(true)}
-                className={tileClass}
-                style={{ borderColor: cardBorder, background: tileBg }}
-                aria-label="Book a Discovery Call"
-              >
-                <IconWrap>
-                  <RiCalendarLine size={iconSize} color={accent} />
-                </IconWrap>
-                <div className="text-sm font-semibold text-gray-900">
-                  Book a Discovery Call
-                </div>
-                <div
-                  className="mt-1 inline-flex items-center gap-1 text-xs font-medium"
-                  style={{ color: accent }}
-                >
-                  Open scheduler <RiArrowRightLine size={14} />
-                </div>
-              </button>
+            <h3
+              className="text-2xl font-bold mb-5 md:mb-6"
+              style={{ color: textPrimary }}
+            >
+              Contact Information
+            </h3>
 
-              {/* Phone */}
-              <div
-                className={tileClass}
-                style={{ borderColor: cardBorder, background: tileBg }}
-              >
-                <IconWrap>
-                  <RiPhoneLine size={iconSize} color={accent} />
-                </IconWrap>
-                <div className="text-sm font-semibold text-gray-900">
-                  Call Us
-                </div>
+            {[
+              {
+                title: "Book a Discovery Call",
+                subtitle: "Let’s plan something",
+                icon: <RiCalendarLine size={24} color={accent} />,
+                onClick: () => setBookingOpen(true),
+                isButton: true,
+              },
+              {
+                title: "Call Us",
+                subtitle: phone,
+                icon: <RiPhoneLine size={24} color={accent} />,
+                href: `tel:${phone.replace(/\s/g, "")}`,
+              },
+              {
+                title: "Let’s Chat",
+                subtitle: "WhatsApp us",
+                icon: <RiWhatsappLine size={24} color={accent} />,
+                href: whatsappHref,
+              },
+              {
+                title: "Email Us",
+                subtitle: email,
+                icon: <RiMailLine size={24} color={accent} />,
+                href: `mailto:${email}`,
+              },
+            ].map((item, i) =>
+              item.isButton ? (
+                <button
+                  key={i}
+                  onClick={item.onClick}
+                  className="flex items-start gap-4 group text-left w-full mb-5 md:mb-6"
+                >
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: iconBg }}
+                  >
+                    {item.icon}
+                  </div>
+                  <div className="flex flex-col">
+                    <span
+                      className="text-base font-semibold"
+                      style={{ color: textPrimary }}
+                    >
+                      {item.title}
+                    </span>
+                    <span
+                      className="text-sm mt-0.5 font-medium group-hover:underline"
+                      style={{ color: textSecondary }}
+                    >
+                      {item.subtitle}{" "}
+                      <RiArrowRightLine className="inline ml-1" size={14} />
+                    </span>
+                  </div>
+                </button>
+              ) : (
                 <a
-                  href={`tel:${phone.replace(/\s/g, "")}`}
-                  className="mt-1 text-sm underline underline-offset-2 text-gray-700 truncate max-w-[12rem]"
-                  title={phone}
+                  key={i}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 group text-left w-full mb-5 md:mb-6"
                 >
-                  {phone}
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: iconBg }}
+                  >
+                    {item.icon}
+                  </div>
+                  <div className="flex flex-col">
+                    <span
+                      className="text-base font-semibold"
+                      style={{ color: textPrimary }}
+                    >
+                      {item.title}
+                    </span>
+                    <span
+                      className="text-sm mt-0.5 font-medium group-hover:underline truncate max-w-[16rem]"
+                      style={{
+                        color:
+                          item.title === "Let’s Chat"
+                            ? textPrimary
+                            : textSecondary,
+                      }}
+                    >
+                      {item.subtitle}
+                    </span>
+                  </div>
                 </a>
-              </div>
-
-              {/* WhatsApp */}
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={tileClass}
-                style={{ borderColor: cardBorder, background: tileBg }}
-                aria-label="Chat with us on WhatsApp"
-              >
-                <IconWrap>
-                  <RiWhatsappLine size={iconSize} color="#1f5133" />
-                </IconWrap>
-                <div className="text-sm font-semibold text-gray-900">
-                  WhatsApp
-                </div>
-                <div
-                  className="mt-1 text-sm underline underline-offset-2"
-                  style={{ color: "#1f5133" }}
-                >
-                  Chat with us
-                </div>
-              </a>
-
-              {/* Email */}
-              <a
-                href={`mailto:${email}`}
-                className={`${tileClass} break-words`}
-                style={{ borderColor: cardBorder, background: tileBg }}
-                aria-label="Email us"
-              >
-                <IconWrap>
-                  <RiMailLine size={iconSize} color={accent} />
-                </IconWrap>
-                <div className="text-sm font-semibold text-gray-900">Email</div>
-                <div
-                  className="mt-1 text-sm underline underline-offset-2 text-gray-700 truncate max-w-[12rem]"
-                  title={email}
-                >
-                  {email}
-                </div>
-              </a>
-            </div>
+              )
+            )}
           </div>
 
-          {/* RIGHT */}
-          <div
-            className="rounded-2xl p-6 md:p-8 shadow-lg border"
-            style={{ background: tileBg, borderColor: cardBorder }}
-          >
-            <h2 className="sr-only">Inquiry Form</h2>
+          {/* RIGHT: Transparent Contact Form */}
+          <div className="rounded-xl p-6 md:p-8 backdrop-blur-md bg-white/20 shadow-xl border border-white/30 h-full">
+            <h2 className="text-2xl font-bold mb-5 md:mb-6 text-white">
+              Start Your Journey
+            </h2>
             <ContactForm />
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* Booking Modal */}
       {bookingOpen && (
@@ -203,10 +192,7 @@ export default function ContactPageClient({
             className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[85vw] lg:w-[75vw] bg-white shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="flex items-center justify-between px-4 py-3 border-b"
-              style={{ backgroundColor: iconBg, borderColor: cardBorder }}
-            >
+            <div className="flex items-center justify-between px-4 py-3 border-b">
               <span className="text-sm font-semibold text-gray-800">
                 Book a Discovery Call
               </span>

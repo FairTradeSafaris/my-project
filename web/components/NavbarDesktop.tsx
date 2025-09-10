@@ -29,7 +29,6 @@ function useScrolled(threshold = 50) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > threshold);
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [threshold]);
@@ -63,17 +62,12 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
   const screenWidth = useBreakpoint();
 
   const size = (() => {
-    if (screenWidth === null) {
-      return { box: 96, img: 76 };
-    }
-
-    if (screenWidth >= 1280) {
-      return scrolled ? { box: 96, img: 76 } : { box: 150, img: 125 };
-    } else if (screenWidth >= 1024) {
-      return scrolled ? { box: 80, img: 64 } : { box: 120, img: 100 };
-    } else {
-      return scrolled ? { box: 64, img: 52 } : { box: 100, img: 84 };
-    }
+    if (screenWidth === null) return { box: 96, img: 76 };
+    if (screenWidth >= 1280)
+      return scrolled ? { box: 84, img: 68 } : { box: 120, img: 100 };
+    if (screenWidth >= 1024)
+      return scrolled ? { box: 70, img: 56 } : { box: 100, img: 84 };
+    return scrolled ? { box: 56, img: 44 } : { box: 84, img: 68 };
   })();
 
   return (
@@ -83,10 +77,7 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
         "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]",
         "rounded-b-2xl rounded-t-none transition-all duration-300 ease-in-out"
       )}
-      style={{
-        width: `${size.box}px`,
-        height: `${size.box}px`,
-      }}
+      style={{ width: `${size.box}px`, height: `${size.box}px` }}
     >
       <Link href="/" aria-label="Fair Trade Safaris">
         <BadgeVisual size={size.img} />
@@ -106,53 +97,40 @@ export default function NavbarDesktop({
 }) {
   const scrolled = useScrolled(40);
   const screenWidth = useBreakpoint();
-
-  const layoutSizes = (() => {
-    if (screenWidth === null) {
-      return {
-        logo: { width: 180, height: 40, padding: "py-3" },
-        topOffset: 18,
-      };
-    }
-
-    if (screenWidth >= 1280) {
-      return scrolled
-        ? {
-            logo: { width: 180, height: 40, padding: "py-2.5" },
-            topOffset: 18,
-          }
-        : {
-            logo: { width: 240, height: 60, padding: "py-3.5" },
-            topOffset: 30,
-          };
-    } else if (screenWidth >= 1024) {
-      return scrolled
-        ? {
-            logo: { width: 160, height: 36, padding: "py-2.5" },
-            topOffset: 16,
-          }
-        : {
-            logo: { width: 220, height: 54, padding: "py-3" },
-            topOffset: 26,
-          };
-    } else {
-      return scrolled
-        ? {
-            logo: { width: 140, height: 32, padding: "py-2" },
-            topOffset: 12,
-          }
-        : {
-            logo: { width: 200, height: 44, padding: "py-2.5" },
-            topOffset: 20,
-          };
-    }
-  })();
-
   const pathname = usePathname();
   const hideBadge = pathname?.startsWith("/journey") ?? false;
 
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
+
+  const layoutSizes = (() => {
+    if (screenWidth === null)
+      return {
+        logo: { width: 180, height: 40, padding: "py-3" },
+        topOffset: 18,
+      };
+    if (screenWidth >= 1400)
+      return scrolled
+        ? { logo: { width: 200, height: 48, padding: "py-2.5" }, topOffset: 20 }
+        : {
+            logo: { width: 240, height: 60, padding: "py-3.5" },
+            topOffset: 30,
+          };
+    if (screenWidth >= 1200)
+      return scrolled
+        ? { logo: { width: 180, height: 40, padding: "py-2" }, topOffset: 18 }
+        : { logo: { width: 220, height: 54, padding: "py-3" }, topOffset: 26 };
+    if (screenWidth >= 1024)
+      return scrolled
+        ? { logo: { width: 150, height: 36, padding: "py-2" }, topOffset: 16 }
+        : {
+            logo: { width: 180, height: 44, padding: "py-2.5" },
+            topOffset: 22,
+          };
+    return scrolled
+      ? { logo: { width: 140, height: 32, padding: "py-2" }, topOffset: 12 }
+      : { logo: { width: 160, height: 40, padding: "py-2.5" }, topOffset: 18 };
+  })();
 
   useEffect(() => {
     const prev = document.documentElement.style.overflow;
@@ -171,76 +149,77 @@ export default function NavbarDesktop({
       )}
 
       <div
-        className="hidden md:flex fixed left-0 right-0 mx-auto z-40 w-[88vw] max-w-[1100px] lg:w-[84vw] lg:max-w-6xl px-4"
+        className="hidden md:flex fixed left-0 right-0 z-40 px-4"
         style={{ top: `${layoutSizes.topOffset}px` }}
       >
-        <div
-          className={cx(
-            "flex w-full items-center justify-between gap-4",
-            "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
-            layoutSizes.logo.padding,
-            "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white",
-            "px-6"
-          )}
-        >
-          <div className="flex items-center gap-2 min-w-0 max-w-[60%] flex-shrink">
-            <Link
-              href="/"
-              className="flex items-center max-w-full"
-              aria-label="Fair Trade Safaris"
-            >
-              <Image
-                src="/logos/logo-light.png"
-                alt="Fair Trade Safaris"
-                width={layoutSizes.logo.width}
-                height={layoutSizes.logo.height}
-                className={cx(
-                  "block dark:hidden object-contain transition-all duration-300 ease-in-out",
-                  scrolled ? "scale-100" : "scale-105"
-                )}
-                priority
-              />
-
-              <Image
-                src="/logos/logo-dark.png"
-                alt="Fair Trade Safaris"
-                width={layoutSizes.logo.width}
-                height={layoutSizes.logo.height}
-                className={cx(
-                  "hidden dark:block object-contain transition-all duration-300 ease-in-out",
-                  scrolled ? "scale-100" : "scale-105"
-                )}
-                priority
-              />
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-end">
-            <Link href="/journey" title="Search" className="p-2 rounded-xl">
-              <Search size={20} />
-            </Link>
-            <SignedIn>
-              <CustomUserMenu />
-            </SignedIn>
-            <SignedOut>
+        <div className="w-full max-w-[94vw] sm:max-w-[92vw] md:max-w-[88vw] lg:max-w-[80vw] xl:max-w-[72vw] mx-auto transition-all duration-300">
+          <div
+            className={cx(
+              "flex w-full flex-wrap items-center justify-between gap-4 min-w-0",
+              "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
+              layoutSizes.logo.padding,
+              "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white",
+              "px-6"
+            )}
+          >
+            <div className="flex items-center gap-2 min-w-0 max-w-[60%] flex-shrink">
               <Link
-                href="/sign-in"
-                title="My Journey"
-                className="p-2 rounded-xl"
+                href="/"
+                className="flex items-center max-w-full"
+                aria-label="Fair Trade Safaris"
               >
-                <User size={20} />
+                <Image
+                  src="/logos/logo-light.png"
+                  alt="Fair Trade Safaris"
+                  width={layoutSizes.logo.width}
+                  height={layoutSizes.logo.height}
+                  className={cx(
+                    "block dark:hidden object-contain transition-all duration-300 ease-in-out",
+                    scrolled ? "scale-100" : "scale-105"
+                  )}
+                  priority
+                />
+                <Image
+                  src="/logos/logo-dark.png"
+                  alt="Fair Trade Safaris"
+                  width={layoutSizes.logo.width}
+                  height={layoutSizes.logo.height}
+                  className={cx(
+                    "hidden dark:block object-contain transition-all duration-300 ease-in-out",
+                    scrolled ? "scale-100" : "scale-105"
+                  )}
+                  priority
+                />
               </Link>
-            </SignedOut>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              title={open ? "Close Menu" : "Open Menu"}
-              onClick={() => setOpen((v) => !v)}
-              className="transition-transform duration-200 p-2 rounded-xl"
-              aria-expanded={open}
-              aria-controls="desktop-menu-sheet"
-            >
-              {open ? <X size={22} /> : <Menu size={22} />}
-            </motion.button>
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-end min-w-0">
+              <Link href="/journey" title="Search" className="p-2 rounded-xl">
+                <Search size={20} />
+              </Link>
+              <SignedIn>
+                <CustomUserMenu />
+              </SignedIn>
+              <SignedOut>
+                <Link
+                  href="/sign-in"
+                  title="My Journey"
+                  className="p-2 rounded-xl"
+                >
+                  <User size={20} />
+                </Link>
+              </SignedOut>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                title={open ? "Close Menu" : "Open Menu"}
+                onClick={() => setOpen((v) => !v)}
+                className="transition-transform duration-200 p-2 rounded-xl"
+                aria-expanded={open}
+                aria-controls="desktop-menu-sheet"
+              >
+                {open ? <X size={22} /> : <Menu size={22} />}
+              </motion.button>
+            </div>
           </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ import JourneyCard from "@/components/JourneyCard";
 import FeaturedAmbassador from "@/components/FeaturedAmbassador";
 import FoundersPromise from "@/components/FoundersPromise";
 import type { FoundersPromiseBlock } from "@/types/types";
+import { getSanityMetadata } from "@/lib/getSanityMetadata";
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -40,25 +41,7 @@ const foundersPromise: FoundersPromiseBlock | null = await sanity.fetch(
 );
 
 export async function generateMetadata() {
-  const data = await sanity.fetch(
-    `*[_type == "sitePages" && slug.current == "home"][0]{
-      metaTitle,
-      metaDescription
-    }`
-  );
-
-  return {
-    title: data?.metaTitle ?? "Fair Trade Safaris",
-    description:
-      data?.metaDescription ??
-      "Explore ethical luxury safaris in Africa with Fair Trade Safaris. Travel with heart and purpose.",
-    openGraph: {
-      title: data?.metaTitle ?? "Fair Trade Safaris",
-      description:
-        data?.metaDescription ??
-        "Explore ethical luxury safaris in Africa with Fair Trade Safaris. Travel with heart and purpose.",
-    },
-  };
+  return getSanityMetadata("home"); // or "about", "contact", etc.
 }
 
 type HeroContent = {
@@ -214,29 +197,30 @@ export default async function Home() {
             {journeys.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-center">
                 {journeys.map((j) => (
-                  <Link
-                    key={j._id}
-                    href={{
-                      pathname: "/journey",
-                      query: { q: j.title, open: "true" },
-                    }}
-                    className="block"
-                  >
-                    <JourneyCard
-                      journeyId={j._id}
-                      slug={j.slug?.current || ""}
-                      title={j.title}
-                      summary={j.summary}
-                      imageUrl={j.heroImage.asset.url}
-                      alt={j.alt}
-                      price={j.price}
-                      duration={j.duration}
-                      region={j.region?.title}
-                      star={Number(j.star || 0)}
-                      starIcon={j.starIcon}
-                      isFeatured={j.featuredOnHome === true}
-                    />
-                  </Link>
+                  <div key={j._id} className="h-full flex">
+                    <Link
+                      href={{
+                        pathname: "/journey",
+                        query: { q: j.title, open: "true" },
+                      }}
+                      className="block h-full w-full"
+                    >
+                      <JourneyCard
+                        journeyId={j._id}
+                        slug={j.slug?.current || ""}
+                        title={j.title}
+                        summary={j.summary}
+                        imageUrl={j.heroImage.asset.url}
+                        alt={j.alt}
+                        price={j.price}
+                        duration={j.duration}
+                        region={j.region?.title}
+                        star={Number(j.star || 0)}
+                        starIcon={j.starIcon}
+                        isFeatured={j.featuredOnHome === true}
+                      />
+                    </Link>
+                  </div>
                 ))}
               </div>
             ) : (

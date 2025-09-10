@@ -153,9 +153,11 @@ export default function JourneyCard({
           </p>
         )}
 
-        <h3 className="text-base font-bold text-gray-800 mb-1 leading-snug">
-          {title}
-        </h3>
+        <div className="min-h-[3rem] flex items-center">
+          <h3 className="text-base font-bold text-gray-800 leading-snug line-clamp-2">
+            {title}
+          </h3>
+        </div>
 
         {summary && (
           <div className="mb-3">

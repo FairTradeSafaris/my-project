@@ -1,30 +1,48 @@
-export const revalidate = 60;
+// app/ambassadors/page.tsx
+export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
+import Script from "next/script";
 import { client } from "@/lib/sanity";
+import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import AmbassadorCard from "@/components/AmbassadorCard";
 import type { Ambassador } from "@/types/ambassador";
 
+// SEO via central helper
+export async function generateMetadata(): Promise<Metadata> {
+  const { metadata } = await getSanityMetadata("ambassadors");
+  return metadata;
+}
+
 export default async function AmbassadorsPage() {
-  const ambassadors: Ambassador[] = await client.fetch(`
-    *[_type == "ambassador"] | order(_createdAt desc){
-      _id,
-      name,
-      role,
-      description,
-      ctaLabel,
-      ctaLink,
-      "image": image.asset->url,
-      socials[] {
-        platform,
-        url,
-        icon
-      }
-    }
-  `);
+  // Let TS infer the tuple types (no explicit generics)
+  const [metaRes, ambassadors] = await Promise.all([
+    getSanityMetadata("ambassadors"),
+    client.fetch<Ambassador[]>(
+      `*[_type == "ambassador"] | order(_createdAt desc){
+        _id,
+        name,
+        role,
+        description,
+        ctaLabel,
+        ctaLink,
+        "image": image.asset->url,
+        socials[] { platform, url, icon }
+      }`
+    ),
+  ]);
+
+  const { structuredData } = metaRes; // structuredData?: object
 
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen">
-      {/* Hero Section */}
+      {structuredData ? (
+        <Script
+          id="jsonld-ambassadors"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      ) : null}
 
       {/* Intro Section */}
       <section className="max-w-3xl mx-auto px-6 pt-12 pb-6 text-center">

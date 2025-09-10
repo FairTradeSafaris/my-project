@@ -4,9 +4,7 @@ import { NextResponse } from "next/server";
 export const runtime = "edge";
 
 export async function GET() {
-  const isProduction = process.env.NEXT_PUBLIC_APP_URL?.includes(
-    "www.fairtradesafaris.com"
-  );
+  const isProduction = process.env.NODE_ENV === "production";
 
   const body = isProduction
     ? `

@@ -1,4 +1,3 @@
-// app/destination/[slug]/page.tsx
 import { groq } from "next-sanity";
 import { client } from "@/lib/sanity";
 import Image from "next/image";
@@ -53,14 +52,12 @@ const query = groq`
   }
 `;
 
-// ✅ Next 15: params is a Promise
 export default async function DestinationPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
   const data = (await client.fetch(query, { slug })) as DestinationDoc | null;
 
   if (!data) return <div className="p-10">Destination not found</div>;
@@ -68,7 +65,7 @@ export default async function DestinationPage({
   return (
     <main className="bg-white text-gray-900">
       {/* Hero */}
-      <section className="relative h-[400px]">
+      <section className="relative h-[400px] w-full">
         {data.heroImage && (
           <Image
             src={data.heroImage}
@@ -85,7 +82,7 @@ export default async function DestinationPage({
 
       {/* Travel Info */}
       {data.travelInfo && (
-        <section className="max-w-7xl mx-auto py-10 px-8">
+        <section className="w-full py-10 px-6">
           <h2 className="text-2xl font-semibold mb-4">Travel Information</h2>
           <PortableText value={data.travelInfo} />
         </section>
@@ -93,8 +90,8 @@ export default async function DestinationPage({
 
       {/* Did You Know */}
       {(data.didYouKnowText || data.didYouKnowImage) && (
-        <section className="bg-yellow-50 py-10 px-6">
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-6 items-center">
+        <section className="bg-yellow-50 py-10 px-6 w-full">
+          <div className="flex flex-col md:flex-row gap-6 items-center w-full">
             {data.didYouKnowImage && (
               <Image
                 src={data.didYouKnowImage}
@@ -114,7 +111,7 @@ export default async function DestinationPage({
 
       {/* Highlights */}
       {data.highlights && (
-        <section className="w-full px-6">
+        <section className="w-full px-6 py-10">
           <h2 className="text-2xl font-semibold mb-4">Highlights</h2>
           <PortableText value={data.highlights} />
         </section>
@@ -122,8 +119,8 @@ export default async function DestinationPage({
 
       {/* Practical Info */}
       {Array.isArray(data.practicalStuff) && data.practicalStuff.length > 0 && (
-        <section className="bg-gray-50 py-10 px-6">
-          <div className="max-w-4xl mx-auto space-y-6">
+        <section className="bg-gray-50 py-10 px-6 w-full">
+          <div className="space-y-6 w-full">
             <h2 className="text-2xl font-semibold mb-4">Practical Info</h2>
             {data.practicalStuff.map((section, i) => (
               <div
@@ -142,7 +139,7 @@ export default async function DestinationPage({
 
       {/* Gallery */}
       {Array.isArray(data.gallery) && data.gallery.length > 0 && (
-        <section className="max-w-5xl mx-auto py-10 px-6">
+        <section className="w-full py-10 px-6">
           <h2 className="text-2xl font-semibold mb-4">Photo Gallery</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {data.gallery.map((img, i) => (
@@ -161,7 +158,7 @@ export default async function DestinationPage({
 
       {/* Map */}
       {data.mapLocation && (
-        <section className="max-w-4xl mx-auto py-10 px-6">
+        <section className="w-full py-10 px-6">
           <h2 className="text-2xl font-semibold mb-4">Map</h2>
           <iframe
             src={`https://www.google.com/maps?q=${encodeURIComponent(
@@ -171,7 +168,7 @@ export default async function DestinationPage({
             height="400"
             allowFullScreen
             loading="lazy"
-            className="rounded-lg border"
+            className="rounded-lg border w-full"
             title={`${data.title} map`}
           />
         </section>
@@ -179,7 +176,7 @@ export default async function DestinationPage({
 
       {/* CTA */}
       {data.ctaLink && (
-        <section className="text-center py-12 bg-[#E5D5B8]">
+        <section className="text-center py-12 bg-[#E5D5B8] w-full">
           <Button
             asChild
             className="bg-black text-white px-6 py-3 rounded-lg text-lg"

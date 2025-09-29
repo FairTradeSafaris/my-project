@@ -179,9 +179,10 @@ export default function ClientLayout({
 
   return (
     <>
+      {/* Navbar First */}
       {!hideUI && ready && hasMounted && screenWidth !== null && (
         <>
-          {screenWidth < 1024 ? ( // ⬅️ UPDATED from 768 to 1024
+          {screenWidth < 1024 ? (
             <NavbarMobile />
           ) : (
             <NavbarDesktop
@@ -193,11 +194,8 @@ export default function ClientLayout({
         </>
       )}
 
-      {showHero && (
-        <div className="pt-16 md:pt-0">
-          <HeroController heroData={heroData} />
-        </div>
-      )}
+      {/* Hero Section Below Navbar */}
+      {showHero && <HeroController heroData={heroData} />}
 
       <main>{children}</main>
 

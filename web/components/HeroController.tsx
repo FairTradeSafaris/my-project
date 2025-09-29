@@ -235,7 +235,7 @@ function HeroView({
     <section
       className={`
         relative w-full
-        ${isHome ? "aspect-[16/9] md:h-auto" : "h-[500px] md:h-[500px]"}
+        ${isHome ? "h-[75vh] md:h-[80vh]" : "h-[500px] md:h-[500px]"}
         pt-24 md:pt-28
       `}
       id="hero"
@@ -366,6 +366,8 @@ function deriveBgUrls(items?: HeroData["backgroundImages"]): {
 /* -------------------- Controller -------------------- */
 export default function HeroController({ heroData }: { heroData?: HeroData }) {
   const pathname = usePathname();
+  const isHome = pathname === "/";
+
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -453,6 +455,7 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
       pageLabel={hero.pageLabel}
       headline={hero.headline}
       sub={hero.subheadline}
+      variant={isHome ? "home" : "banner"} // 👈 THIS LINE MATTERS
     >
       {showHomeFilters && (
         <>

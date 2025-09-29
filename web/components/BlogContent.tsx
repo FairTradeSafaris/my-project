@@ -96,7 +96,9 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
             return (
               <section
                 key={index}
-                className="relative text-center max-w-7xl mx-auto mb-6"
+                className={`relative text-center max-w-7xl mx-auto ${
+                  block.text ? "mb-6" : "mb-0"
+                }`}
               >
                 {imageUrl && (
                   <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] lg:aspect-[5/2] max-h-[600px] rounded overflow-hidden">

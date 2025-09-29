@@ -254,36 +254,27 @@ export default function FiltersPanel({
                 </div>
               ) : (
                 group.items.map((item) => {
-                  const isActive =
-                    group.filterKey === "country"
-                      ? selectedFilters.country.includes(item)
-                      : group.multi &&
-                          Array.isArray(
-                            selectedFilters[group.filterKey as keyof Filters]
-                          )
-                        ? (
-                            selectedFilters[
-                              group.filterKey as keyof Filters
-                            ] as string[]
-                          ).includes(item)
-                        : (selectedFilters[
-                            group.filterKey as FilterKey
-                          ] as string) === item;
+                  const selectedValue =
+                    selectedFilters[group.filterKey as keyof Filters];
+                  const isActive = group.multi
+                    ? Array.isArray(selectedValue) &&
+                      (selectedValue as string[]).includes(item)
+                    : selectedValue === item;
 
                   return (
                     <button
                       key={item}
                       onClick={() => {
                         const key = group.filterKey as FilterKey;
-                        if (key === "country") onToggleCountry(item);
-                        else if (group.filterKey === "signature")
-                          onToggleSignature(item);
-                        else if (group.filterKey === "style")
-                          onToggleStyle(item);
-                        else if (group.filterKey === "feature")
-                          onToggleFeature(item);
-                        else if (key === "region" || key === "star") {
-                          onSetSimpleFilter(key, isActive ? "" : item);
+                        if (group.multi) {
+                          if (key === "country") onToggleCountry(item);
+                          else if (key === "signature") onToggleSignature(item);
+                          else if (key === "style") onToggleStyle(item);
+                          else if (key === "feature") onToggleFeature(item);
+                        } else {
+                          if (key === "region")
+                            onSetSimpleFilter("region", isActive ? "" : item);
+                          else if (key === "star") onToggleStar(item);
                         }
                       }}
                       className={`px-2.5 py-[2px] rounded-full text-[11px] font-medium border transition-all ${

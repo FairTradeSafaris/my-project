@@ -141,6 +141,39 @@ export async function POST(request: NextRequest) {
 
     const uploadResult = await uploadResp.json();
     const assetId = uploadResult.document._id;
+    console.log(
+      "🧪 Patch mutation payload:",
+      JSON.stringify(
+        {
+          mutations: [
+            {
+              patch: {
+                id: tripId,
+                setIfMissing: { documents: [] },
+                insert: {
+                  after: "documents[-1]",
+                  items: [
+                    {
+                      label: "other",
+                      file: {
+                        _type: "file",
+                        asset: {
+                          _type: "reference",
+                          _ref: assetId,
+                        },
+                      },
+                      originalFilename: file_name || "unknown.pdf",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        null,
+        2
+      )
+    );
 
     // Patch trip to add file to `documents[]`
     const patchResp = await fetch(
@@ -161,7 +194,6 @@ export async function POST(request: NextRequest) {
                   after: "documents[-1]",
                   items: [
                     {
-                      _type: "object",
                       label: "other",
                       file: {
                         _type: "file",

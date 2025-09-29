@@ -42,10 +42,11 @@ export default function JourneyFinderClient() {
     filteredJourneys,
     selectedFilters,
     setSelectedFilters,
-
     setSearchTerm,
     justClearedRef,
+    toggleCountry, // ✅ now using from hook
   } = useFilteredJourneys();
+
   const { wishlistedMap } = useWishlistGrid(filteredJourneys);
 
   const [selectedJourney, setSelectedJourney] = useState<Journey | null>(null);
@@ -174,11 +175,10 @@ export default function JourneyFinderClient() {
   // Pool after region/country
   const scopedPool = useMemo(() => {
     return optionsJourneys.filter((j) => {
-      const { region, country, types, signature, style, feature } =
-        selectedFilters;
+      const { country, types, signature, style, feature } = selectedFilters;
 
       // ✅ Match region
-      if (region && j.region?.title !== region) return false;
+      /// if (region && j.region?.title !== region) return false;
 
       // ✅ Match countries (if any selected)
       if (country.length > 0) {
@@ -258,11 +258,9 @@ export default function JourneyFinderClient() {
   );
 
   // React to REGION changes
+  // React to REGION changes (preserve selected countries)
   useEffect(() => {
     setSelectedFilters((prev) => {
-      const nextCountries = prev.country.filter((c) =>
-        availableCountries.includes(c)
-      );
       const nextTypes = prev.types.filter((t) => availableStyle.includes(t));
       const nextDuration = availableDurationRange as [number, number];
       const nextPrice = availablePriceRange as [number, number];
@@ -273,15 +271,14 @@ export default function JourneyFinderClient() {
         a[0] === b[0] && a[1] === b[1];
 
       const changed =
-        !arrEq(prev.country, nextCountries) ||
         !arrEq(prev.types, nextTypes) ||
         !tupEq(prev.duration, nextDuration) ||
         !tupEq(prev.price, nextPrice);
 
       if (!changed) return prev;
+
       return {
         ...prev,
-        country: nextCountries,
         types: nextTypes,
         duration: nextDuration,
         price: nextPrice,
@@ -289,7 +286,6 @@ export default function JourneyFinderClient() {
     });
   }, [
     selectedFilters.region,
-    availableCountries,
     availableStyle,
     availableDurationRange,
     availablePriceRange,
@@ -429,15 +425,6 @@ export default function JourneyFinderClient() {
       types: prev.types.includes(type)
         ? prev.types.filter((t) => t !== type)
         : [...prev.types, type],
-    }));
-  };
-
-  const toggleCountry = (country: string) => {
-    setSelectedFilters((prev) => ({
-      ...prev,
-      country: prev.country.includes(country)
-        ? prev.country.filter((c) => c !== country)
-        : [...prev.country, country],
     }));
   };
 

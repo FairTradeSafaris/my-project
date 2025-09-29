@@ -21,17 +21,6 @@ export default async function TeamPage() {
     <main className="bg-background text-foreground dark:bg-[#1a1a1a] dark:text-[#fdf8f3] min-h-screen font-sans">
       {/* Hero Section — DO NOT TOUCH */}
 
-      {/* Subheading */}
-      <section className="text-center max-w-3xl mx-auto px-6 pt-12 pb-6">
-        <h2 className="text-[22px] font-medium text-[#3c2a1e] dark:text-[#fdf8f3] tracking-tight">
-          Purpose-Driven. People-Led.
-        </h2>
-        <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 leading-snug">
-          Every Fair Trade Safari is crafted by humans who believe in ethical
-          impact, bold storytelling, and soulful discovery.
-        </p>
-      </section>
-
       {/* Team Section */}
       <section className="px-6 py-20 bg-[#f8f2eb] dark:bg-[#121212] transition-colors duration-500">
         <div className="max-w-6xl mx-auto">

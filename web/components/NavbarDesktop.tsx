@@ -74,7 +74,9 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
     <div
       className={cx(
         "flex items-center justify-center",
-        "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]",
+        scrolled
+          ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
+          : "bg-[#d7ccc850] dark:bg-[#1f141050]",
         "rounded-b-2xl rounded-t-none transition-all duration-300 ease-in-out"
       )}
       style={{ width: `${size.box}px`, height: `${size.box}px` }}
@@ -143,7 +145,15 @@ export default function NavbarDesktop({
   return (
     <>
       {!hideBadge && (
-        <div className="fixed top-0 left-4 z-[60]">
+        <div
+          className={cx(
+            "fixed top-0 left-4 z-[60]",
+            scrolled
+              ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
+              : "bg-[#d7ccc850] dark:bg-[#1f141050]"
+          )}
+          style={{ borderRadius: "0 0 1rem 1rem" }}
+        >
           <DesktopRoundBadge scrolled={scrolled} />
         </div>
       )}
@@ -156,10 +166,13 @@ export default function NavbarDesktop({
           <div
             className={cx(
               "flex w-full flex-wrap items-center justify-between gap-4 min-w-0",
-              "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
+              "rounded-2xl shadow-md transition-all duration-300",
               layoutSizes.logo.padding,
-              "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white",
-              "px-6"
+              "text-foreground dark:text-white",
+              "px-6",
+              scrolled
+                ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
+                : "bg-[#d7ccc850] dark:bg-[#1f141050]"
             )}
           >
             <div className="flex items-center gap-2 min-w-0 max-w-[60%] flex-shrink">
@@ -248,7 +261,7 @@ export default function NavbarDesktop({
               role="dialog"
               aria-modal="true"
             >
-              <div className="rounded-3xl shadow-2xl ring-1 ring-black/10 backdrop-blur bg-white/85 dark:bg-neutral-900/80 border border-white/40 dark:border-white/10">
+              <div className="rounded-3xl shadow-2xl ring-1 ring-black/10  bg-white dark:bg-neutral-900/80 border border-white/40 dark:border-white/10">
                 <div
                   className={[
                     "p-4 md:p-6 gap-4 grid",

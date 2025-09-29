@@ -1,27 +1,18 @@
+// TOP OF FILE
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Home, Search, CalendarCheck2, User2, BookOpen, X } from "lucide-react";
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
 import { client as sanityClient } from "@/lib/sanity";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { motion, AnimatePresence } from "framer-motion";
 
 export const OPEN_SEARCH_SHEET = "fts:open-search-sheet";
 export const CLOSE_SEARCH_SHEET = "fts:close-search-sheet";
 export const OPEN_BOOK_SHEET = "fts:open-book-sheet";
-
-type HelperKey = "search" | "book" | "bookFree" | "account";
-
-const helperMessages: Record<HelperKey, string[]> = {
-  search: ["Start your safari now", "Explore journeys that matter"],
-  book: ["Need help planning?", "Talk to a safari expert"],
-  bookFree: ["Claim your free book", "Your ethical safari guide awaits"],
-  account: ["Sign in to personalize", "Track your bookings"],
-};
 
 export default function BottomTabBar() {
   const { isSignedIn } = useUser();
@@ -34,19 +25,39 @@ export default function BottomTabBar() {
   const [selectedLuxury, setSelectedLuxury] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [visibleHelper, setVisibleHelper] = useState<{
-    key: HelperKey;
-    message: string;
-  } | null>(null);
-  const [tooltipX, setTooltipX] = useState<number | null>(null);
-
   const TABBAR_BASE_HEIGHT = 56;
 
-  const searchRef = useRef<HTMLButtonElement>(null);
-  const bookRef = useRef<HTMLButtonElement>(null);
-  const bookFreeRef = useRef<HTMLAnchorElement>(null);
-  const accountRefSignedIn = useRef<HTMLDivElement>(null);
-  const accountRefSignedOut = useRef<HTMLAnchorElement>(null);
+  const [activeTooltipIndex, setActiveTooltipIndex] = useState<number | null>(
+    null
+  );
+
+  // 🧠 Tooltip cycling logic
+  useEffect(() => {
+    let count = 0;
+    let lastIndex: number | null = null;
+
+    const interval = setInterval(() => {
+      if (count >= 5) {
+        clearInterval(interval);
+        setActiveTooltipIndex(null);
+        return;
+      }
+
+      let nextIndex: number;
+      do {
+        nextIndex = Math.floor(Math.random() * 4); // 0–3
+      } while (nextIndex === lastIndex);
+
+      setActiveTooltipIndex(nextIndex);
+      lastIndex = nextIndex;
+      count++;
+
+      // hide it after 2s
+      setTimeout(() => setActiveTooltipIndex(null), 2500);
+    }, 4000); // every 4s (2.5s show + 1.5s pause)
+
+    return () => clearInterval(interval);
+  }, []);
 
   const setOpenWithEvents = (state: boolean) => {
     setOpen(state);
@@ -62,11 +73,10 @@ export default function BottomTabBar() {
     sanityClient
       .fetch(
         `{
-      "interests": *[_type == "travelInterest" && isTopInterest == true] | order(sortOrder asc) { title },
-      "luxuryRaw": *[_type == "journey"].star
-    }`
+          "interests": *[_type == "travelInterest" && isTopInterest == true] | order(sortOrder asc) { title },
+          "luxuryRaw": *[_type == "journey"].star
+        }`
       )
-
       .then(
         (data: {
           interests: { title: string }[];
@@ -88,52 +98,6 @@ export default function BottomTabBar() {
     };
   }, []);
 
-  useEffect(() => {
-    const handler = () => setOpenWithEvents(true);
-    window.addEventListener(OPEN_SEARCH_SHEET, handler);
-    return () => window.removeEventListener(OPEN_SEARCH_SHEET, handler);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (typeof window !== "undefined" && window.innerWidth > 768) return;
-
-      const keys = Object.keys(helperMessages) as HelperKey[];
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      const randomMsg =
-        helperMessages[randomKey][
-          Math.floor(Math.random() * helperMessages[randomKey].length)
-        ];
-
-      setVisibleHelper({ key: randomKey, message: randomMsg });
-
-      const refMap = {
-        search: searchRef,
-        book: bookRef,
-        bookFree: bookFreeRef,
-        account: isSignedIn ? accountRefSignedIn : accountRefSignedOut,
-      } as Record<HelperKey, React.RefObject<Element>>;
-
-      const rect = refMap[randomKey].current?.getBoundingClientRect();
-      const centerX = rect ? rect.left + rect.width / 2 : null;
-
-      if (centerX !== null && typeof window !== "undefined") {
-        const left = Math.min(
-          Math.max(centerX - 80, 8),
-          window.innerWidth - 160
-        );
-        setTooltipX(left);
-      }
-
-      setTimeout(() => {
-        setVisibleHelper(null);
-        setTooltipX(null);
-      }, 4000);
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [isSignedIn]);
-
   const onSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     const params = new URLSearchParams();
@@ -145,36 +109,6 @@ export default function BottomTabBar() {
 
   return (
     <>
-      <AnimatePresence>
-        {visibleHelper && tooltipX !== null && (
-          <motion.div
-            key={visibleHelper.key + visibleHelper.message}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.3 }}
-            className="fixed bottom-[72px] z-[100] bg-white text-black px-4 py-2 text-sm rounded-2xl shadow-xl border border-gray-200 max-w-[80vw] text-center md:hidden"
-            style={{ left: tooltipX }}
-          >
-            {visibleHelper.key === "search"
-              ? "Start your trip"
-              : visibleHelper.message}
-            <div
-              className="absolute top-full"
-              style={{
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 0,
-                height: 0,
-                borderLeft: "8px solid transparent",
-                borderRight: "8px solid transparent",
-                borderTop: "8px solid white",
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {open && (
         <>
           <button
@@ -234,64 +168,82 @@ export default function BottomTabBar() {
       )}
 
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-t border-black/10 dark:border-white/10 flex items-center justify-around px-4"
+        className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-t border-black/10 dark:border-white/10 grid grid-cols-5 items-center text-center"
         style={{
           height: `calc(${TABBAR_BASE_HEIGHT}px + env(safe-area-inset-bottom))`,
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
+        {/* Home */}
         <Link href="/" className="flex flex-col items-center gap-1 text-xs">
           <Home size={20} />
           <span>Home</span>
         </Link>
 
+        {/* Trips */}
         <button
-          ref={searchRef}
           type="button"
           onClick={() => setOpenWithEvents(true)}
-          className="flex flex-col items-center gap-1 text-xs active:scale-95"
+          className="relative flex flex-col items-center gap-1 text-xs active:scale-95"
         >
+          {activeTooltipIndex === 0 && (
+            <TooltipBubble text="Start your safari now" top="-top-16" />
+          )}
           <Search size={20} />
           <span>Trips</span>
         </button>
 
+        {/* Book Call */}
         <button
-          ref={bookRef}
           type="button"
           onClick={() => window.dispatchEvent(new CustomEvent(OPEN_BOOK_SHEET))}
-          className="flex flex-col items-center gap-1 text-xs active:scale-95"
+          className="relative flex flex-col items-center gap-1 text-xs active:scale-95"
         >
+          {activeTooltipIndex === 1 && (
+            <TooltipBubble text="Talk to a safari expert" top="-top-22" />
+          )}
           <CalendarCheck2 size={20} />
           <span>Book Call</span>
         </button>
 
+        {/* Free Book */}
         <Link
-          ref={bookFreeRef}
           href={isSignedIn ? "/books" : "/sign-up"}
-          className="flex flex-col items-center gap-1 text-xs active:scale-95 transform"
-          style={{ transformOrigin: "center center" }}
+          className="relative flex flex-col items-center gap-1 text-xs active:scale-95"
         >
+          {activeTooltipIndex === 2 && (
+            <TooltipBubble
+              text={
+                isSignedIn ? "Access your free book" : "Claim your free book"
+              }
+              top="-top-22"
+            />
+          )}
           <div className="w-5 h-5 flex items-center justify-center">
             <BookOpen size={20} />
           </div>
           <span className="leading-[1rem]">Free Book</span>
         </Link>
 
+        {/* Account */}
         <SignedIn>
-          <div
-            ref={accountRefSignedIn}
-            className="flex flex-col items-center gap-1 text-xs"
-          >
+          <div className="relative flex flex-col items-center gap-1 text-xs">
+            {activeTooltipIndex === 3 && (
+              <TooltipBubble text="Track your bookings" top="-top-18" />
+            )}
             <CustomUserMenu />
             <span>Account</span>
           </div>
         </SignedIn>
+
         <SignedOut>
           <Link
-            ref={accountRefSignedOut}
             href="/sign-in"
-            className="flex flex-col items-center gap-1 text-xs"
+            className="relative flex flex-col items-center gap-1 text-xs"
           >
+            {activeTooltipIndex === 3 && (
+              <TooltipBubble text="Log in to track trips" top="-top-18" />
+            )}
             <User2 size={20} />
             <span>Account</span>
           </Link>
@@ -301,7 +253,22 @@ export default function BottomTabBar() {
   );
 }
 
-// 👇 Move MultiSelectDropdown down here
+// Tooltip Component
+function TooltipBubble({ text, top }: { text: string; top: string }) {
+  return (
+    <div className={`absolute ${top} right-0 z-50`}>
+      <div className="relative bg-white text-black px-3 py-1.5 text-xs rounded-[18px] shadow-xl text-center pb-3">
+        {text}
+        <div
+          className="absolute -bottom-[5px] left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 bg-white rotate-45"
+          style={{ boxShadow: "none" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Dropdown Component
 function MultiSelectDropdown({
   label,
   options,

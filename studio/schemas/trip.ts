@@ -111,6 +111,13 @@ export default defineType({
               options: {storeOriginalFilename: true},
               validation: (Rule) => Rule.required(),
             },
+            {
+              name: 'originalFilename',
+              title: 'Original Filename',
+              type: 'string',
+              readOnly: true,
+              description: 'Captured from upload to preserve filename',
+            },
           ],
           preview: {
             select: {

@@ -168,8 +168,11 @@ export default function HeroWithSearch({
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  console.log("📍 Pathname:", pathname);
+  const isHome = pathname === "/";
   const router = useRouter();
-
+  console.log("🌍 Current pathname:", pathname);
+  console.log("🏠 isHome:", isHome);
   // Desktop detection
   useEffect(() => {
     const check = () => setIsDesktop(window.innerWidth >= 768);
@@ -277,7 +280,11 @@ export default function HeroWithSearch({
   return (
     <section
       id="hero"
-      className="relative h-[45vh] md:h-[90vh] max-h-[600px] w-full pt-24 md:pt-28 overflow-hidden bg-[var(--background)] text-[var(--text)]"
+      className={`relative w-full overflow-hidden bg-[var(--background)] text-[var(--text)] ${
+        isHome
+          ? "h-screen pt-0"
+          : "h-[50vh] md:h-[70vh] max-h-[600px] pt-24 md:pt-28"
+      }`}
     >
       {/* Background */}
       <Image

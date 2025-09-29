@@ -115,6 +115,7 @@ export default function DestinationClient({
 }: {
   initialDestinations?: Destination[];
 }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const destinations: Destination[] = useMemo(() => {
     return Array.isArray(initialDestinations)
       ? initialDestinations.filter(Boolean)
@@ -296,6 +297,16 @@ export default function DestinationClient({
   return (
     <main className="relative bg-[var(--background)] text-[var(--foreground)]">
       {/* Mobile sticky chips */}
+      <section className="bg-[#f2e7db] text-center px-4 pt-8 pb-4">
+        <h2 className="text-3xl font-bold text-neutral-900 mb-2">
+          Discover Your Perfect Safari Destination
+        </h2>
+        <p className="text-lg text-neutral-700 max-w-2xl mx-auto">
+          Browse our top-rated countries and begin planning a journey rooted in
+          purpose, beauty, and local connection.
+        </p>
+      </section>
+
       <div className="md:hidden sticky top-0 z-20 bg-[#f2e7db] border-b border-[var(--border)]">
         <h2 className="text-base font-semibold px-4 py-3">
           Top-rated Safari Countries
@@ -307,7 +318,7 @@ export default function DestinationClient({
         />
       </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row h-full md:overflow-hidden">
+      <div className="w-full flex flex-col md:flex-row h-full md:overflow-hidden">
         {/* Sidebar (md+) */}
         <nav
           className="hidden md:block md:w-72 bg-[var(--surface-dark)] border-r border-[var(--border)]"
@@ -334,7 +345,6 @@ export default function DestinationClient({
                     }`}
                   aria-current={selectedIndex === i ? "true" : undefined}
                 >
-                  <span className="text-[var(--background)]">#{i + 1}</span>
                   {dest.flagImage && (
                     <Image
                       src={dest.flagImage}
@@ -486,6 +496,7 @@ export default function DestinationClient({
                         <button
                           onClick={() => {
                             setGalleryOpen(true);
+                            setCurrentImageIndex(0); // ✅ Reset on open
                             setUserPausedUntil(Date.now() + 60_000);
                           }}
                           className="text-sm underline hover:no-underline"
@@ -522,6 +533,7 @@ export default function DestinationClient({
                   <Button
                     onClick={() => {
                       setGalleryOpen(true);
+                      setCurrentImageIndex(0); // ✅ Reset on open
                       setUserPausedUntil(Date.now() + 60_000);
                     }}
                     className="w-full bg-white/15 hover:bg-white/20 text-white border border-white/20"
@@ -579,53 +591,60 @@ export default function DestinationClient({
       {/* ---------- GALLERY MODAL ---------- */}
       {galleryOpen && selected?.gallery?.length ? (
         <Portal>
-          {/* Modal backdrop */}
           <div
-            className="fixed inset-0 bg-black/70 z-[9998]"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998]"
             onClick={() => setGalleryOpen(false)}
           />
 
-          {/* Modal content */}
-          <div className="fixed inset-0 z-[9999] flex flex-col">
-            {/* Modal header with close button */}
-            <div className="relative px-4 py-3 bg-black/60 backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-white">
-                <Images size={18} />
-                <span className="font-semibold">
-                  Photo Highlights — {selected.title}
-                </span>
+          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-4">
+            <button
+              onClick={() => setGalleryOpen(false)}
+              className="absolute top-6 right-6 z-[10000] w-10 h-10 rounded-full bg-white text-black hover:bg-neutral-200 font-bold text-lg shadow-md"
+              aria-label="Close gallery"
+            >
+              ×
+            </button>
+
+            <div className="relative w-full max-w-5xl aspect-[16/9] rounded-xl overflow-hidden bg-black shadow-xl">
+              <Image
+                src={selected!.gallery![currentImageIndex]}
+                alt={`Gallery image ${currentImageIndex + 1}`}
+                fill
+                sizes="100vw"
+                priority
+                className="object-cover transition-opacity duration-500"
+              />
+
+              {/* Image counter */}
+              <div className="absolute bottom-3 right-4 text-sm text-white bg-black/50 px-2 py-1 rounded">
+                {currentImageIndex + 1} / {selected!.gallery!.length}
               </div>
 
+              {/* Left arrow */}
               <button
-                onClick={() => setGalleryOpen(false)}
-                className="fixed top-4 right-4 z-[10000] w-10 h-10 rounded-full bg-white text-black hover:bg-neutral-200 font-bold text-lg shadow-md"
-                aria-label="Close gallery"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImageIndex((prev) =>
+                    prev === 0 ? selected!.gallery!.length - 1 : prev - 1
+                  );
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
               >
-                ×
+                ←
               </button>
-            </div>
 
-            {/* Gallery content */}
-            <div className="flex-1 overflow-x-auto overflow-y-hidden">
-              <div className="h-full w-max flex gap-4 p-4 snap-x snap-mandatory">
-                {selected.gallery.map((img, i) => (
-                  <div
-                    key={`${img}-${i}`}
-                    className="snap-center w-[calc(100vw-3rem)] md:w-[80vw] max-w-6xl"
-                  >
-                    <div className="relative mx-auto aspect-[4/3] sm:aspect-[16/9] max-h-[70vh] sm:max-h-[80vh] rounded-xl overflow-hidden bg-black">
-                      <Image
-                        src={img}
-                        alt={`Gallery image ${i + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="100vw"
-                        priority={i === 0}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {/* Right arrow */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImageIndex((prev) =>
+                    prev === selected!.gallery!.length - 1 ? 0 : prev + 1
+                  );
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
+              >
+                →
+              </button>
             </div>
           </div>
         </Portal>

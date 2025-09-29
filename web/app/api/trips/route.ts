@@ -1,6 +1,22 @@
 import { NextResponse } from "next/server";
 import { sanityClient } from "@/lib/client";
 
+// Define minimal type for debugging (only what's being logged)
+type TripForDebug = {
+  title?: string;
+  documents?: {
+    _key: string;
+    label: string;
+    originalFilename?: string; // ✅ Your schema-level field
+    file: {
+      asset: {
+        url: string;
+        mimeType: string;
+      };
+    };
+  }[];
+};
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const email = searchParams.get("email");
@@ -18,41 +34,47 @@ export async function GET(req: Request) {
   try {
     const trips = await sanityClient.fetch(
       `*[_type == "trip" && clientEmail == $email]{
-    ...,
-    destination->{
-      name,
-      slug
-    },
-    documents[]{
-      _key,
-      label,
-      file{
-        asset->{
-          url,
-          originalFilename,
-          mimeType
+        ...,
+        destination->{
+          name,
+          slug
+        },
+        documents[] {
+          _key,
+          label,
+          originalFilename, // ✅ Schema-level field (NOT asset field)
+          file {
+            asset->{
+              url,
+              mimeType
+            }
+          }
+        },
+        passportUploads[] {
+          asset->{
+            url,
+            originalFilename,
+            mimeType
+          }
+        },
+        flightTicketUploads[] {
+          asset->{
+            url,
+            originalFilename,
+            mimeType
+          }
         }
-      }
-    },
-    passportUploads[]{
-      asset->{
-        url,
-        originalFilename,
-        mimeType
-      }
-    },
-    flightTicketUploads[]{
-      asset->{
-        url,
-        originalFilename,
-        mimeType
-      }
-    }
-  }`,
+      }`,
       { email }
     );
 
-    console.log(`Fetched ${trips.length} trips for`, email);
+    console.log(`Fetched ${trips.length} trips for ${email}`);
+
+    // 🔍 Debug log with explicit type — no 'any'
+    (trips as TripForDebug[]).forEach((trip, index) => {
+      console.log(`🧳 Trip #${index + 1}: ${trip.title}`);
+      console.log("📁 CRM Documents:", trip.documents);
+    });
 
     return NextResponse.json({ trips });
   } catch (error) {

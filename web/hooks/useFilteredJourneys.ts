@@ -32,13 +32,23 @@ export function useFilteredJourneys() {
     price: [0, 999999],
   });
 
-  // ✅ Create stable version to avoid React hook lint warnings
+  // ✅ Stable setter to avoid hook re-deps
   const setSelectedFiltersStable = useCallback(
     (updater: React.SetStateAction<Filters>) => {
       setSelectedFilters(updater);
     },
     []
   );
+
+  // ✅ NEW: Toggle country logic
+  const toggleCountry = (country: string) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      country: prev.country.includes(country)
+        ? prev.country.filter((c) => c !== country)
+        : [...prev.country, country],
+    }));
+  };
 
   // ✅ Fetch all journeys once
   useEffect(() => {
@@ -61,7 +71,7 @@ export function useFilteredJourneys() {
       });
   }, []);
 
-  // 🔍 Apply filters + search
+  // 🔍 Apply filters
   useEffect(() => {
     if (!filtersReady) return;
 
@@ -126,7 +136,7 @@ export function useFilteredJourneys() {
         selectedFilters.types.length === 0 ||
         selectedFilters.types.every((t) =>
           interestTitlesByCategory.style.has(t)
-        ); // assuming 'types' are same as 'style'
+        );
 
       return (
         matchesSearch &&
@@ -162,7 +172,7 @@ export function useFilteredJourneys() {
     selectedFilters.price[1],
   ]);
 
-  // ✅ Update visible slice when visibleCount increases
+  // ✅ Update visible slice
   useEffect(() => {
     setVisibleJourneys(filteredJourneys.slice(0, visibleCount));
   }, [visibleCount, filteredJourneys]);
@@ -174,11 +184,12 @@ export function useFilteredJourneys() {
     filteredJourneys,
     visibleJourneys,
     selectedFilters,
-    setSelectedFilters: setSelectedFiltersStable, // 👈 stable version
+    setSelectedFilters: setSelectedFiltersStable,
     searchTerm,
     setSearchTerm,
     filtersReady,
     setFiltersReady,
     justClearedRef,
+    toggleCountry, // ✅ make sure this is returned!
   };
 }

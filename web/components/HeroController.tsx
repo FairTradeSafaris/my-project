@@ -152,12 +152,12 @@ function HomeFilters() {
           `{
             "interests": *[_type == "travelInterest" && isTopInterest == true] | order(sortOrder asc) { title },
             "luxuryRaw": *[_type == "journey"].star
-          }`
+          }`,
         );
 
         const topInterests = result.interests.map((i) => i.title);
         const luxuryUnique = Array.from(
-          new Set(result.luxuryRaw.filter((s): s is string => !!s))
+          new Set(result.luxuryRaw.filter((s): s is string => !!s)),
         ).slice(0, 5);
 
         setDestinations(topInterests);
@@ -175,9 +175,18 @@ function HomeFilters() {
       onSubmit={(e) => {
         e.preventDefault();
         const qs = new URLSearchParams();
-        destination.forEach((d) => qs.append("interest", d));
-        luxury.forEach((l) => qs.append("luxury", l));
-        router.push(`/journey?${qs.toString()}`);
+
+        if (destination.length) {
+          destination.forEach((d) =>
+            qs.append("signature", encodeURIComponent(d)),
+          );
+        }
+
+        if (luxury.length) {
+          luxury.forEach((l) => qs.append("luxury", encodeURIComponent(l)));
+        }
+
+        router.push(`/africansafariitineraries?${qs.toString()}`);
       }}
       className="relative z-[999] mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
       role="search"
@@ -241,23 +250,24 @@ function HeroView({
       id="hero"
     >
       {/* Mobile art-directed image */}
+      {/* Mobile image – DO NOT preload this */}
       <Image
         src={mobileSrc}
         alt={alt || "Hero background"}
         fill
-        priority
-        fetchPriority="high"
-        className="md:hidden object-cover object-center"
         sizes="100vw"
+        className="md:hidden object-cover object-center"
       />
+
+      {/* Desktop image – THIS is preloaded for LCP */}
       <Image
         src={desktopSrc}
         alt={alt || "Hero background"}
         fill
         priority
         fetchPriority="high"
-        className="hidden md:block object-cover object-center"
         sizes="100vw"
+        className="hidden md:block object-cover object-center"
       />
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
@@ -268,7 +278,7 @@ function HeroView({
             {pageLabel}
           </span>
         )}
-        {headline && (
+        {headline ? (
           <h1
             className={`font-extrabold leading-tight ${
               isHome
@@ -278,7 +288,12 @@ function HeroView({
           >
             {headline}
           </h1>
+        ) : (
+          <h1 className="sr-only">
+            Luxury African Safaris That Make a Difference
+          </h1> // fallback H1
         )}
+
         {sub && (
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-xl mb-2 md:mb-4 leading-snug drop-shadow">
             {sub}
@@ -298,7 +313,7 @@ type WithAssetUrl = { asset?: { url?: string } };
 
 /** Return a usable URL from either a SanityImageSource or an {asset:{url}} shape */
 function toUrl(
-  src?: SanityImageSource | WithAssetUrl | null
+  src?: SanityImageSource | WithAssetUrl | null,
 ): string | undefined {
   if (!src) return "/sunset-safari.webp";
 
@@ -383,7 +398,6 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
     /^\/project-portal/,
   ];
   const hideHero = pathname ? HIDE_ON.some((rx) => rx.test(pathname)) : false;
-
   useEffect(() => {
     if (!heroData) return;
 
@@ -403,10 +417,18 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
     };
 
     setHero(doc);
-    console.log("🔍 heroData.backgroundImages", heroData.backgroundImages);
+
+    console.log("🔍 heroData.backgroundImages:", heroData.backgroundImages);
+
+    const allImagesHaveUrl = (heroData.backgroundImages ?? []).every(
+      (img) => "url" in img && typeof img.url === "string",
+    );
+
+    console.log("🔎 Do all hero images have a `url` field?:", allImagesHaveUrl);
 
     const { desktop, mobile } = deriveBgUrls(heroData.backgroundImages);
     console.log("✅ derived background URLs:", { desktop, mobile });
+
     setBgDesktop(desktop);
     setBgMobile(mobile);
   }, [heroData]);
@@ -425,7 +447,7 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
         window.history.replaceState({}, "", newUrl);
       }, 300);
     },
-    [hero?.action]
+    [hero?.action],
   );
 
   const initialQ = searchParams?.get("q") ?? "";

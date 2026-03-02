@@ -6,9 +6,9 @@ import { client } from "@/lib/sanity";
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const slug = params.slug;
+  const { slug } = await params;
 
   const data = await client.fetch(
     `*[_type == "post" && slug.current == $slug][0]{

@@ -50,41 +50,17 @@ const portableComponents: Partial<PortableTextReactComponents> = {
     },
   },
   block: {
-    h1: ({ children }) => {
-      const hasContent = Array.isArray(children)
-        ? children.some(
-            (child) => typeof child === "string" && child.trim() !== "",
-          )
-        : !!children;
+    h1: ({ children }) => (
+      <h1 className="text-3xl sm:text-4xl font-bold my-4">{children}</h1>
+    ),
 
-      return hasContent ? (
-        <h1 className="text-3xl sm:text-4xl font-bold my-4">{children}</h1>
-      ) : null;
-    },
+    h2: ({ children }) => (
+      <h2 className="text-2xl sm:text-3xl font-semibold my-4">{children}</h2>
+    ),
 
-    h2: ({ children }) => {
-      const hasContent = Array.isArray(children)
-        ? children.some(
-            (child) => typeof child === "string" && child.trim() !== "",
-          )
-        : !!children;
-
-      return hasContent ? (
-        <h2 className="text-2xl sm:text-3xl font-semibold my-4">{children}</h2>
-      ) : null;
-    },
-
-    h3: ({ children }) => {
-      const hasContent = Array.isArray(children)
-        ? children.some(
-            (child) => typeof child === "string" && child.trim() !== "",
-          )
-        : !!children;
-
-      return hasContent ? (
-        <h3 className="text-xl sm:text-2xl font-semibold my-3">{children}</h3>
-      ) : null;
-    },
+    h3: ({ children }) => (
+      <h3 className="text-xl sm:text-2xl font-semibold my-3">{children}</h3>
+    ),
 
     normal: ({ children }) => (
       <p className="text-sm sm:text-base leading-snug mb-4">{children}</p>
@@ -130,8 +106,9 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
   const [openVideoIndex, setOpenVideoIndex] = useState<number | null>(null);
 
   return (
-    <div className="space-y-0 font-sans text-base sm:text-lg text-gray-800 leading-relaxed">
+    <div className="space-y-0 font-sans text-gray-800">
       {blocks?.map((block: any, index: number) => {
+        console.log("BLOCK TYPE:", block._type, block);
         switch (block._type) {
           case "heroBlock": {
             const imageUrl =
@@ -229,7 +206,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
             return (
               <section key={index} className={`${backgroundClass} w-full py-5`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                  <div className="prose max-w-none text-left sm:text-justify">
+                  <div className="max-w-none text-left sm:text-justify">
                     <PortableText
                       value={block.body}
                       components={portableComponents}
@@ -482,6 +459,17 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
             );
 
           default:
+            if (block._type === "block") {
+              return (
+                <div key={index} className="max-w-7xl mx-auto px-4 sm:px-6">
+                  <PortableText
+                    value={[block]}
+                    components={portableComponents}
+                  />
+                </div>
+              );
+            }
+
             return null;
         }
       })}

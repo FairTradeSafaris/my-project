@@ -199,12 +199,13 @@ async function getRelatedBlogs(destinationId: string): Promise<RelatedBlog[]> {
     { destinationId },
   );
 }
-type Props = {
-  params: { slug: string };
-};
 
-export async function generateMetadata(props: Props): Promise<Metadata> {
-  const { slug } = props.params;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
 
   const seo = await client.fetch(
     groq`*[_type == "blog" && slug.current == $slug][0]{
@@ -284,9 +285,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function BlogPost({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
 
   if (!slug) return notFound();
 

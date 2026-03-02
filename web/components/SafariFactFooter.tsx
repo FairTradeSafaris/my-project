@@ -10,6 +10,7 @@ import type { SanityImageAssetDocument } from "@sanity/client";
 type SocialLink = {
   platform: string;
   icon?: { asset?: SanityImageAssetDocument };
+  alt?: string;
   url: string;
 };
 
@@ -24,7 +25,7 @@ const fadeTransition = { duration: 0.35, ease: easeOutBezier } as const;
 export default function SafariFactFooter() {
   const [fact, setFact] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [logoUrl, setLogoUrl] = useState<string>("");
+
   const [exploreLinks, setExploreLinks] = useState<FooterLink[]>([]);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [connectLinks, setConnectLinks] = useState<ConnectLink[]>([]);
@@ -36,23 +37,41 @@ export default function SafariFactFooter() {
     { src: "/logos/fox.svg", alt: "FOX" },
     { src: "/logos/CBS_logo.svg", alt: "CBS" },
   ];
-
+  const [logoUrlMobile, setLogoUrlMobile] = useState<string>("");
+  const [logoUrlDesktop, setLogoUrlDesktop] = useState<string>("");
   useEffect(() => {
     const fetchFooter = async () => {
       try {
         const result = await client.fetch(
-          `*[_type == "footer"][0]{facts,lineArt{asset},logo{asset},exploreLinks,socialLinks[]{platform,icon{asset},url},connectLinks}`
+          `*[_type == "footer"][0]{
+    facts,
+    lineArt{asset},
+    logo{asset},
+    logoSmall{asset},
+    exploreLinks,
+    socialLinks[]{platform,icon{asset},alt,url},
+    connectLinks
+  }`,
         );
+
         if (result) {
           if (result.facts?.length) {
             setFact(
-              result.facts[Math.floor(Math.random() * result.facts.length)]
+              result.facts[Math.floor(Math.random() * result.facts.length)],
             );
           }
           setImageUrl(
-            result.lineArt?.asset ? urlFor(result.lineArt.asset).url() : ""
+            result.lineArt?.asset ? urlFor(result.lineArt.asset).url() : "",
           );
-          setLogoUrl(result.logo?.asset ? urlFor(result.logo.asset).url() : "");
+          setLogoUrlMobile(
+            result.logoSmall?.asset
+              ? urlFor(result.logoSmall.asset).url()
+              : urlFor(result.logo.asset).url(),
+          );
+          setLogoUrlDesktop(
+            result.logo?.asset ? urlFor(result.logo.asset).url() : "",
+          );
+
           setExploreLinks(result.exploreLinks || []);
           setConnectLinks(result.connectLinks || []);
           setSocialLinks(result.socialLinks || []);
@@ -112,15 +131,31 @@ export default function SafariFactFooter() {
           {loading ? (
             <div className="h-[56px] w-[220px] rounded-xl bg-black/5 animate-pulse" />
           ) : (
-            logoUrl && (
-              <Image
-                src={logoUrl}
-                alt="Fair Trade Safaris"
-                width={220}
-                height={56}
-                priority
-              />
-            )
+            <>
+              {/* Mobile logo */}
+              {logoUrlMobile && (
+                <Image
+                  src={logoUrlMobile}
+                  alt="Fair Trade Safaris"
+                  width={220}
+                  height={56}
+                  priority
+                  className="block md:hidden w-[180px] sm:w-[200px] h-auto"
+                />
+              )}
+
+              {/* Desktop logo */}
+              {logoUrlDesktop && (
+                <Image
+                  src={logoUrlDesktop}
+                  alt="Fair Trade Safaris"
+                  width={360}
+                  height={92}
+                  priority
+                  className="hidden md:block w-[220px] h-auto"
+                />
+              )}
+            </>
           )}
 
           <p className="mt-3 max-w-xs text-[#5a4836]">
@@ -154,7 +189,7 @@ export default function SafariFactFooter() {
                     : col1.map((l, i) => (
                         <li key={`col1-${i}`}>
                           <Link
-                            href={l.href}
+                            href={`${l.href.replace(/\/?$/, "/")}`}
                             className="hover:underline hover:text-black/80"
                           >
                             {l.label}
@@ -173,7 +208,7 @@ export default function SafariFactFooter() {
                     : col2.map((l, i) => (
                         <li key={`col2-${i}`}>
                           <Link
-                            href={l.href}
+                            href={`${l.href.replace(/\/?$/, "/")}`}
                             className="hover:underline hover:text-black/80"
                           >
                             {l.label}
@@ -239,10 +274,9 @@ export default function SafariFactFooter() {
               {s.icon?.asset && (
                 <Image
                   src={urlFor(s.icon.asset).width(44).height(44).url()}
-                  alt=""
+                  alt={s.alt || s.platform}
                   width={44}
                   height={44}
-                  aria-hidden
                 />
               )}
             </a>
@@ -253,7 +287,7 @@ export default function SafariFactFooter() {
       {/* Bottom bar */}
       <div className="relative z-10 text-xs py-2.5 mt-2 border-t border-[#d2c2a3] bg-[#eadfca]/60 backdrop-blur-sm px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-          <Link href="/privacy" className="underline hover:text-black">
+          <Link href="/privacy/" className="underline hover:text-black">
             Privacy Policy
           </Link>
           <p className="opacity-80">

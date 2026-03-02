@@ -5,9 +5,15 @@ import withPWA from "next-pwa";
 import type { NextConfig } from "next";
 import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
-// ✅ Base config
+import withBundleAnalyzerInit from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = withBundleAnalyzerInit({
+  enabled: false, // 🔕 Turned off
+});
+
 const baseConfig: NextConfig = {
   reactStrictMode: true,
+  trailingSlash: true, // ✅ Enforce trailing slashes
 
   serverExternalPackages: ["@clerk/clerk-sdk-node"],
 
@@ -58,19 +64,48 @@ const baseConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/",
+        source: "/:path*",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, s-maxage=600, stale-while-revalidate=59",
+            value: "public, max-age=0, must-revalidate",
           },
         ],
       },
     ];
   },
+
+  async redirects() {
+    return [
+      // Redirect non-www to www
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "fairtradesafaris.com",
+          },
+        ],
+        destination: "https://www.fairtradesafaris.com/:path*",
+        permanent: true,
+      },
+      // ✅ Optional: Redirect non-trailing slash to trailing slash (safety net)
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "header",
+            key: "x-vercel-matched-path-no-trailing-slash",
+          },
+        ],
+        destination: "/:path*/",
+        permanent: true,
+      },
+    ];
+  },
 };
 
-// ✅ Runtime caching (no type needed)
+// Runtime caching config
 const runtimeCaching = [
   {
     urlPattern: ({ request }: { request: Request }) =>
@@ -113,7 +148,7 @@ const runtimeCaching = [
   },
 ];
 
-// ✅ Wrap and export final config with PWA
+// Export wrapped config
 const finalConfig = withPWA({
   dest: "public",
   register: true,
@@ -125,4 +160,4 @@ const finalConfig = withPWA({
   },
 })(baseConfig);
 
-export default finalConfig;
+export default withBundleAnalyzer(finalConfig);

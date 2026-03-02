@@ -10,7 +10,20 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // Your existing Next.js and TS config
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+
+  // ✅ Custom override to disable TS linting for .cjs files
+  {
+    files: ["**/*.cjs"],
+    languageOptions: {
+      sourceType: "commonjs", // Important: tells ESLint this is CommonJS, not ESM
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-var-requires": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

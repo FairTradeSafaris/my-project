@@ -16,5 +16,17 @@ export default defineType({
       title: 'Author / Source',
       type: 'string',
     }),
+    defineField({
+      name: 'backgroundStyle',
+      title: 'Background Style',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Default (White)', value: 'default'},
+          {title: 'Soft Neutral', value: 'neutral'},
+        ],
+      },
+      initialValue: 'default',
+    }),
   ],
 })

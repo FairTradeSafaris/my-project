@@ -5,6 +5,7 @@ import VideoTestimonialCard from "./VideoTestimonialCard";
 export type VideoTestimonial = {
   _id: string;
   name: string;
+  slug: string;
   location: string;
   videoUrl: string;
   quote: string;

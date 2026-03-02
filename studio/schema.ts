@@ -1,3 +1,5 @@
+// ./schema.ts
+
 import blog from './schemas/blog'
 import footer from './schemas/footer'
 import ctaBanner from './schemas/ctaBanner'
@@ -34,6 +36,7 @@ import ctaBlock from './schemas/blocks/ctaBlock'
 import mapBlock from './schemas/blocks/mapBlock'
 import zohoForm from './schemas/blocks/zohoForm'
 import smartCarousel from './schemas/blocks/smartCarousel'
+
 import author from './schemas/author'
 import teamMember from './schemas/teamMember'
 import foundersPromise from './schemas/founderPromise'
@@ -47,7 +50,16 @@ import travelInterest from './schemas/journeys/travelInterest'
 import contactSettings from './schemas/contactSettings'
 import filterLabels from './schemas/settings/filterLabels'
 import wishlist from './schemas/wishlist'
-
+import nonProfit from './schemas/nonProfit'
+import redirect from './schemas/redirect'
+import organization from './schemas/organization' // ✅ Added here
+import customJourneyCta from './schemas/customJourneyCta' // ✅ NEW
+import tag from './schemas/tag'
+import {imageOrGallery} from './schemas/objects/imageOrGallery'
+import leadMagnetPopup from './schemas/leadMagnetPopup'
+import pillarPage from './schemas/pillarPage'
+import teamPage from './schemas/teamPage'
+import category from './schemas/category'
 const schemaTypes = [
   blog,
   comments,
@@ -70,6 +82,7 @@ const schemaTypes = [
   sitePages,
   ambassador,
   globalsettings,
+
   // ⬇️ Registering new blocks
   heroImage,
   textImage,
@@ -81,6 +94,7 @@ const schemaTypes = [
   mapBlock,
   zohoForm,
   smartCarousel,
+
   author,
   teamMember,
   foundersPromise,
@@ -96,7 +110,16 @@ const schemaTypes = [
   contactSettings,
   filterLabels,
   wishlist,
+  nonProfit,
+  redirect,
+  organization, // ✅ Needed by sitePages
+  customJourneyCta,
+  tag,
+  imageOrGallery,
+  leadMagnetPopup,
+  pillarPage,
+  teamPage,
+  category,
 ]
 
-// ✅ This is the only change:
 export default schemaTypes

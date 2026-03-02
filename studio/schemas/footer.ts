@@ -28,6 +28,15 @@ export default defineType({
       },
     }),
     defineField({
+      name: 'logoSmall',
+      title: 'Logo Image (Optimized for Footer)',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+    }),
+
+    defineField({
       name: 'contactEmail',
       title: 'Contact Email',
       type: 'string',
@@ -42,11 +51,13 @@ export default defineType({
           fields: [
             {name: 'platform', type: 'string', title: 'Platform'},
             {name: 'icon', type: 'image', title: 'Icon'},
+            {name: 'alt', type: 'string', title: 'Alt Text for Icon'},
             {name: 'url', type: 'url', title: 'URL'},
           ],
         },
       ],
     }),
+
     defineField({
       name: 'connectLinks',
       title: 'Connect Links',

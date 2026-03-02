@@ -1,12 +1,13 @@
-// lib/getSanityMetadata.ts
 import { client as sanity } from "@/lib/sanity";
 import type { Metadata } from "next";
 
-export async function getSanityMetadata(
-  slug: string
-): Promise<{ metadata: Metadata; structuredData?: object }> {
+export async function getSanityMetadata(slug: string): Promise<{
+  metadata: Metadata;
+  canonicalUrl?: string;
+}> {
   const data = await sanity.fetch(
     `*[_type == "sitePages" && slug.current == $slug][0]{
+      slug,
       metaTitle,
       metaDescription,
       ogImage {
@@ -14,33 +15,28 @@ export async function getSanityMetadata(
         alt
       },
       noIndex,
-      structuredData
+      canonicalUrl
     }`,
     { slug }
   );
 
-  const title =
-    data?.metaTitle || "Fair Trade Safaris – Ethical Luxury Safari Travel";
-
-  const description =
-    data?.metaDescription ||
+  // Fallback values
+  const defaultTitle = "Fair Trade Safaris – Ethical Luxury Safari Travel";
+  const defaultDescription =
     "Explore ethical African safaris with heart, luxury, and purpose.";
-
-  const ogImageUrl =
-    data?.ogImage?.asset?.url ||
+  const defaultOgImage =
     "https://www.fairtradesafaris.com/images/default-og.jpg";
-
   const slugPath = slug === "home" ? "" : slug;
 
-  // ✅ Parse structuredData safely
-  let parsedStructuredData: object | undefined = undefined;
-  if (data?.structuredData) {
-    try {
-      parsedStructuredData = JSON.parse(data.structuredData);
-    } catch (e) {
-      console.warn("Invalid JSON-LD in Sanity:", e);
-    }
-  }
+  // 🧼 Strip any HTML tags that may have been entered in Sanity
+  const stripTags = (input: string = "") =>
+    input.replace(/<[^>]*>/g, "").trim();
+
+  const title = stripTags(data?.metaTitle) || defaultTitle;
+  const description = stripTags(data?.metaDescription) || defaultDescription;
+  const ogImageUrl = data?.ogImage?.asset?.url || defaultOgImage;
+  const canonical =
+    data?.canonicalUrl || `https://www.fairtradesafaris.com/${slugPath}`;
 
   const metadata: Metadata = {
     title,
@@ -52,7 +48,7 @@ export async function getSanityMetadata(
     openGraph: {
       title,
       description,
-      url: `https://www.fairtradesafaris.com/${slugPath}`,
+      url: canonical,
       siteName: "Fair Trade Safaris",
       type: "website",
       images: [
@@ -70,14 +66,11 @@ export async function getSanityMetadata(
       description,
       images: [ogImageUrl],
     },
-    robots: {
-      index: !data?.noIndex,
-      follow: true,
-    },
+    robots: data?.noIndex === true ? "noindex, nofollow" : "index, follow",
   };
 
   return {
     metadata,
-    structuredData: parsedStructuredData,
+    canonicalUrl: canonical,
   };
 }

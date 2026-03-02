@@ -7,6 +7,7 @@ import { Search, X } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -20,9 +21,9 @@ type FeatureCard = {
 
 type Props = {
   onClose: () => void;
-  navSections?: NavSection[]; // if you want to inject custom lists
-  featureCards?: FeatureCard[]; // optional
-  promoCard?: FeatureCard; // optional
+  navSections?: NavSection[];
+  featureCards?: FeatureCard[];
+  promoCard?: FeatureCard;
 };
 
 function cx(...classes: (string | false | undefined)[]) {
@@ -33,7 +34,7 @@ function BadgeVisual({ size }: { size: number }) {
   return (
     <>
       <Image
-        src="/logos/badge-light.png"
+        src="/logos/badge-light.webp"
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
@@ -52,17 +53,37 @@ function BadgeVisual({ size }: { size: number }) {
   );
 }
 
+// ✅ NEW: Wrapper to delay Clerk usage until after cookieConsent
+function ClerkMenuSection({ onClose }: { onClose: () => void }) {
+  return (
+    <>
+      <SignedIn>
+        <CustomUserMenu />
+      </SignedIn>
+      <SignedOut>
+        <Link
+          href="/sign-in/"
+          onClick={onClose}
+          className="px-3 py-2 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm font-medium"
+        >
+          Sign in
+        </Link>
+      </SignedOut>
+    </>
+  );
+}
+
 export default function MobileMenuSheet({
   onClose,
   navSections = [
     {
       links: [
-        { title: "Journey", href: "/journey" },
-        { title: "Safari Destinations", href: "/destinations" },
-        { title: "Book a Discovery Call", href: "/contact" },
-        { title: "Meet the Team", href: "/team" },
-        { title: "Collabs & Ambassadors", href: "/collabs" },
-        { title: "Client Testimonials", href: "/testimonials" },
+        { title: "Safari Itineraries", href: "/africansafariitineraries/" },
+        { title: "Safari Destinations", href: "/destination/" },
+        { title: "Book a Discovery Call", href: "/contact/" },
+        { title: "Meet the Team", href: "/team/" },
+        { title: "Collabs & Ambassadors", href: "/collabs/" },
+        { title: "Client Testimonials", href: "/testimonials/" },
       ],
     },
   ],
@@ -70,6 +91,22 @@ export default function MobileMenuSheet({
   promoCard,
 }: Props) {
   const pathname = usePathname();
+  const [hasConsent, setHasConsent] = useState(false);
+
+  // ✅ Cookie Consent Tracker
+  useEffect(() => {
+    const stored = localStorage.getItem("cookieConsent");
+    if (stored === "accepted") setHasConsent(true);
+
+    const handler = (e: StorageEvent) => {
+      if (e.key === "cookieConsent" && e.newValue === "accepted") {
+        setHasConsent(true);
+      }
+    };
+
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
 
   return (
     <>
@@ -83,7 +120,6 @@ export default function MobileMenuSheet({
         aria-hidden="true"
       />
 
-      {/* Panel (owns scroll) */}
       <motion.div
         initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -100,7 +136,7 @@ export default function MobileMenuSheet({
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        {/* Sticky top inside sheet (no 'Explore' text) */}
+        {/* Header */}
         <div className="sticky top-0 z-10 h-14 px-4 flex items-center justify-between border-b border-black/5 dark:border-white/10 bg-white/95 dark:bg-neutral-900/95 backdrop-blur">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-[#d7ccc8] dark:bg-[#1f1410] grid place-items-center shadow-sm">
@@ -119,10 +155,10 @@ export default function MobileMenuSheet({
           </button>
         </div>
 
-        {/* Search / Sign in row */}
+        {/* Search + Clerk Auth */}
         <div className="px-4 py-3 border-b border-black/5 dark:border-white/10 flex items-center gap-3">
           <Link
-            href="/journey"
+            href="/africansafariitineraries/"
             onClick={onClose}
             className="flex-1 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 px-4 grid grid-cols-[20px_1fr] items-center gap-3 text-sm"
           >
@@ -134,23 +170,14 @@ export default function MobileMenuSheet({
               Search journeys
             </span>
           </Link>
-          <SignedIn>
-            <CustomUserMenu />
-          </SignedIn>
-          <SignedOut>
-            <Link
-              href="/sign-in"
-              onClick={onClose}
-              className="px-3 py-2 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm font-medium"
-            >
-              Sign in
-            </Link>
-          </SignedOut>
+
+          {/* ✅ Render Clerk stuff only if consent accepted */}
+          {hasConsent && <ClerkMenuSection onClose={onClose} />}
         </div>
 
         {/* Scroll area */}
         <div className="flex-1 overflow-y-auto">
-          {/* Main links (no 'Explore' heading) */}
+          {/* Main nav links */}
           <div className="px-2 py-3">
             <ul className="space-y-1">
               {navSections
@@ -164,7 +191,7 @@ export default function MobileMenuSheet({
                           "text-neutral-900 dark:text-neutral-100",
                           pathname === item.href
                             ? "bg-neutral-200 dark:bg-neutral-800 font-semibold"
-                            : "bg-neutral-100 dark:bg-neutral-800/60 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                            : "bg-neutral-100 dark:bg-neutral-800/60 hover:bg-neutral-200 dark:hover:bg-neutral-700",
                         )}
                       >
                         {item.title}
@@ -182,7 +209,7 @@ export default function MobileMenuSheet({
                 Featured
               </h3>
               <ul className="space-y-2">
-                {featureCards.slice(0, 3).map((card, idx) => (
+                {featureCards.map((card, idx) => (
                   <li key={`feat-${idx}`}>
                     <Link
                       href={card.link}

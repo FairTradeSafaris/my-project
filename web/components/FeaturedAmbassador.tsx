@@ -4,6 +4,7 @@ import { PortableText } from "@portabletext/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { client } from "@/lib/sanity";
+import Link from "next/link";
 import {
   Facebook,
   Globe,
@@ -23,6 +24,7 @@ type Ambassador = {
   name: string;
   role: string;
   description: TypedObject[];
+  slug?: { current: string };
   ctaLabel?: string;
   ctaLink?: string;
   image?: string;
@@ -46,15 +48,16 @@ export default function FeaturedAmbassador() {
       try {
         const result = await client.fetch<Ambassador>(
           `*[_type == "ambassador" && featured == true][0]{
-    _id,
-    name,
-    role,
-    description,
-    ctaLabel,
-    ctaLink,
-    "image": image.asset->url,
-    socials
-  }`
+            _id,
+            name,
+            role,
+            description,
+            slug,
+            ctaLabel,
+            ctaLink,
+            "image": image.asset->url,
+            socials
+          }`,
         );
 
         setAmbassador(result || null);
@@ -71,14 +74,26 @@ export default function FeaturedAmbassador() {
   return (
     <section className="relative py-20 bg-[#fdf3e9] text-black">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
-          Featured Connection
-        </h2>
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl font-bold">
+            Featured Connection
+          </h2>
 
-        <div className="flex flex-col md:flex-row items-start gap-8 bg-white rounded-xl shadow-md p-8">
-          {/* Left: Image */}
-          {ambassador.image && (
-            <div className="w-full md:w-1/3 flex-shrink-0">
+          <Link
+            href="/ambassadors"
+            className="inline-block mt-4 text-sm font-medium text-[#5a3e2b] hover:text-black transition"
+          >
+            See All Connections →
+          </Link>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-start gap-8 bg-white rounded-xl shadow-md p-8 hover:shadow-lg transition">
+          {/* Image */}
+          {ambassador.image && ambassador.slug?.current ? (
+            <Link
+              href={`/ambassadors/${ambassador.slug.current}`}
+              className="w-full md:w-1/3 flex-shrink-0 block"
+            >
               <Image
                 src={ambassador.image}
                 alt={ambassador.name}
@@ -87,12 +102,37 @@ export default function FeaturedAmbassador() {
                 className="rounded-lg object-cover w-full"
                 unoptimized
               />
-            </div>
+            </Link>
+          ) : (
+            ambassador.image && (
+              <div className="w-full md:w-1/3 flex-shrink-0">
+                <Image
+                  src={ambassador.image}
+                  alt={ambassador.name}
+                  width={400}
+                  height={400}
+                  className="rounded-lg object-cover w-full"
+                  unoptimized
+                />
+              </div>
+            )
           )}
 
-          {/* Right: Text */}
+          {/* Text */}
           <div className="w-full md:w-2/3">
-            <h3 className="text-2xl font-semibold mb-1">{ambassador.name}</h3>
+            {ambassador.slug?.current ? (
+              <Link
+                href={`/ambassadors/${ambassador.slug.current}`}
+                className="block"
+              >
+                <h3 className="text-2xl font-semibold mb-1 hover:text-[#5a3e2b] transition">
+                  {ambassador.name}
+                </h3>
+              </Link>
+            ) : (
+              <h3 className="text-2xl font-semibold mb-1">{ambassador.name}</h3>
+            )}
+
             <p className="text-sm text-gray-500 mb-4">{ambassador.role}</p>
 
             <div className="prose prose-sm text-gray-800 max-w-none">

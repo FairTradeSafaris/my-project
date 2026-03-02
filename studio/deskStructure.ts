@@ -1,9 +1,10 @@
-// studio/deskStructure.ts
-
 import {StructureBuilder} from 'sanity/desk'
 
-// ✅ Import the filterLabels schema
+// ✅ Existing imports
 import filterLabels from './schemas/settings/filterLabels'
+
+// ✅ NEW import
+import leadMagnetPopup from './schemas/leadMagnetPopup'
 
 export const myStructure = (S: StructureBuilder) =>
   S.list()
@@ -36,18 +37,29 @@ export const myStructure = (S: StructureBuilder) =>
               S.documentTypeListItem('blog').title('📝 Blog'),
               S.documentTypeListItem('comment').title('💬 Comments'),
               S.documentTypeListItem('author').title('✍️ Author'),
+              S.documentTypeListItem('tag').title('🏷️ Tags'),
+              S.documentTypeListItem('category').title('Category'),
             ]),
         ),
-
+      // 🏛️ Core / Flagship Pages
+      S.listItem()
+        .title('🏛️ Core Pages')
+        .child(
+          S.list()
+            .title('Core Commercial Pages')
+            .items([S.documentTypeListItem('pillarPage').title('Pillar Pages')]),
+        ),
       // 👥 People
       S.listItem()
         .title('👥 People')
         .child(
           S.list()
-            .title('Team & Ambassadors')
+            .title('People & Partners')
             .items([
               S.documentTypeListItem('teamMember').title('Team Members'),
+              S.documentTypeListItem('teamPage').title('Team Page Setup'),
               S.documentTypeListItem('ambassador').title('Ambassadors'),
+              S.documentTypeListItem('nonProfit').title('Non-Profit Partners'),
             ]),
         ),
 
@@ -83,8 +95,12 @@ export const myStructure = (S: StructureBuilder) =>
               S.documentTypeListItem('privacyPolicy').title('Privacy Policy'),
               S.documentTypeListItem('footer').title('Footer'),
 
-              // ✅ Add Filter Labels here
               S.documentTypeListItem('filterLabels').title('Filter Labels'),
+              S.documentTypeListItem('redirect').title('Redirects'),
+
+              // ✅ NEW: Lead Magnet Popup
+              S.documentTypeListItem('leadMagnetPopup').title('Lead Magnet Popup'),
+
               S.listItem()
                 .title('Travel Interests')
                 .schemaType('travelInterest')
@@ -108,6 +124,7 @@ export const myStructure = (S: StructureBuilder) =>
               S.documentTypeListItem('region').title('Regions'),
               S.documentTypeListItem('country').title('Countries'),
               S.documentTypeListItem('featuredJourney').title('Featured Journeys'),
+              S.documentTypeListItem('customJourneyCta').title('Custom Journey CTA'),
               S.documentTypeListItem('dest_slug').title('Destination Slugs'),
             ]),
         ),
@@ -122,8 +139,7 @@ export const myStructure = (S: StructureBuilder) =>
             .documentId('contactSettings'),
         ),
 
-      // 📨 Lead Forms
-      // 🧑‍💼 User Activity (renamed from Lead Forms)
+      // 🧑‍💼 User Activity
       S.listItem()
         .title('🧑‍💼 User Activity')
         .child(
@@ -132,7 +148,7 @@ export const myStructure = (S: StructureBuilder) =>
             .items([
               S.documentTypeListItem('leadMagnetClaim').title('Lead Magnet Downloads'),
               S.documentTypeListItem('travelInterest').title('Travel Interest Form'),
-              S.documentTypeListItem('wishlist').title('User Wishlists'), // ✅ NEW
+              S.documentTypeListItem('wishlist').title('User Wishlists'),
             ]),
         ),
 

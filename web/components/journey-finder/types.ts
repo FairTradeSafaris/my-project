@@ -3,6 +3,7 @@ import type { PortableTextBlock } from "@portabletext/types";
 // ─────────────────────────────────────────────────────────
 // Journey Interface (with destination-level country fields)
 // ─────────────────────────────────────────────────────────
+
 export interface Journey {
   _id: string; // ✅ Required for wishlist reference
 
@@ -25,8 +26,15 @@ export interface Journey {
 
   interests?: {
     title: string;
-    category: string;
+    category?: {
+      title?: string;
+    };
     isTopInterest?: boolean;
+  }[];
+
+  activities?: {
+    title: string;
+    isTopActivity?: boolean;
   }[];
 
   countries?: {
@@ -43,6 +51,12 @@ export interface Journey {
     mapLocation?: string | null;
   }[];
 
+  destinations?: {
+    title: string;
+    region?: string;
+    ranking?: number;
+  }[];
+
   travelInfo?: PortableTextBlock[] | null;
   highlights?: PortableTextBlock[] | null;
   practicalStuff?:
@@ -57,9 +71,10 @@ export interface Journey {
 // ─────────────────────────────────────────────────────────
 // Filters & Related Types
 // ─────────────────────────────────────────────────────────
+
 export type Filters = {
   region: string;
-  country: string[];
+  country: string[]; // ✅ can rename to destination[] later if needed
   star: string[];
   signature: string[];
   style: string[];
@@ -71,7 +86,7 @@ export type Filters = {
 
 export type FilterOptions = {
   regions: string[];
-  countries: string[];
+  countries: string[]; // ✅ can rename to destinations[] later if needed
   signature: string[];
   style: string[];
   feature: string[];
@@ -95,6 +110,7 @@ export type CollapsedMap = {
 // ─────────────────────────────────────────────────────────
 // Destination (single country from a journey)
 // ─────────────────────────────────────────────────────────
+
 export type Destination = {
   title: string;
   image?: string | null;

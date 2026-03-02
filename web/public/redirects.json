@@ -1,0 +1,702 @@
+[
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/savannah-explorations"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/10-of-africas-most-endangered-animals-and-where-to-see-them"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/2022/10"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/journey"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/ali-nahid-khataw-inspiring-journey"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/itinerary/CA251378-8CCC-4211-AFB6-1DF4DDBE73B6"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/10-top-places-to-visit-in-malawi-africa"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/wildaidtrip/"
+  },
+  {
+    "destination": "/authors/devon-heuer",
+    "permanent": true,
+    "source": "/author/geri"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/animals-to-look-out-for-on-an-african-night-safari"
+  },
+  {
+    "destination": "/destination/namibia",
+    "permanent": true,
+    "source": "/trips/destinations/namibia"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/2020/12"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/animals-to-look-out-for-on-an-african-night-safari"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/landing"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/community-tourism"
+  },
+  {
+    "destination": "/authors/devon-heuer",
+    "permanent": true,
+    "source": "/author/andres/page/11"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/ten-oddball-mammals-to-look-out-for-on-an-african-safari"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/eco-conscious-travel"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/the-spectacular-spiral-horned-antelopes-and-where-to-see-them-on-an-african-safari"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/kenyas-top-off-the-beaten-track-safari-and-wildlife-destinations/"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/trips/destinations"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/trips/destinations/mt-kilimanjaro"
+  },
+  {
+    "destination": "/destination/mozambique",
+    "permanent": true,
+    "source": "/trips/destinations/mozambique"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/africa-photography"
+  },
+  {
+    "destination": "/destination/namibia",
+    "permanent": true,
+    "source": "/destinations/namibia"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/trip-to-kenya"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/blog/page/13"
+  },
+  {
+    "destination": "/authors/devon-heuer",
+    "permanent": true,
+    "source": "/author/andres"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/top-10-things-to-do-in-and-around-mombasa"
+  },
+  {
+    "destination": "/destination",
+    "permanent": true,
+    "source": "/destinations"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/?p=8336"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/african-safari-adventure-ally"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/travel/speaking-the-safari-lingo"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/typologies-packages/big-5/feed"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/reptiles-to-look-out-for-on-an-african-safari"
+  },
+  {
+    "destination": "/destinations/zimbabwe",
+    "permanent": true,
+    "source": "/trips/destinations/zimbabwe"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/trips/destinations/zimbabwe/"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/africa-best-safari-destinations-for-apes-and-monkeys"
+  },
+  {
+    "destination": "/blog/beyond-the-big-five-africa-s-hidden-wildlife-gems-and-where-to-spot-them",
+    "permanent": true,
+    "source": "/news/africas-almost-as-big-five"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/top-10-museums-to-visit-in-cape-town-south-africa"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/ultimate-cool-down-safari-spots-away-from-heat"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/a-look-back-to-fts-2021"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/unboxing-the-serengeti-mara-ecosystem"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/beyond-the-wild"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/meet-the-little-five"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/exploring-kenyas-rift-valley-lakes"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/10-amazing-wildlife-experiences-in-and-around-cape-town"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/everything-you-need-to-know-about-african-wild-dogs-and-where-to-see-them"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/about-fts/"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/diy-safari-vs-expert-planning"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/feed"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/ethical-travel"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/2024/06"
+  },
+  {
+    "destination": "/videoTestimonial",
+    "permanent": true,
+    "source": "/testimonials-category/traveler"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/top-birding-hotspots-in-southern-africa/"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/trips/destinations"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/2024/12"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/ten-top-tips-for-spotting-wildlife-on-a-safari-in-africa"
+  },
+  {
+    "destination": "/africansafariitineraries/cape-town-and-big-five-safari",
+    "permanent": true,
+    "source": "/africansafariitineraries/Cape%20Town%20&%20Big%20Five%20Safari"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/vacation"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/top-10-adventure-activities-and-destinations-in-southern-africa"
+  },
+  {
+    "destination": "/destination/rwanda",
+    "permanent": true,
+    "source": "/trips/destinations/rwanda"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/itineraries"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news"
+  },
+  {
+    "destination": "/blog/east-africa-s-10-cultural-unesco-world-heritage-sites-to-explore-in-2025",
+    "permanent": true,
+    "source": "/news/east-africas-10-cultural-unesco-world-heritage-sites"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/safari-planning"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/2021/10"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/cultural"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/top-10-safari-destinations-in-botswana"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/the-best-safari-destinations-in-africa-to-see-leopards"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/12-best-things-to-do-in-and-around-victoria-falls"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/packages/tanzania-kenya-wildlife"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/about-us"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/great-walking-experiences-in-africa"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/why-fts"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/the-spectacular-spiral-horned-antelopes-and-where-to-see-them-on-an-african-safari"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/photographic-tips-for-your-african-safari"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/everything-you-need-to-know-about-africas-giraffes"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/tag/zanzibar"
+  },
+  {
+    "destination": "/destination/tanzania",
+    "permanent": true,
+    "source": "/trips/destinations/tanzania"
+  },
+  {
+    "destination": "/videoTestimonial",
+    "permanent": true,
+    "source": "/testimonials"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/itinerary/tanzania-nat-geo-style"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/trip-to-tanzania"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/africas-best-post-safari-beach-retreats"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/null"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/trees"
+  },
+  {
+    "destination": "/privacy",
+    "permanent": true,
+    "source": "/privacy-policy"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/african-wildlife"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/ten-record-setting-destinations-in-tanzania"
+  },
+  {
+    "destination": "/blog/eric-bear-championing-sustainable-travel-and-wildlife-conservation",
+    "permanent": true,
+    "source": "/eric-bear-championing-sustainable-travel-and-wildlife-conservation"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/cameras-not-guns"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/guillaume"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/travel-photography"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/10-iconic-trees-to-look-out-for-on-an-african-safari/&sa=U"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/travel/our-favorite-places-to-visit-on-a-safari-to-zambia-and-zimbabwe"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/apple-app-site-association"
+  },
+  {
+    "destination": "/ambassadors",
+    "permanent": true,
+    "source": "/khataw"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/beyond-the-wild"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/everything-you-need-to-know-about-african-wild-dogs-and-where-to-see-them"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/honeymoon-escapes"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/tailoring-your-dream-safari"
+  },
+  {
+    "destination": "/africansafariitineraries/",
+    "permanent": true,
+    "source": "/itineraries-and-packages"
+  },
+  {
+    "destination": "/destination",
+    "permanent": true,
+    "source": "/destinations"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/information-travel-africa"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/purposeful-travel-fair-trade-safaris-experience"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/east-africa-vs-southern-africa"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/east-africa-vs-southern-africa"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/introducing-africas-legendary-big-five"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/eco-friendly-travel"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/everything-you-need-to-know-about-africas-giraffes"
+  },
+  {
+    "destination": "/contact",
+    "permanent": true,
+    "source": "/contact-us"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/best-of-northern-tanzania-safari-circuit"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/10-best-places-to-visit-on-kenyas-swahili-coast"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/where-and-when-to-catch-east-africas-legendary-wildebeest-migration"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/eight-reasons-to-visit-ngorongoro-conservation-area"
+  },
+  {
+    "destination": "/destination/tanzania",
+    "permanent": true,
+    "source": "/tag/south-africa"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/safari-conservation"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/12-best-things-to-do-in-and-around-victoria-falls"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/tag/zanzibar"
+  },
+  {
+    "destination": "/destination/seychelles",
+    "permanent": true,
+    "source": "/trips/destinations/indian-ocean-islands"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/everything-you-need-to-know-about-african-wild-dogs-and-where-to-see-them"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/great-walking-experiences-in-africa"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/10-of-africas-most-worthwhile-off-the-beaten-track-safari-destinations"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/east-or-south-africa-safari-how-to-choose-the-one-that-speaks-to-your-soul"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/10-best-indian-ocean-island-destinations-offshore-of-africa/&sa=U"
+  },
+  {
+    "destination": "/blog/2024-a-year-of-gratitude-connection-and-impact-with-fair-trade-safaris",
+    "permanent": true,
+    "source": "/adventure/2024-year-of-impact-fair-trade-safaris"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/category/summer"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/sustainable-tourism"
+  },
+  {
+    "destination": "/ambassadors",
+    "permanent": true,
+    "source": "/Khataw"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/10-of-africas-most-worthwhile-off-the-beaten-track-safari-destinations"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/news/seven-magnificent-mammal-migrations-to-add-to-your-africa-bucket-list"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/trips/destinations/madagascar"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/home"
+  },
+  {
+    "destination": "/",
+    "permanent": true,
+    "source": "/2022/06"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/blog/page/8"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/author/andres/page/5"
+  },
+  {
+    "destination": "/africansafariitineraries",
+    "permanent": true,
+    "source": "/trips"
+  },
+  {
+    "destination": "/blog",
+    "permanent": true,
+    "source": "/adventure/15-heavyweight-birds-to-look-out-for-on-an-african-safari"
+  }
+]

@@ -7,7 +7,7 @@ export const client = createClient({
   projectId: "jw971r14",
   dataset: "production",
   apiVersion: "2023-01-01", // or today's date
-  useCdn: false,
+  useCdn: true,
 });
 
 // 🔧 URL builder

@@ -1,8 +1,6 @@
 // app/robots.txt/route.ts
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 export async function GET() {
   const isProduction = process.env.NODE_ENV === "production";
 
@@ -10,6 +8,7 @@ export async function GET() {
     ? `
 User-agent: *
 Allow: /
+Disallow: /*?_rsc=
 
 User-agent: GPTBot
 Allow: /
@@ -20,7 +19,6 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Host: https://www.fairtradesafaris.com
 Sitemap: https://www.fairtradesafaris.com/sitemap.xml
 `.trim()
     : `

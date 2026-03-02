@@ -97,7 +97,7 @@ function SearchForm({
     const params = new URLSearchParams();
     if (selectedDestination) params.set("destination", selectedDestination);
     if (selectedLuxury) params.set("luxury", selectedLuxury);
-    router.push(`/journey?${params.toString()}`);
+    router.push(`/africansafariitineraries?${params.toString()}`);
     if (isMobile && onClose) onClose();
   };
 

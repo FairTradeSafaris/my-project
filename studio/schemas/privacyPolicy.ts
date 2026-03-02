@@ -1,6 +1,6 @@
 export default {
   name: 'privacyPolicy',
-  title: 'Privacy Policy',
+  title: 'Fair Trade Safaris Privacy Policy',
   type: 'document',
   fields: [
     {

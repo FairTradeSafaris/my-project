@@ -18,18 +18,20 @@ export default defineType({
     }),
     defineField({
       name: 'slug',
-      title: 'Slug (Optional)',
+      title: 'Slug',
       type: 'slug',
       options: {
         source: 'name',
         maxLength: 96,
       },
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'image',
       title: 'Profile Image',
       type: 'image',
       options: {hotspot: true},
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'description',
@@ -78,6 +80,7 @@ export default defineType({
               name: 'url',
               title: 'Profile URL',
               type: 'url',
+              validation: (Rule) => Rule.uri({scheme: ['https', 'http']}),
             },
             {
               name: 'icon',

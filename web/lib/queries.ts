@@ -6,10 +6,16 @@ export const faqCategoriesQuery = /* groq */ `
   "items": coalesce(
     questions[]->{
       _id, question, answer, keywords, order
-    } | order(order asc)[0...6],
+    } | order(order asc),
     *[_type=="faqQuestion" && references(^._id)]{
       _id, question, answer, keywords, order
-    } | order(order asc, question asc)[0...6]
+    } | order(order asc, question asc)
   )
+}
+`;
+export const journeyFilterBoundsQuery = /* groq */ `
+*[_type == "journey"]{
+  price,
+  duration
 }
 `;

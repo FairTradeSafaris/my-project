@@ -5,12 +5,16 @@ export default defineType({
   title: 'Author',
   type: 'document',
   fields: [
+    // -------------------------------------------------------
+    // BASIC AUTHOR INFO (existing)
+    // -------------------------------------------------------
     defineField({
       name: 'name',
       title: 'Name',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
+
     defineField({
       name: 'slug',
       title: 'Slug',
@@ -18,11 +22,13 @@ export default defineType({
       options: {source: 'name'},
       validation: (Rule) => Rule.required(),
     }),
+
     defineField({
       name: 'bio',
       title: 'Bio',
       type: 'text',
     }),
+
     defineField({
       name: 'image',
       title: 'Profile Image',
@@ -30,24 +36,61 @@ export default defineType({
       options: {hotspot: true},
     }),
 
-    // 🔥 NEW FIELDS BELOW
+    // -------------------------------------------------------
+    // NEW: SEO + AI FIELDS
+    // -------------------------------------------------------
+
+    defineField({
+      name: 'jobTitle',
+      title: 'Job Title',
+      type: 'string',
+      description: 'Used in Person schema for Google and AI assistants.',
+    }),
+
+    defineField({
+      name: 'sameAs',
+      title: 'Online Profiles',
+      type: 'array',
+      of: [{type: 'url'}],
+      description:
+        'Links to author profiles (LinkedIn, Instagram, website, etc). Required for entity linking + E-E-A-T.',
+    }),
+
+    defineField({
+      name: 'expertiseAreas',
+      title: 'Expertise Areas',
+      type: 'array',
+      of: [{type: 'string'}],
+      description:
+        'Topics this author specializes in (e.g., Wildlife Conservation, African Culture, Safari Planning).',
+    }),
+
+    defineField({
+      name: 'location',
+      title: 'Location (Optional)',
+      type: 'string',
+      description: 'City or country — used for additional entity context in AI models.',
+    }),
+
+    // -------------------------------------------------------
+    // FUN BRAND FIELDS (existing + safe)
+    // -------------------------------------------------------
     defineField({
       name: 'favoriteWildlifeEncounter',
       title: 'Favorite Wildlife Encounter',
       type: 'string',
-      description: 'A quick highlight moment with animals in the wild',
     }),
+
     defineField({
       name: 'inspiringDestination',
       title: 'Most Inspiring Destination',
       type: 'string',
-      description: 'A destination that deeply impacted this storyteller',
     }),
+
     defineField({
       name: 'whyTellStories',
       title: 'Why I Tell Safari Stories',
       type: 'text',
-      description: 'Let them share their personal mission or purpose',
     }),
   ],
 })

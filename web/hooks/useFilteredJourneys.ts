@@ -37,7 +37,7 @@ export function useFilteredJourneys() {
     (updater: React.SetStateAction<Filters>) => {
       setSelectedFilters(updater);
     },
-    []
+    [],
   );
 
   // ✅ NEW: Toggle country logic
@@ -64,7 +64,7 @@ export function useFilteredJourneys() {
           star, "starIcon": starIcon.asset->url,
           "interests": travelStyleRefs[]->{title, category, isTopInterest},
           "featuredOnHome": featuredOnHome
-        }`
+        }`,
       )
       .then((data: Journey[]) => {
         setAllJourneys(data);
@@ -99,7 +99,7 @@ export function useFilteredJourneys() {
         selectedFilters.country.length === 0
           ? true
           : (j.countries || []).some((c) =>
-              selectedFilters.country.includes(c.title)
+              selectedFilters.country.includes(c.title),
             );
 
       const matchesStar =
@@ -113,7 +113,7 @@ export function useFilteredJourneys() {
       };
 
       (j.interests || []).forEach((interest) => {
-        const cat = interest.category?.toLowerCase();
+        const cat = interest.category?.title?.toLowerCase();
         const title = interest.title;
         if (cat && title && cat in interestTitlesByCategory) {
           interestTitlesByCategory[
@@ -123,19 +123,19 @@ export function useFilteredJourneys() {
       });
 
       const matchesSignature = selectedFilters.signature.every((s) =>
-        interestTitlesByCategory.signature.has(s)
+        interestTitlesByCategory.signature.has(s),
       );
       const matchesStyle = selectedFilters.style.every((s) =>
-        interestTitlesByCategory.style.has(s)
+        interestTitlesByCategory.style.has(s),
       );
       const matchesFeature = selectedFilters.feature.every((f) =>
-        interestTitlesByCategory.feature.has(f)
+        interestTitlesByCategory.feature.has(f),
       );
 
       const matchesTypes =
         selectedFilters.types.length === 0 ||
         selectedFilters.types.every((t) =>
-          interestTitlesByCategory.style.has(t)
+          interestTitlesByCategory.style.has(t),
         );
 
       return (

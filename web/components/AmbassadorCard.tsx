@@ -1,5 +1,7 @@
 "use client";
+
 import { useState } from "react";
+import Link from "next/link";
 import { SocialIcon } from "react-social-icons";
 import { PortableText } from "@portabletext/react";
 import type { Ambassador } from "@/types/ambassador";
@@ -13,13 +15,9 @@ interface Props {
 export default function AmbassadorCard({ amb }: Props) {
   const [showModal, setShowModal] = useState(false);
 
-  // Safely check socials
   const hasSocials = Array.isArray(amb.socials) && amb.socials.length > 0;
-
-  // Safely check image
   const isImageString = typeof amb.image === "string";
 
-  // ✅ SAFELY generate image URL (for modal <img>)
   const imageUrl =
     typeof amb.image === "string"
       ? amb.image
@@ -29,10 +27,16 @@ export default function AmbassadorCard({ amb }: Props) {
 
   return (
     <>
-      {/* Card */}
-      <div
-        onClick={() => setShowModal(true)}
-        className="cursor-pointer group transition-transform duration-300 hover:scale-105 w-full max-w-sm mx-auto"
+      {/* Card (linked if slug exists) */}
+      <Link
+        href={amb.slug?.current ? `/ambassadors/${amb.slug.current}` : "#"}
+        className="group transition-transform duration-300 hover:scale-105 w-full max-w-sm mx-auto block"
+        onClick={(e) => {
+          if (!amb.slug?.current) {
+            e.preventDefault();
+            setShowModal(true);
+          }
+        }}
       >
         <div
           className="rounded-3xl overflow-hidden shadow-xl border border-white/10 backdrop-blur-md"
@@ -58,13 +62,12 @@ export default function AmbassadorCard({ amb }: Props) {
             </div>
           </div>
         </div>
-      </div>
+      </Link>
 
-      {/* Modal */}
+      {/* Modal fallback if no slug */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
-            {/* Close Button */}
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-3 right-4 text-2xl text-gray-600 hover:text-black"
@@ -73,7 +76,6 @@ export default function AmbassadorCard({ amb }: Props) {
               &times;
             </button>
 
-            {/* Modal Content */}
             <div className="mb-4">
               {imageUrl && (
                 <div className="relative w-full aspect-[3/2] mb-4 rounded-xl overflow-hidden">
@@ -95,7 +97,6 @@ export default function AmbassadorCard({ amb }: Props) {
               </div>
             </div>
 
-            {/* Social Icons */}
             {hasSocials && (
               <div className="flex gap-3 mt-4">
                 {amb.socials!.map((social, idx) => (
@@ -111,7 +112,6 @@ export default function AmbassadorCard({ amb }: Props) {
               </div>
             )}
 
-            {/* CTA Button */}
             {amb.ctaLink && amb.ctaLabel && (
               <a
                 href={amb.ctaLink}

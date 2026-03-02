@@ -11,5 +11,18 @@ export default defineType({
       type: 'array',
       of: [{type: 'block'}],
     }),
+
+    defineField({
+      name: 'backgroundStyle',
+      title: 'Background Style',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Default (White)', value: 'default'},
+          {title: 'Soft Neutral', value: 'neutral'},
+        ],
+      },
+      initialValue: 'default',
+    }),
   ],
 })

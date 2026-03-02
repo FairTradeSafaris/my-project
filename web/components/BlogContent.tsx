@@ -50,19 +50,47 @@ const portableComponents: Partial<PortableTextReactComponents> = {
     },
   },
   block: {
-    h1: ({ children }) => (
-      <h1 className="text-3xl sm:text-4xl font-bold my-4">{children}</h1>
-    ),
-    h2: ({ children }) => (
-      <h2 className="text-2xl sm:text-3xl font-semibold my-4">{children}</h2>
-    ),
-    h3: ({ children }) => (
-      <h3 className="text-xl sm:text-2xl font-semibold my-3">{children}</h3>
-    ),
+    h1: ({ children }) => {
+      const hasContent = Array.isArray(children)
+        ? children.some(
+            (child) => typeof child === "string" && child.trim() !== "",
+          )
+        : !!children;
+
+      return hasContent ? (
+        <h1 className="text-3xl sm:text-4xl font-bold my-4">{children}</h1>
+      ) : null;
+    },
+
+    h2: ({ children }) => {
+      const hasContent = Array.isArray(children)
+        ? children.some(
+            (child) => typeof child === "string" && child.trim() !== "",
+          )
+        : !!children;
+
+      return hasContent ? (
+        <h2 className="text-2xl sm:text-3xl font-semibold my-4">{children}</h2>
+      ) : null;
+    },
+
+    h3: ({ children }) => {
+      const hasContent = Array.isArray(children)
+        ? children.some(
+            (child) => typeof child === "string" && child.trim() !== "",
+          )
+        : !!children;
+
+      return hasContent ? (
+        <h3 className="text-xl sm:text-2xl font-semibold my-3">{children}</h3>
+      ) : null;
+    },
+
     normal: ({ children }) => (
       <p className="text-sm sm:text-base leading-snug mb-4">{children}</p>
     ),
   },
+
   list: {
     bullet: ({ children }) => (
       <ul className="list-disc pl-6 mb-2 space-y-1">{children}</ul>
@@ -79,10 +107,26 @@ const portableComponents: Partial<PortableTextReactComponents> = {
     strong: ({ children }) => (
       <strong className="font-semibold text-black">{children}</strong>
     ),
+
+    link: ({ children, value }) => {
+      const href = value?.href || "#";
+
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-amber-700 underline hover:text-amber-900 transition-colors"
+        >
+          {children}
+        </a>
+      );
+    },
   },
 };
 
 export default function BlogContent({ blocks }: { blocks: Block[] }) {
+  console.log("🔥 BLOGCONTENT ACTIVE");
   const [openVideoIndex, setOpenVideoIndex] = useState<number | null>(null);
 
   return (
@@ -96,30 +140,28 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
             return (
               <section
                 key={index}
-                className={`relative text-center max-w-7xl mx-auto ${
+                className={`text-center max-w-7xl mx-auto ${
                   block.text ? "mb-6" : "mb-0"
                 }`}
               >
                 {imageUrl && (
-                  <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] lg:aspect-[5/2] max-h-[600px] rounded overflow-hidden">
+                  <div className="w-full flex justify-center">
                     <Image
                       src={imageUrl}
                       alt={block.text || "Hero Image"}
-                      fill
-                      className="object-cover"
+                      width={1600}
+                      height={900}
+                      className="w-full md:w-3/4 lg:w-1/2 h-auto rounded"
+                      priority
                     />
                   </div>
                 )}
 
                 {block.text && (
-                  <div
-                    className={`absolute inset-0 flex items-center justify-${block.alignment || "center"} px-4`}
-                  >
-                    <div className="max-w-sm mx-auto">
-                      <h2 className="text-2xl sm:text-4xl font-bold text-white bg-black/60 px-4 py-3 rounded-lg leading-snug">
-                        {block.text}
-                      </h2>
-                    </div>
+                  <div className="mt-4">
+                    <h2 className="text-2xl sm:text-4xl font-bold text-gray-900">
+                      {block.text}
+                    </h2>
                   </div>
                 )}
               </section>
@@ -137,6 +179,7 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               | "md"
               | "lg"
               | "full";
+
             const imageSizeClass: Record<"sm" | "md" | "lg" | "full", string> =
               {
                 sm: "md:w-1/4",
@@ -145,29 +188,50 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 full: "md:w-full",
               };
 
-            return (
-              <section
-                key={index}
-                className={`max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row ${
-                  block.align === "right" ? "md:flex-row-reverse" : ""
-                } gap-8 items-stretch`}
-              >
-                {imageUrl && (
-                  <div className={`w-full ${imageSizeClass[imageSize]}`}>
-                    <Image
-                      src={imageUrl}
-                      alt={altText}
-                      width={1200}
-                      height={900}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  </div>
-                )}
+            const backgroundClass =
+              block.backgroundStyle === "neutral" ? "bg-[#f5f1ea]" : "bg-white";
 
-                <div className="w-full flex items-center">
-                  <div className="prose max-w-none text-left sm:text-justify w-full">
+            return (
+              <section key={index} className={`${backgroundClass} w-full py-5`}>
+                <div
+                  className={`max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row ${
+                    block.align === "right" ? "md:flex-row-reverse" : ""
+                  } gap-8 items-stretch`}
+                >
+                  {imageUrl && (
+                    <div className={`w-full ${imageSizeClass[imageSize]}`}>
+                      <Image
+                        src={imageUrl}
+                        alt={altText}
+                        width={1200}
+                        height={900}
+                        className="w-full h-full object-cover rounded"
+                      />
+                    </div>
+                  )}
+
+                  <div className="w-full flex items-center">
+                    <div className="prose max-w-none text-left sm:text-justify w-full">
+                      <PortableText
+                        value={block.text}
+                        components={portableComponents}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+            );
+          }
+          case "textBlock": {
+            const backgroundClass =
+              block.backgroundStyle === "neutral" ? "bg-[#f5f1ea]" : "bg-white";
+
+            return (
+              <section key={index} className={`${backgroundClass} w-full py-5`}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                  <div className="prose max-w-none text-left sm:text-justify">
                     <PortableText
-                      value={block.text}
+                      value={block.body}
                       components={portableComponents}
                     />
                   </div>
@@ -175,21 +239,6 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
               </section>
             );
           }
-
-          case "textBlock":
-            return (
-              <section
-                key={index}
-                className="max-w-7xl mx-auto px-4 sm:px-6 pt-0"
-              >
-                <div className="prose max-w-none text-left sm:text-justify">
-                  <PortableText
-                    value={block.body}
-                    components={portableComponents}
-                  />
-                </div>
-              </section>
-            );
 
           case "quoteBlock":
             return (

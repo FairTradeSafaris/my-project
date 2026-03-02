@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
 import type { Journey } from "@/components/journey-finder/types";
 
-export function useWishlistGrid(journeys: Journey[]) {
+/**
+ * Returns a map of journey IDs that are wishlisted by the user.
+ * Fully decoupled from Clerk – only uses `userId` if passed in.
+ */
+export function useWishlistGrid(journeys: Journey[], userId: string | null) {
   const [wishlistedMap, setWishlistedMap] = useState<Record<string, boolean>>(
     {}
   );
-  const { user } = useUser();
-  const userId = user?.id;
 
   useEffect(() => {
     if (!userId) {
-      console.warn("❌ No Clerk user ID found.");
+      // No user = no wishlist
+      setWishlistedMap({});
       return;
     }
 
@@ -28,13 +30,10 @@ export function useWishlistGrid(journeys: Journey[]) {
         }
       });
 
-      console.log("🔑 Wishlist Key:", key);
-      console.log("📦 Raw Wishlist JSON:", parsed);
-      console.log("✅ Wishlist map populated:", map);
-
       setWishlistedMap(map);
     } catch (err) {
-      console.warn("❌ Failed to parse wishlist from localStorage:", err);
+      console.warn("❌ Failed to parse wishlist:", err);
+      setWishlistedMap({});
     }
   }, [journeys, userId]);
 

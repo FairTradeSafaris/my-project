@@ -69,6 +69,14 @@ const config: Config = {
             boxShadow: "0 2px 8px 0 rgba(163, 120, 60, 0.12)",
             transform: "scale(1)",
           },
+          heroZoom: {
+            "0%": { transform: "scale(1.03)" },
+            "100%": { transform: "scale(1)" },
+          },
+          heroTextUp: {
+            "0%": { opacity: "0", transform: "translateY(16px)" },
+            "100%": { opacity: "1", transform: "translateY(0)" },
+          },
         },
       },
       animation: {
@@ -78,6 +86,8 @@ const config: Config = {
         bounceSlow: "bounceSlow 15s ease-in-out infinite",
         cornerWiggle: "cornerWiggle 1.8s ease-in-out infinite",
         leadMagnetPulse: "leadMagnetPulse 0.8s cubic-bezier(.4,0,.2,1)",
+        heroZoom: "heroZoom 10s ease-out forwards",
+        heroTextUp: "heroTextUp 0.9s ease-out forwards",
       },
       clipPath: {
         triangle: "polygon(0% 100%, 0% 0%, 100% 100%)",

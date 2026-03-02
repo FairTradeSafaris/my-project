@@ -56,11 +56,10 @@ export default function ScriptInjector({
     normalized.forEach(({ code, label, once }) => {
       if (!code) return;
 
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = code;
+      const template = document.createElement("template");
+      template.innerHTML = code;
 
-      // --- Handle <script> tags ---
-      const scriptTags = wrapper.querySelectorAll("script");
+      const scriptTags = template.content.querySelectorAll("script");
       scriptTags.forEach((node) => {
         const src = node.getAttribute("src") || "";
         const signature = src
@@ -78,24 +77,46 @@ export default function ScriptInjector({
         }
 
         const script = document.createElement("script");
+
         for (const attr of Array.from(node.attributes)) {
           script.setAttribute(attr.name, attr.value);
         }
+
         if (!script.getAttribute("nonce") && cspNonce) {
           script.setAttribute("nonce", cspNonce);
         }
-        if (node.textContent) script.textContent = node.textContent;
 
         script.setAttribute("data-injected-by", "ScriptInjector");
         if (label) script.setAttribute("data-label", label);
         script.setAttribute("data-signature", signature);
 
+        // ✅ Inline script handling with safe DOM-ready check
+        if (!src && node.textContent) {
+          const js = node.textContent;
+          script.textContent = `
+            try {
+              if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                (function() {
+                  ${js}
+                })();
+              } else {
+                document.addEventListener('DOMContentLoaded', function() {
+                  (function() {
+                    ${js}
+                  })();
+                });
+              }
+            } catch(e) {
+              console.error('[ScriptInjector] Inline script error:', e);
+            }
+          `;
+        }
+
         container.appendChild(script);
         addedScripts.push(script);
       });
 
-      // --- Handle <link> tags ---
-      const linkTags = wrapper.querySelectorAll("link");
+      const linkTags = template.content.querySelectorAll("link");
       linkTags.forEach((node) => {
         const href = node.getAttribute("href");
         const rel = node.getAttribute("rel");
@@ -125,18 +146,14 @@ export default function ScriptInjector({
       });
     });
 
-    // ✅ Take a snapshot of what was added in this render
-    const cleanupSnapshot = {
-      scripts: addedScripts,
-      links: addedLinks,
-    };
-
     createdEls.current.scripts = addedScripts;
     createdEls.current.links = addedLinks;
 
     return () => {
-      cleanupSnapshot.scripts.forEach((el) => el.parentNode?.removeChild(el));
-      cleanupSnapshot.links.forEach((el) => el.parentNode?.removeChild(el));
+      createdEls.current.scripts.forEach((el) =>
+        el.parentNode?.removeChild(el)
+      );
+      createdEls.current.links.forEach((el) => el.parentNode?.removeChild(el));
     };
   }, [normalized, cspNonce, target]);
 

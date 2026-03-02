@@ -24,6 +24,19 @@ export default defineType({
           type: 'string',
           validation: (Rule) => Rule.required().error('Alt text is required for accessibility.'),
         },
+
+        defineField({
+          name: 'backgroundStyle',
+          title: 'Background Style',
+          type: 'string',
+          options: {
+            list: [
+              {title: 'Default (White)', value: 'default'},
+              {title: 'Soft Neutral', value: 'neutral'},
+            ],
+          },
+          initialValue: 'default',
+        }),
       ],
       validation: (Rule) =>
         Rule.custom((image: SanityImageValue | undefined) => {
@@ -41,6 +54,20 @@ export default defineType({
       title: 'Or Select from Gallery',
       type: 'reference',
       to: [{type: 'galleryImage'}],
+    }),
+
+    // ✅ Background Style (NOW CORRECT LOCATION)
+    defineField({
+      name: 'backgroundStyle',
+      title: 'Background Style',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Default (White)', value: 'default'},
+          {title: 'Soft Neutral', value: 'neutral'},
+        ],
+      },
+      initialValue: 'default',
     }),
 
     // ✅ Text & display config

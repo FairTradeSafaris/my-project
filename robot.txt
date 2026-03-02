@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://demo.fairtradesafaris.com/sitemap.xml
+Sitemap: https://www.fairtradesafaris.com/sitemap.xml

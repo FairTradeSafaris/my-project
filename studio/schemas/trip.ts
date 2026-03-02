@@ -121,8 +121,16 @@ export default defineType({
           ],
           preview: {
             select: {
-              title: 'label',
+              label: 'label',
+              originalFilename: 'originalFilename',
               media: 'file',
+            },
+            prepare({label, originalFilename, media}) {
+              return {
+                title: originalFilename || label || 'Untitled Document',
+                subtitle: label !== 'other' ? label : undefined,
+                media,
+              }
             },
           },
         },

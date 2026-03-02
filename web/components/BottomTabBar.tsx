@@ -1,4 +1,3 @@
-// TOP OF FILE
 "use client";
 
 import Link from "next/link";
@@ -10,13 +9,43 @@ import CustomUserMenu from "@/components/CustomUserMenu";
 import { client as sanityClient } from "@/lib/sanity";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
+// Event constants
 export const OPEN_SEARCH_SHEET = "fts:open-search-sheet";
 export const CLOSE_SEARCH_SHEET = "fts:close-search-sheet";
 export const OPEN_BOOK_SHEET = "fts:open-book-sheet";
 
+// -------------------------------
+// ✅ Parent: Handles Cookie Consent
+// -------------------------------
 export default function BottomTabBar() {
-  const { isSignedIn } = useUser();
+  const [hasConsent, setHasConsent] = useState(false);
+
+  // Check localStorage for consent
+  useEffect(() => {
+    const stored = localStorage.getItem("cookieConsent");
+    if (stored === "accepted") setHasConsent(true);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "cookieConsent" && e.newValue === "accepted") {
+        setHasConsent(true);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  if (!hasConsent) return null; // Don’t render until consent is given
+
+  return <BottomTabBarWithUser />;
+}
+
+// -------------------------------
+// ✅ Subcomponent: Safe to use `useUser()` here
+// -------------------------------
+function BottomTabBarWithUser() {
   const router = useRouter();
+  const { isSignedIn } = useUser();
 
   const [open, setOpen] = useState(false);
   const [interests, setInterests] = useState<string[]>([]);
@@ -26,12 +55,10 @@ export default function BottomTabBar() {
   const [loading, setLoading] = useState(false);
 
   const TABBAR_BASE_HEIGHT = 56;
-
   const [activeTooltipIndex, setActiveTooltipIndex] = useState<number | null>(
-    null
+    null,
   );
 
-  // 🧠 Tooltip cycling logic
   useEffect(() => {
     let count = 0;
     let lastIndex: number | null = null;
@@ -45,25 +72,29 @@ export default function BottomTabBar() {
 
       let nextIndex: number;
       do {
-        nextIndex = Math.floor(Math.random() * 4); // 0–3
+        nextIndex = Math.floor(Math.random() * 4);
       } while (nextIndex === lastIndex);
 
       setActiveTooltipIndex(nextIndex);
       lastIndex = nextIndex;
       count++;
 
-      // hide it after 2s
       setTimeout(() => setActiveTooltipIndex(null), 2500);
-    }, 4000); // every 4s (2.5s show + 1.5s pause)
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
 
   const setOpenWithEvents = (state: boolean) => {
-    setOpen(state);
-    window.dispatchEvent(
-      new CustomEvent(state ? OPEN_SEARCH_SHEET : CLOSE_SEARCH_SHEET)
-    );
+    setOpen((prev) => {
+      if (prev === state) return prev; // ⛔ Prevent redundant dispatch/renders
+      if (state) {
+        window.dispatchEvent(new CustomEvent(OPEN_SEARCH_SHEET));
+      } else {
+        window.dispatchEvent(new CustomEvent(CLOSE_SEARCH_SHEET));
+      }
+      return state;
+    });
   };
 
   useEffect(() => {
@@ -75,7 +106,7 @@ export default function BottomTabBar() {
         `{
           "interests": *[_type == "travelInterest" && isTopInterest == true] | order(sortOrder asc) { title },
           "luxuryRaw": *[_type == "journey"].star
-        }`
+        }`,
       )
       .then(
         (data: {
@@ -86,24 +117,28 @@ export default function BottomTabBar() {
           setInterests(data.interests.map((i) => i.title));
           setLuxuryLevels(
             Array.from(
-              new Set(data.luxuryRaw.filter((s): s is string => !!s))
-            ).slice(0, 5)
+              new Set(data.luxuryRaw.filter((s): s is string => !!s)),
+            ).slice(0, 5),
           );
-        }
+        },
       )
       .finally(() => mounted && setLoading(false));
 
+    const openHandler = () => setOpenWithEvents(true);
+    window.addEventListener(OPEN_SEARCH_SHEET, openHandler);
+
     return () => {
       mounted = false;
+      window.removeEventListener(OPEN_SEARCH_SHEET, openHandler);
     };
   }, []);
 
   const onSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     const params = new URLSearchParams();
-    selectedInterests.forEach((i) => params.append("interest", i));
+    selectedInterests.forEach((i) => params.append("signature", i));
     selectedLuxury.forEach((l) => params.append("luxury", l));
-    router.push(`/journey?${params.toString()}`);
+    router.push(`/africansafariitineraries?${params.toString()}`);
     setOpenWithEvents(false);
   };
 
@@ -174,13 +209,11 @@ export default function BottomTabBar() {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        {/* Home */}
         <Link href="/" className="flex flex-col items-center gap-1 text-xs">
           <Home size={20} />
           <span>Home</span>
         </Link>
 
-        {/* Trips */}
         <button
           type="button"
           onClick={() => setOpenWithEvents(true)}
@@ -193,7 +226,6 @@ export default function BottomTabBar() {
           <span>Trips</span>
         </button>
 
-        {/* Book Call */}
         <button
           type="button"
           onClick={() => window.dispatchEvent(new CustomEvent(OPEN_BOOK_SHEET))}
@@ -206,7 +238,6 @@ export default function BottomTabBar() {
           <span>Book Call</span>
         </button>
 
-        {/* Free Book */}
         <Link
           href={isSignedIn ? "/books" : "/sign-up"}
           className="relative flex flex-col items-center gap-1 text-xs active:scale-95"
@@ -225,35 +256,30 @@ export default function BottomTabBar() {
           <span className="leading-[1rem]">Free Book</span>
         </Link>
 
-        {/* Account */}
-        <SignedIn>
-          <div className="relative flex flex-col items-center gap-1 text-xs">
-            {activeTooltipIndex === 3 && (
-              <TooltipBubble text="Track your bookings" top="-top-18" />
-            )}
-            <CustomUserMenu />
-            <span>Account</span>
-          </div>
-        </SignedIn>
+        <div className="relative flex flex-col items-center gap-1 text-xs">
+          {activeTooltipIndex === 3 && (
+            <TooltipBubble text="Track your bookings" top="-top-18" />
+          )}
+          <SignedIn>
+            <div className="flex flex-col items-center gap-1">
+              <CustomUserMenu />
+              <span>Account</span>
+            </div>
+          </SignedIn>
 
-        <SignedOut>
-          <Link
-            href="/sign-in"
-            className="relative flex flex-col items-center gap-1 text-xs"
-          >
-            {activeTooltipIndex === 3 && (
-              <TooltipBubble text="Log in to track trips" top="-top-18" />
-            )}
-            <User2 size={20} />
-            <span>Account</span>
-          </Link>
-        </SignedOut>
+          <SignedOut>
+            <Link href="/sign-in/">
+              <User2 size={20} />
+              <span>Account</span>
+            </Link>
+          </SignedOut>
+        </div>
       </nav>
     </>
   );
 }
 
-// Tooltip Component
+// TooltipBubble and MultiSelectDropdown remain unchanged
 function TooltipBubble({ text, top }: { text: string; top: string }) {
   return (
     <div className={`absolute ${top} right-0 z-50`}>
@@ -268,7 +294,6 @@ function TooltipBubble({ text, top }: { text: string; top: string }) {
   );
 }
 
-// Dropdown Component
 function MultiSelectDropdown({
   label,
   options,
@@ -286,7 +311,7 @@ function MultiSelectDropdown({
     setSelected(
       selected.includes(option)
         ? selected.filter((item) => item !== option)
-        : [...selected, option]
+        : [...selected, option],
     );
   };
 

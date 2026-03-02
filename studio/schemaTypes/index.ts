@@ -20,7 +20,7 @@ import comments from '../schemas/comments'
 import team from '../schemas/teamMember'
 
 // 🆕 Modular Blocks (must match names from ./blocks)
-import table from '../schemas/objects/table'
+
 import heroImage from '../schemas/blocks/heroImage'
 import textImage from '../schemas/blocks/textImage'
 import quoteBlock from '../schemas/blocks/quoteBlock'
@@ -31,11 +31,20 @@ import ctaBlock from '../schemas/blocks/ctaBlock'
 import mapBlock from '../schemas/blocks/mapBlock'
 import zohoForm from '../schemas/blocks/zohoForm'
 import smartCarousel from '../schemas/blocks/smartCarousel'
-import teamMember from '../schemas/teamMember'
 import foundersPromise from '../schemas/founderPromise'
 import dest_slug from '../schemas/dest_slug'
 import faqQuestion from '../schemas/faqQuestion'
 import faqCategory from '../schemas/faqCategory'
+import nonProfit from '../schemas/nonProfit'
+import redirect from '../schemas/redirect'
+import organization from '../schemas/organization'
+import customJourneyCta from '../schemas/customJourneyCta' // ✅ NEW
+import tag from '../schemas/tag'
+import {imageOrGallery} from '../schemas/objects/imageOrGallery'
+import leadMagnetPopup from '../schemas/leadMagnetPopup'
+import pillarPage from '../schemas/pillarPage'
+import teamPage from '../schemas/teamPage'
+import category from '../schemas/category'
 
 export const schemaTypes = [
   blog,
@@ -58,8 +67,9 @@ export const schemaTypes = [
   ambassador,
   globalsettings,
   dest_slug,
+
   // 🧱 Register content blocks
-  table,
+
   heroImage,
   textImage,
   quoteBlock,
@@ -70,9 +80,18 @@ export const schemaTypes = [
   mapBlock,
   zohoForm,
   smartCarousel,
-  teamMember,
   team,
   foundersPromise,
   faqQuestion,
   faqCategory,
+  nonProfit,
+  redirect,
+  organization,
+  customJourneyCta,
+  tag,
+  imageOrGallery,
+  leadMagnetPopup,
+  pillarPage,
+  teamPage,
+  category,
 ]

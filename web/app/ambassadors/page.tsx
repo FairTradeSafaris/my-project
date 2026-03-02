@@ -1,48 +1,153 @@
-// app/ambassadors/page.tsx
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Script from "next/script";
+import Link from "next/link";
 import { client } from "@/lib/sanity";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import AmbassadorCard from "@/components/AmbassadorCard";
 import type { Ambassador } from "@/types/ambassador";
 
-// SEO via central helper
+// -----------------------------------------
+// Metadata from CMS (SEO)
+// -----------------------------------------
 export async function generateMetadata(): Promise<Metadata> {
   const { metadata } = await getSanityMetadata("ambassadors");
-  return metadata;
+
+  return {
+    ...metadata,
+    title:
+      metadata?.title ||
+      "Safari Ambassadors | Fair Trade Safaris — Voices of Impact",
+    description:
+      metadata?.description ||
+      "Meet the voices behind Fair Trade Safaris. Our ambassadors are storytellers, guides, and changemakers creating impact through travel.",
+    // ✅ Add this line
+    alternates: metadata?.alternates,
+  };
 }
 
+// -----------------------------------------
+// Portable Text to Plain String
+// -----------------------------------------
+type TextSpan = { _type: "span"; text: string };
+type Block = { _type: "block"; children: TextSpan[] };
+
+function extractPlainText(blocks: unknown): string {
+  if (!Array.isArray(blocks)) return "";
+
+  const block = blocks.find(
+    (b): b is Block =>
+      typeof b === "object" &&
+      b !== null &&
+      (b as Block)._type === "block" &&
+      Array.isArray((b as Block).children),
+  );
+
+  return (
+    block?.children
+      .map((child) => child.text)
+      .join(" ")
+      .trim()
+      .slice(0, 300) || ""
+  );
+}
+
+// -----------------------------------------
+// Page Component
+// -----------------------------------------
 export default async function AmbassadorsPage() {
-  // Let TS infer the tuple types (no explicit generics)
-  const [metaRes, ambassadors] = await Promise.all([
-    getSanityMetadata("ambassadors"),
+  const [structuredData, ambassadors] = await Promise.all([
+    client.fetch(
+      `*[_type == "sitePages" && slug.current == "ambassadors"][0].structuredData`,
+    ),
     client.fetch<Ambassador[]>(
       `*[_type == "ambassador"] | order(_createdAt desc){
         _id,
         name,
         role,
+        slug, // ✅ Required for linking to profile pages
         description,
         ctaLabel,
         ctaLink,
         "image": image.asset->url,
         socials[] { platform, url, icon }
-      }`
+      }`,
     ),
   ]);
 
-  const { structuredData } = metaRes; // structuredData?: object
+  const personSchema = ambassadors.map((amb) => ({
+    "@type": "Person",
+    name: amb.name,
+    jobTitle: amb.role,
+    image: amb.image,
+    description: extractPlainText(amb.description),
+    sameAs: amb.socials?.map((s) => s.url).filter(Boolean),
+  }));
 
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen">
-      {structuredData ? (
+      {/* Structured Data */}
+      {structuredData && (
         <Script
           id="jsonld-ambassadors"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
         />
-      ) : null}
+      )}
+
+      {/* Breadcrumb Schema */}
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://www.fairtradesafaris.com/",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Ambassadors",
+                item: "https://www.fairtradesafaris.com/ambassadors",
+              },
+            ],
+          }),
+        }}
+      />
+
+      {/* Person JSON-LD */}
+      <Script
+        id="person-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(personSchema),
+        }}
+      />
+
+      {/* Breadcrumb UI */}
+      <nav
+        className="max-w-7xl mx-auto px-6 pt-8 text-sm text-gray-600"
+        aria-label="Breadcrumb"
+      >
+        <ol className="flex">
+          <li>
+            <Link href="/" className="hover:underline text-[#5a3e2b]">
+              Home
+            </Link>
+          </li>
+          <li className="mx-2 text-gray-400">/</li>
+          <li className="text-gray-500">Ambassadors</li>
+        </ol>
+      </nav>
 
       {/* Intro Section */}
       <section className="max-w-3xl mx-auto px-6 pt-12 pb-6 text-center">
@@ -51,67 +156,16 @@ export default async function AmbassadorsPage() {
         </h2>
         <p className="text-base text-gray-700 leading-relaxed">
           Our ambassadors are more than just names — they’re changemakers,
-          cultural connectors, storytellers, and sustainability champions. Get
-          to know the humans shaping how the world travels with heart.
+          cultural connectors, storytellers, and sustainability champions.
         </p>
       </section>
 
-      {/* Mini Value Grid */}
-      <section className="max-w-5xl mx-auto px-6 pt-4 pb-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-        <div>
-          <p className="text-2xl font-bold text-[#5a3e2b]">20+</p>
-          <p className="text-sm text-gray-600">Global Ambassadors</p>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-[#5a3e2b]">5M+</p>
-          <p className="text-sm text-gray-600">Collective Reach</p>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-[#5a3e2b]">1 Shared Mission</p>
-          <p className="text-sm text-gray-600">
-            Ethical, Purpose-Driven Travel
-          </p>
-        </div>
-      </section>
-
-      {/* Optional Visual Quote Strip */}
-      <section className="bg-[#f0eae2] py-6">
-        <div className="max-w-5xl mx-auto px-6 text-center italic text-[#3c2a1e] text-lg">
-          “Travel isn’t just about seeing the world — it’s about seeing your
-          place in it.”
-          <br />
-          <span className="not-italic text-sm text-gray-600">
-            – One of Our Ambassadors
-          </span>
-        </div>
-      </section>
-
-      {/* Ambassador Cards */}
+      {/* Cards Section */}
       <section className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {ambassadors.map((amb) => (
             <AmbassadorCard key={amb._id} amb={amb} />
           ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-[#fdf4ea] py-12">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h3 className="text-2xl font-semibold text-[#3c2a1e] mb-4">
-            Interested in Joining the Movement?
-          </h3>
-          <p className="text-gray-700 mb-6">
-            We&apos;re always on the lookout for mission-aligned creators,
-            guides, and advocates to help tell the story of conscious travel.
-            Think you&apos;d be a fit?
-          </p>
-          <a
-            href="/contact"
-            className="inline-block px-6 py-3 bg-[#5a3e2b] text-white rounded-full hover:bg-[#3a291e] transition font-medium"
-          >
-            Become an Ambassador
-          </a>
         </div>
       </section>
     </main>

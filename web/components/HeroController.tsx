@@ -175,17 +175,9 @@ function HomeFilters() {
       onSubmit={(e) => {
         e.preventDefault();
         const qs = new URLSearchParams();
+        destination.forEach((d) => qs.append("signature", d));
 
-        if (destination.length) {
-          destination.forEach((d) =>
-            qs.append("signature", encodeURIComponent(d)),
-          );
-        }
-
-        if (luxury.length) {
-          luxury.forEach((l) => qs.append("luxury", encodeURIComponent(l)));
-        }
-
+        luxury.forEach((l) => qs.append("luxury", l));
         router.push(`/africansafariitineraries?${qs.toString()}`);
       }}
       className="relative z-[999] mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
@@ -243,10 +235,10 @@ function HeroView({
   return (
     <section
       className={`
-        relative w-full
-        ${isHome ? "h-[75vh] md:h-[80vh]" : "h-[500px] md:h-[500px]"}
-        pt-24 md:pt-28
-      `}
+    relative w-full
+    ${isHome ? "h-[75vh] md:h-[80vh]" : "h-[500px] md:h-[500px]"}
+    ${isHome ? "pt-24 md:pt-28" : ""}
+  `}
       id="hero"
     >
       {/* Mobile art-directed image */}

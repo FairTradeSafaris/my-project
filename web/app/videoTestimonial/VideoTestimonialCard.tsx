@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { VideoTestimonial } from "./VideoTestimonials";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function VideoTestimonialCard({
   testimonial,
@@ -48,9 +49,18 @@ export default function VideoTestimonialCard({
           <p className="italic text-sm text-gray-700 leading-snug line-clamp-2">
             “{testimonial.quote}”
           </p>
+
           <p className="text-xs text-gray-500 mt-2">
             – {testimonial.name}, {testimonial.location}
           </p>
+
+          <Link
+            href={`/videoTestimonial/${testimonial.slug}`}
+            className="text-xs text-green-700 mt-2 underline hover:text-green-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            View dedicated video page →
+          </Link>
         </div>
       </div>
 

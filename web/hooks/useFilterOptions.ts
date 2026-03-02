@@ -24,28 +24,33 @@ export function useFilterOptions() {
     sanityClient
       .fetch(
         `*[_type == "journey"][0...1000]{
-          _id,
+        _id,
+        title,
+        region->{ title },
+        destinations[]->{
           title,
-          region->{ title },
-          countries[]->{ title },
-          "interests": travelStyleRefs[]->{ title, category },
-          duration,
-          star,
-          price
-        }`
+          region,
+          ranking
+        },
+        "interests": travelStyleRefs[]->{ title, category },
+        duration,
+        star,
+        price
+      }`,
       )
       .then((data: Journey[]) => {
         setOptionsJourneys(data);
 
         const regions = Array.from(
-          new Set(data.map((j) => j.region?.title).filter(Boolean))
+          new Set(data.map((j) => j.region?.title).filter(Boolean)),
         ) as string[];
+
         const countries = Array.from(
           new Set(
             data
-              .flatMap((j) => (j.countries || []).map((c) => c.title))
-              .filter(Boolean)
-          )
+              .flatMap((j) => (j.destinations || []).map((d) => d.title))
+              .filter(Boolean),
+          ),
         ) as string[];
 
         const signatureSet = new Set<string>();
@@ -54,21 +59,18 @@ export function useFilterOptions() {
 
         data.forEach((j) => {
           (j.interests || []).forEach((interest) => {
-            if (!interest?.title || !interest?.category) return;
-            const normalizedCategory = {
-              signature: "Signature Safari Experience",
-              style: "Travel Style",
-              feature: "Trip Feature",
-            }[interest.category.toLowerCase()];
+            if (!interest?.title || !interest?.category?.title) return;
 
-            switch (normalizedCategory) {
-              case "Signature Safari Experience":
+            const categoryTitle = interest.category.title.toLowerCase();
+
+            switch (categoryTitle) {
+              case "signature safari experience":
                 signatureSet.add(interest.title);
                 break;
-              case "Travel Style":
+              case "travel style":
                 styleSet.add(interest.title);
                 break;
-              case "Trip Feature":
+              case "trip feature":
                 featureSet.add(interest.title);
                 break;
             }
@@ -79,8 +81,8 @@ export function useFilterOptions() {
           new Set(
             data
               .map((j) => j.star)
-              .filter((s): s is string => typeof s === "string")
-          )
+              .filter((s): s is string => typeof s === "string"),
+          ),
         );
 
         const durationNumbers = data

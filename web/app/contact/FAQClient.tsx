@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { PortableText } from "@portabletext/react";
 import { PortableTextBlock } from "@portabletext/types";
 
@@ -18,139 +18,209 @@ type FAQCat = {
 };
 
 export default function FAQClient({ categories }: { categories: FAQCat[] }) {
-  const [selectedFAQ, setSelectedFAQ] = useState<FAQItem | null>(null);
+  const [openQuestionId, setOpenQuestionId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const cardBorder = "#d8cfc4";
-  const tileBg = "#f9f6f2";
-  const commonSearches = categories.map((c) => c.title).slice(0, 6);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const closeModal = () => setSelectedFAQ(null);
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // ✅ Explicit destination control list
+  const destinationKeywords = [
+    "Namibia",
+    "Tanzania",
+    "Kenya",
+    "Zambia",
+    "Botswana",
+    "Uganda",
+    "Rwanda",
+    "Zimbabwe",
+    "South Africa",
+    "Madagascar",
+    "Mozambique",
+    "Indian Ocean Islands",
+    "Mount Kilimanjaro",
+  ];
+
+  const isDestination = (title: string) =>
+    destinationKeywords.some((keyword) =>
+      title.toLowerCase().includes(keyword.toLowerCase()),
+    );
+
+  const destinationCategories = categories
+    .map((c) => c.title)
+    .filter((title) => isDestination(title));
+
+  const topicCategories = categories
+    .map((c) => c.title)
+    .filter((title) => !isDestination(title));
 
   const filteredCategories = useMemo(() => {
-    if (!searchTerm.trim()) return categories;
+    let result = categories;
 
-    const term = searchTerm.toLowerCase();
+    if (activeCategory) {
+      result = result.filter((c) => c.title === activeCategory);
+    }
 
-    return categories
-      .map((cat) => {
-        const filteredItems = cat.items.filter(
-          (item) =>
-            item.question.toLowerCase().includes(term) ||
-            item.keywords?.some((k) => k.toLowerCase().includes(term))
-        );
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
 
-        return filteredItems.length > 0
-          ? { ...cat, items: filteredItems }
-          : null;
-      })
-      .filter(Boolean) as FAQCat[];
-  }, [categories, searchTerm]);
+      result = result
+        .map((cat) => {
+          const filteredItems = cat.items.filter(
+            (item) =>
+              item.question.toLowerCase().includes(term) ||
+              item.keywords?.some((k) => k.toLowerCase().includes(term)),
+          );
+
+          return filteredItems.length > 0
+            ? { ...cat, items: filteredItems }
+            : null;
+        })
+        .filter(Boolean) as FAQCat[];
+    }
+
+    return result;
+  }, [categories, searchTerm, activeCategory]);
+
+  const toggleQuestion = (id: string) => {
+    setOpenQuestionId((prev) => (prev === id ? null : id));
+  };
+
+  const handleCategoryClick = (title: string) => {
+    setActiveCategory(title);
+    setSearchTerm("");
+
+    setTimeout(() => {
+      categoryRefs.current[title]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
+  };
+
+  const clearCategory = () => {
+    setActiveCategory(null);
+  };
+
+  const renderChips = (titles: string[]) =>
+    titles.map((title) => (
+      <button
+        key={title}
+        onClick={() => handleCategoryClick(title)}
+        className={`rounded-full px-4 py-1 border transition ${
+          activeCategory === title
+            ? "bg-black text-white border-black"
+            : "border-[#e5ddd2] text-gray-700 hover:bg-white"
+        }`}
+      >
+        {title}
+      </button>
+    ));
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-12 font-sans">
-      <div
-        className="rounded-2xl shadow-lg border overflow-hidden"
-        style={{ background: tileBg, borderColor: cardBorder }}
-      >
-        {/* Header */}
-        <div
-          className="px-6 md:px-8 py-5 border-b"
-          style={{ borderColor: cardBorder }}
-        >
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900">
-            Your Safari Questions, Answered
-          </h2>
-        </div>
+      <div className="rounded-3xl shadow-sm border bg-[#f9f6f2] border-[#e5ddd2] overflow-hidden">
+        <div className="px-6 md:px-10 py-8 border-b border-[#e5ddd2]">
+          <input
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setActiveCategory(null);
+            }}
+            className="w-full rounded-xl border border-[#e5ddd2] px-4 py-3 text-base focus:outline-none"
+            placeholder="Search safari questions..."
+          />
 
-        {/* Search + Chips */}
-        <div className="px-6 md:px-8 pt-5">
-          <div className="relative">
-            <input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-xl border px-4 py-3 pr-12 text-base focus:outline-none"
-              style={{ borderColor: cardBorder }}
-              placeholder="Ask about wildlife, lodges, ethics, or planning your perfect safari..."
-              aria-label="Search FAQs"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-              🔍
-            </span>
+          {/* Destinations */}
+          <div className="mt-6">
+            <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">
+              🌍 Destinations
+            </h4>
+            <div className="flex flex-wrap gap-2 text-sm">
+              {renderChips(destinationCategories)}
+            </div>
           </div>
 
-          {commonSearches.length > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-gray-500">Popular questions:</span>
-              {commonSearches.map((t) => (
-                <span
-                  key={t}
-                  onClick={() => setSearchTerm(t)}
-                  className="rounded-full border px-3 py-1 text-gray-700 hover:bg-[#f0ece6] cursor-pointer transition"
-                  style={{ borderColor: cardBorder }}
-                >
-                  {t}
-                </span>
-              ))}
+          {/* Planning Topics */}
+          <div className="mt-6">
+            <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">
+              🧭 Planning & Travel Topics
+            </h4>
+            <div className="flex flex-wrap gap-2 text-sm">
+              {renderChips(topicCategories)}
             </div>
+          </div>
+
+          {activeCategory && (
+            <button
+              onClick={clearCategory}
+              className="mt-4 text-gray-500 underline"
+            >
+              Show All
+            </button>
           )}
         </div>
 
-        {/* Categories Grid */}
-        <div className="px-6 md:px-8 pb-8">
+        <div className="px-6 md:px-10 py-10">
           {filteredCategories.length > 0 ? (
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredCategories.map((cat) => (
                 <div
                   key={cat._id}
-                  className="rounded-2xl border bg-white p-4 md:p-5 shadow-sm hover:shadow-md transition"
-                  style={{ borderColor: cardBorder }}
+                  ref={(el) => {
+                    categoryRefs.current[cat.title] = el;
+                  }}
+                  className="bg-white rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-lg transition-all duration-300"
                 >
-                  <h3 className="font-semibold text-gray-900">{cat.title}</h3>
-                  <ul
-                    className="mt-2 divide-y"
-                    style={{ borderColor: cardBorder }}
-                  >
-                    {cat.items.map((q) => (
-                      <li key={q._id} className="py-2">
-                        <button
-                          className="text-sm text-left text-gray-900 hover:underline focus:outline-none"
-                          onClick={() => setSelectedFAQ(q)}
-                        >
-                          {q.question}
-                        </button>
-                      </li>
-                    ))}
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">
+                    {cat.title}
+                  </h3>
+
+                  <ul className="space-y-4">
+                    {cat.items.map((q) => {
+                      const isOpen = openQuestionId === q._id;
+
+                      return (
+                        <li key={q._id}>
+                          <button
+                            onClick={() => toggleQuestion(q._id)}
+                            className="w-full flex justify-between items-start text-left text-sm text-gray-800 hover:text-black transition"
+                          >
+                            <span className="leading-snug">{q.question}</span>
+                            <span
+                              className={`text-lg transition-transform duration-300 ${
+                                isOpen ? "rotate-45" : ""
+                              }`}
+                            >
+                              +
+                            </span>
+                          </button>
+
+                          <div
+                            className={`overflow-hidden transition-all duration-300 ${
+                              isOpen
+                                ? "max-h-96 mt-4 opacity-100"
+                                : "max-h-0 opacity-0"
+                            }`}
+                          >
+                            <div className="faq-content text-gray-600 text-sm leading-relaxed space-y-3 [&_a]:underline [&_a]:hover:text-black">
+                              <PortableText value={q.answer} />
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="mt-6 text-center text-gray-500">
+            <p className="text-center text-gray-500">
               No FAQs matched your search.
             </p>
           )}
         </div>
       </div>
-
-      {/* Modal */}
-      {selectedFAQ && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center px-4">
-          <div className="bg-white max-w-lg w-full p-6 rounded-2xl shadow-xl relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl"
-            >
-              &times;
-            </button>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {selectedFAQ.question}
-            </h3>
-            <div className="text-gray-700 text-sm leading-relaxed space-y-2">
-              <PortableText value={selectedFAQ.answer} />
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

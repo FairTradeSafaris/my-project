@@ -87,7 +87,7 @@ export default function CustomUserMenu() {
           <ul className="text-sm divide-y divide-gray-100 dark:divide-neutral-800">
             <li>
               <Link
-                href="/client-home"
+                href="/client-home/"
                 className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
                 onClick={() => setOpen(false)}
               >
@@ -99,7 +99,7 @@ export default function CustomUserMenu() {
             </li>
             <li>
               <Link
-                href="/books"
+                href="/books/"
                 className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
                 onClick={() => setOpen(false)}
               >
@@ -111,7 +111,7 @@ export default function CustomUserMenu() {
             </li>
             <li>
               <Link
-                href="/account"
+                href="/user-profile"
                 className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
                 onClick={() => setOpen(false)}
               >
@@ -121,6 +121,7 @@ export default function CustomUserMenu() {
                 </span>
               </Link>
             </li>
+
             <li>
               <button
                 onClick={() => {

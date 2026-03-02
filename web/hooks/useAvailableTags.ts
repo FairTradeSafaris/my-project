@@ -12,11 +12,11 @@ export function useAvailableTags(journeys: Journey[]) {
 
     journeys.forEach((j) =>
       (j.interests || []).forEach(({ category, title }) => {
-        const key = category?.toLowerCase();
+        const key = category?.title?.toLowerCase();
         if (title && key && tags[key as keyof typeof tags]) {
           tags[key as keyof typeof tags].add(title);
         }
-      })
+      }),
     );
 
     return {

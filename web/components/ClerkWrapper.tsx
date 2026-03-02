@@ -1,15 +1,20 @@
 "use client";
 
-import { ClerkProvider } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
 
-export function ClerkWrapper({ children }: { children: React.ReactNode }) {
+const ClerkWrapper = dynamic(() => import("./ClerkWrapper"), {
+  ssr: false,
+  loading: () => <></>,
+});
+
+export default function ClerkClientWrapper({
+  children,
+  publishableKey,
+}: {
+  children: React.ReactNode;
+  publishableKey: string;
+}) {
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-    >
-      {children}
-    </ClerkProvider>
+    <ClerkWrapper publishableKey={publishableKey}>{children}</ClerkWrapper>
   );
 }
-
-export default ClerkWrapper;

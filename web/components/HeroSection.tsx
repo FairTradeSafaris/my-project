@@ -1,4 +1,4 @@
-// components/HeroSection.tsx
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
@@ -12,18 +12,18 @@ export default function HeroSection() {
           powered by heart.
         </p>
         <div className="flex justify-center gap-4">
-          <a
-            href="/journeys"
+          <Link
+            href="/africansafariitineraries/"
             className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
           >
             Start Planning
-          </a>
-          <a
-            href="/why-us"
+          </Link>
+          <Link
+            href="/why-us/"
             className="px-6 py-3 bg-white border border-amber-600 text-amber-700 rounded-lg hover:bg-amber-50"
           >
             Why Travel With Us
-          </a>
+          </Link>
         </div>
       </div>
     </section>

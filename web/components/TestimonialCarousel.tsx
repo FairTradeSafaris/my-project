@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTestimonials, Testimonial } from "@/hooks/useTestimonials";
+import Link from "next/link";
 
 export default function TestimonialCarousel() {
   const { settings, cardsToShow, next, prev } = useTestimonials();
@@ -150,12 +151,12 @@ export default function TestimonialCarousel() {
 
         {/* Video Testimonials Link */}
         <div className="mt-8 flex justify-center">
-          <a
-            href="/videoTestimonial"
+          <Link
+            href="/videoTestimonials"
             className="text-[#b49a7f] text-base font-semibold underline hover:text-[#a5835e] transition"
           >
             Look at our video testimonials
-          </a>
+          </Link>
         </div>
       </div>
     </section>

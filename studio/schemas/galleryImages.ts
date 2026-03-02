@@ -44,14 +44,31 @@ export const galleryImage = defineType({
         layout: 'dropdown',
       },
     },
+    {
+      name: 'credit',
+      title: 'Photo Credit',
+      type: 'string',
+      description: 'Photographer name or image source (e.g. Unsplash, Pexels, Adobe Stock)',
+    },
+    {
+      name: 'license',
+      title: 'Image License',
+      type: 'string',
+      description: 'E.g. Creative Commons, Purchased, Rights-Managed, etc.',
+    },
+    {
+      name: 'sourceUrl',
+      title: 'Source URL',
+      type: 'url',
+      description: 'Optional — link to the original image source if applicable.',
+    },
   ],
 
-  // 👇 Add this to customize how each item appears in the list
   preview: {
     select: {
-      title: 'alt', // shown as main title
-      media: 'image', // thumbnail
-      subtitle: 'category', // shown below the title
+      title: 'alt',
+      media: 'image',
+      subtitle: 'category',
     },
   },
 })

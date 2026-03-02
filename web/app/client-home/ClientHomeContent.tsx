@@ -6,6 +6,7 @@ import { sanityClient } from "@/lib/client";
 import { groq } from "next-sanity";
 import { useWishlist } from "@/hooks/useWishlist";
 import JourneyCard from "@/components/JourneyCard";
+import Link from "next/link";
 
 const fetchWishlistJourneys = async (ids: string[]) => {
   if (!ids.length) return [];
@@ -52,16 +53,20 @@ type Trip = {
     };
   }[];
   passportUploads?: {
+    _key: string; // ✅ Sanity array items always have a _key
     asset: {
-      _ref?: string;
+      _ref?: string; // when not expanded
+      _id?: string; // when expanded with asset-> in GROQ
       url: string;
       originalFilename?: string;
       mimeType: string;
     };
   }[];
   flightTicketUploads?: {
+    _key: string; // ✅ add key here too
     asset: {
-      _ref?: string;
+      _ref?: string; // when not expanded
+      _id?: string; // when expanded with asset-> in GROQ
       url: string;
       originalFilename?: string;
       mimeType: string;
@@ -91,12 +96,17 @@ export default function ClientHomeContent() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isOffline, setIsOffline] = useState(false);
   const [wishlistJourneys, setWishlistJourneys] = useState<WishlistJourney[]>(
-    []
+    [],
   );
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
+  // 🔁 Added for upload feedback UI
+  // 🔁 Separate upload states for passport and flight
+  const [passportUploading, setPassportUploading] = useState(false);
+  const [flightUploading, setFlightUploading] = useState(false);
+
   // ✅ Input refs mapped by trip ID
-  const passportInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  // const passportInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const flightInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
@@ -181,12 +191,12 @@ export default function ClientHomeContent() {
             <p className="text-gray-700 text-sm">{email}</p>
           </div>
 
-          <a
-            href="/books"
+          <Link
+            href="/books/"
             className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition"
           >
             📘 Download Your Free Book Now
-          </a>
+          </Link>
         </div>
 
         {isOffline && (
@@ -232,8 +242,8 @@ export default function ClientHomeContent() {
                             Uploaded Files:
                           </p>
                           <ul className="list-disc list-inside text-sm">
-                            {trip.documents.map((doc) => (
-                              <li key={doc._key}>
+                            {trip.documents.map((doc, index) => (
+                              <li key={`${doc._key}-${index}`}>
                                 <a
                                   href={doc.file.asset.url}
                                   target="_blank"
@@ -263,78 +273,140 @@ export default function ClientHomeContent() {
                       </p>
 
                       {/* Passport Upload */}
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Passport
+                      <div className="mb-6">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Passport Upload
                         </label>
-                        <input
-                          type="file"
-                          accept=".pdf,image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
 
-                            const uploaded = await sanityClient.assets.upload(
-                              "file",
-                              file,
-                              {
-                                filename: file.name,
-                              }
-                            );
+                        <div className="relative group border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white hover:border-amber-600 transition">
+                          <input
+                            type="file"
+                            accept=".pdf,image/*"
+                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file || !trip._id) return;
+                              setPassportUploading(true);
 
-                            const newRef = {
-                              asset: {
-                                _type: "reference",
-                                _ref: uploaded._id,
-                              },
-                            };
+                              try {
+                                const formData = new FormData();
+                                formData.append("file", file);
+                                formData.append("tripId", trip._id);
+                                formData.append("field", "passportUploads");
 
-                            await sanityClient
-                              .patch(trip._id)
-                              .setIfMissing({ passportUploads: [] })
-                              .append("passportUploads", [newRef])
-                              .commit();
+                                const response = await fetch("/api/upload", {
+                                  method: "POST",
+                                  body: formData,
+                                });
 
-                            alert(
-                              "Passport uploaded. It will now appear below."
-                            );
-                            e.target.value = ""; // reset input
+                                const result = await response.json();
+                                console.log("Passport upload result:", result);
 
-                            // Re-fetch the trips to update UI
-                            fetch(
-                              `/api/trips?email=${encodeURIComponent(email)}&ts=${Date.now()}`
-                            )
-                              .then((res) => res.json())
-                              .then((data) => {
-                                const fresh = Array.isArray(data.trips)
-                                  ? data.trips
-                                  : data;
-                                if (Array.isArray(fresh)) {
-                                  setTrips(fresh);
+                                // 🔁 Refresh trips after upload
+                                const refreshed = await fetch(
+                                  `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
+                                );
+
+                                const data = await refreshed.json();
+                                if (Array.isArray(data.trips)) {
+                                  setTrips(data.trips);
                                   localStorage.setItem(
                                     `trips_${email}`,
-                                    JSON.stringify(fresh)
+                                    JSON.stringify(data.trips),
                                   );
                                 }
-                              });
-                          }}
-                          className="block w-full border border-gray-300 rounded p-2 text-sm"
-                        />
+                              } catch (err) {
+                                console.error("Passport upload failed", err);
+                              } finally {
+                                setPassportUploading(false);
+                                e.target.value = "";
+                              }
+                            }}
+                          />
+                          <div className="text-center text-gray-500 z-0 relative">
+                            {passportUploading ? (
+                              <span className="text-amber-700 font-medium">
+                                Uploading...
+                              </span>
+                            ) : (
+                              <>
+                                <p className="text-sm">
+                                  Click or drag file to upload
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  PDF or image files only
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
 
-                        {/* Uploaded passports visual list */}
-                        {trip.passportUploads &&
+                        {/* Uploaded Files */}
+                        {Array.isArray(trip.passportUploads) &&
                           trip.passportUploads.length > 0 && (
-                            <ul className="mt-3 space-y-1 text-sm text-blue-700 underline">
+                            <ul className="mt-4 space-y-2 text-sm">
                               {trip.passportUploads.map((item, idx) => (
-                                <li key={idx}>
+                                <li
+                                  key={item._key || idx}
+                                  className="flex items-center justify-between"
+                                >
                                   <a
                                     href={item.asset.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    className="text-blue-600 underline"
                                   >
                                     {item.asset.originalFilename ||
                                       `Passport File ${idx + 1}`}
                                   </a>
+                                  <button
+                                    onClick={async () => {
+                                      const confirmDelete = window.confirm(
+                                        "Are you sure you want to delete this file? This cannot be undone.",
+                                      );
+                                      if (!confirmDelete) return;
+
+                                      // 🟢 Debug log before calling API
+                                      console.log(
+                                        "Deleting file with values:",
+                                        {
+                                          tripId: trip._id,
+                                          field: "passportUploads",
+                                          originalFilename:
+                                            item.asset?.originalFilename,
+                                        },
+                                      );
+
+                                      await fetch("/api/delete-upload", {
+                                        method: "POST",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          tripId: trip._id,
+                                          field: "passportUploads",
+                                          originalFilename:
+                                            item.asset?.originalFilename, // ✅ simplified
+                                        }),
+                                      });
+
+                                      // 🔁 Refresh trips after delete
+                                      const refreshed = await fetch(
+                                        `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
+                                      );
+                                      const data = await refreshed.json();
+                                      if (Array.isArray(data.trips)) {
+                                        setTrips(data.trips);
+                                        localStorage.setItem(
+                                          `trips_${email}`,
+                                          JSON.stringify(data.trips),
+                                        );
+                                      }
+                                    }}
+                                    className="ml-3 text-red-600 hover:underline text-sm"
+                                  >
+                                    Delete
+                                  </button>
                                 </li>
                               ))}
                             </ul>
@@ -342,52 +414,164 @@ export default function ClientHomeContent() {
                       </div>
 
                       {/* Flight Ticket Upload */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Flight Ticket
+                      <div className="mb-6">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Flight Ticket Upload
                         </label>
-                        <input
-                          ref={(el) => {
-                            flightInputRefs.current[trip._id] = el;
-                          }}
-                          type="file"
-                          accept=".pdf,image/*"
-                          multiple
-                          onChange={async (e) => {
-                            const files = Array.from(e.target.files || []);
-                            if (!files.length) return;
 
-                            const uploaded = await Promise.all(
-                              files.map((file) =>
-                                sanityClient.assets.upload("file", file, {
-                                  filename: file.name,
-                                })
-                              )
-                            );
+                        <div className="relative group border-2 border-dashed border-gray-300 rounded-lg p-4 bg-white hover:border-amber-600 transition">
+                          <input
+                            ref={(el) => {
+                              flightInputRefs.current[trip._id] = el;
+                            }}
+                            type="file"
+                            accept=".pdf,image/*"
+                            multiple
+                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                            onChange={async (e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (!files.length || !trip._id) return;
 
-                            const newRefs = uploaded.map((asset) => ({
-                              asset: {
-                                _type: "reference",
-                                _ref: asset._id,
-                              },
-                            }));
+                              setFlightUploading(true);
 
-                            await sanityClient
-                              .patch(trip._id)
-                              .setIfMissing({ flightTicketUploads: [] })
-                              .append("flightTicketUploads", newRefs)
-                              .commit();
+                              try {
+                                for (const file of files) {
+                                  const formData = new FormData();
+                                  formData.append("file", file);
+                                  formData.append("tripId", trip._id);
+                                  formData.append(
+                                    "field",
+                                    "flightTicketUploads",
+                                  );
 
-                            alert(
-                              "Flight tickets uploaded. Please refresh to see changes."
-                            );
+                                  const response = await fetch("/api/upload", {
+                                    method: "POST",
+                                    body: formData,
+                                  });
 
-                            if (flightInputRefs.current[trip._id]) {
-                              flightInputRefs.current[trip._id]!.value = "";
-                            }
-                          }}
-                          className="block w-full border border-gray-300 rounded p-2 text-sm"
-                        />
+                                  const result = await response.json();
+                                  console.log(
+                                    "Flight ticket upload result:",
+                                    result,
+                                  );
+
+                                  // 🔁 Refresh trips after upload
+                                  const refreshed = await fetch(
+                                    `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
+                                  );
+                                  const data = await refreshed.json();
+                                  if (Array.isArray(data.trips)) {
+                                    setTrips(data.trips);
+                                    localStorage.setItem(
+                                      `trips_${email}`,
+                                      JSON.stringify(data.trips),
+                                    );
+                                  }
+                                }
+                              } catch (err) {
+                                console.error(
+                                  "Flight ticket upload failed",
+                                  err,
+                                );
+                              } finally {
+                                setFlightUploading(false);
+                                if (flightInputRefs.current[trip._id]) {
+                                  flightInputRefs.current[trip._id]!.value = "";
+                                }
+                              }
+                            }}
+                          />
+                          <div className="text-center text-gray-500 z-0 relative">
+                            {flightUploading ? (
+                              <span className="text-amber-700 font-medium">
+                                Uploading...
+                              </span>
+                            ) : (
+                              <>
+                                <p className="text-sm">
+                                  Click or drag file to upload
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  PDF or image files only
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Uploaded Files */}
+                        {Array.isArray(trip.flightTicketUploads) &&
+                          trip.flightTicketUploads.length > 0 && (
+                            <ul className="mt-4 space-y-2 text-sm">
+                              {trip.flightTicketUploads.map((item, idx) => (
+                                <li
+                                  key={item._key || idx}
+                                  className="flex items-center justify-between"
+                                >
+                                  <a
+                                    href={item.asset.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    {item.asset.originalFilename ||
+                                      `Flight Ticket ${idx + 1}`}
+                                  </a>
+                                  <button
+                                    onClick={async () => {
+                                      const confirmDelete = window.confirm(
+                                        "Are you sure you want to delete this file? This cannot be undone.",
+                                      );
+                                      if (!confirmDelete) return;
+
+                                      // 🟢 Debug log before calling API
+                                      console.log(
+                                        "Deleting file with values:",
+                                        {
+                                          tripId: trip._id,
+                                          field: "flightTicketUploads",
+                                          assetId:
+                                            item?.asset?._ref ||
+                                            item?.asset?._id ||
+                                            "MISSING",
+                                          key: item?._key || "MISSING",
+                                        },
+                                      );
+
+                                      await fetch("/api/delete-upload", {
+                                        method: "POST",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          tripId: trip._id,
+                                          field: "flightTicketUploads",
+                                          originalFilename:
+                                            item.asset?.originalFilename, // ✅ simplified
+                                        }),
+                                      });
+
+                                      // 🔁 Refresh trips after delete
+                                      const refreshed = await fetch(
+                                        `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
+                                      );
+                                      const data = await refreshed.json();
+                                      if (Array.isArray(data.trips)) {
+                                        setTrips(data.trips);
+                                        localStorage.setItem(
+                                          `trips_${email}`,
+                                          JSON.stringify(data.trips),
+                                        );
+                                      }
+                                    }}
+                                    className="ml-3 text-red-600 hover:underline text-sm"
+                                  >
+                                    Delete
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -429,7 +613,9 @@ export default function ClientHomeContent() {
                   }
                   duration={journey.duration}
                   region={journey.region?.title}
-                  country={journey.country?.title}
+                  destinations={
+                    journey.country?.title ? [journey.country.title] : []
+                  }
                   star={journey.starRating}
                   isFeatured={journey.isFeatured ?? false}
                   isWishlisted={wishlistIds.includes(journey._id)}

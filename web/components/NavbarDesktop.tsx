@@ -39,7 +39,7 @@ function BadgeVisual({ size }: { size: number }) {
   return (
     <>
       <Image
-        src="/logos/badge-light.png"
+        src="/logos/badge-light.webp"
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
@@ -77,7 +77,7 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
         scrolled
           ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
           : "bg-[#d7ccc850] dark:bg-[#1f141050]",
-        "rounded-b-2xl rounded-t-none transition-all duration-300 ease-in-out"
+        "rounded-b-2xl rounded-t-none transition-all duration-300 ease-in-out",
       )}
       style={{ width: `${size.box}px`, height: `${size.box}px` }}
     >
@@ -100,7 +100,23 @@ export default function NavbarDesktop({
   const scrolled = useScrolled(40);
   const screenWidth = useBreakpoint();
   const pathname = usePathname();
-  const hideBadge = pathname?.startsWith("/journey") ?? false;
+  const [hasConsent, setHasConsent] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("cookieConsent");
+    if (stored === "accepted") setHasConsent(true);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "cookieConsent" && e.newValue === "accepted") {
+        setHasConsent(true);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  const hideBadge = pathname?.startsWith("/africansafariitineraries") ?? false;
 
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -150,7 +166,7 @@ export default function NavbarDesktop({
             "fixed top-0 left-4 z-[60]",
             scrolled
               ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
-              : "bg-[#d7ccc850] dark:bg-[#1f141050]"
+              : "bg-[#d7ccc850] dark:bg-[#1f141050]",
           )}
           style={{ borderRadius: "0 0 1rem 1rem" }}
         >
@@ -172,7 +188,7 @@ export default function NavbarDesktop({
               "px-6",
               scrolled
                 ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
-                : "bg-[#d7ccc850] dark:bg-[#1f141050]"
+                : "bg-[#d7ccc850] dark:bg-[#1f141050]",
             )}
           >
             <div className="flex items-center gap-2 min-w-0 max-w-[60%] flex-shrink">
@@ -188,7 +204,7 @@ export default function NavbarDesktop({
                   height={layoutSizes.logo.height}
                   className={cx(
                     "block dark:hidden object-contain transition-all duration-300 ease-in-out",
-                    scrolled ? "scale-100" : "scale-105"
+                    scrolled ? "scale-100" : "scale-105",
                   )}
                   priority
                 />
@@ -199,7 +215,7 @@ export default function NavbarDesktop({
                   height={layoutSizes.logo.height}
                   className={cx(
                     "hidden dark:block object-contain transition-all duration-300 ease-in-out",
-                    scrolled ? "scale-100" : "scale-105"
+                    scrolled ? "scale-100" : "scale-105",
                   )}
                   priority
                 />
@@ -207,21 +223,30 @@ export default function NavbarDesktop({
             </div>
 
             <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-end min-w-0">
-              <Link href="/journey" title="Search" className="p-2 rounded-xl">
+              <Link
+                href="/africansafariitineraries/"
+                title="Search"
+                className="p-2 rounded-xl"
+              >
                 <Search size={20} />
               </Link>
-              <SignedIn>
-                <CustomUserMenu />
-              </SignedIn>
-              <SignedOut>
-                <Link
-                  href="/sign-in"
-                  title="My Journey"
-                  className="p-2 rounded-xl"
-                >
-                  <User size={20} />
-                </Link>
-              </SignedOut>
+              {hasConsent && (
+                <>
+                  <SignedIn>
+                    <CustomUserMenu />
+                  </SignedIn>
+                  <SignedOut>
+                    <Link
+                      href="/sign-in/"
+                      title="My Journey"
+                      className="p-2 rounded-xl"
+                    >
+                      <User size={20} />
+                    </Link>
+                  </SignedOut>
+                </>
+              )}
+
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 title={open ? "Close Menu" : "Open Menu"}

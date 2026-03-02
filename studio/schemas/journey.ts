@@ -59,6 +59,13 @@ export default defineType({
       of: [{type: 'reference', to: [{type: 'country'}]}],
       validation: (Rule) => Rule.min(1).unique(),
     }),
+    defineField({
+      name: 'destinations',
+      title: 'Destinations',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'destination'}]}],
+      validation: (Rule) => Rule.required().min(1),
+    }),
 
     defineField({
       name: 'star',
@@ -100,6 +107,13 @@ export default defineType({
       title: 'Wetu Itinerary Link',
       type: 'url',
       validation: (Rule) => Rule.uri({scheme: ['http', 'https']}),
+    }),
+    defineField({
+      name: 'top10List',
+      title: 'Show in Top 10 Schema?',
+      type: 'boolean',
+      initialValue: false,
+      description: 'If checked, this journey will appear in SEO/AI Top 10 structured data.',
     }),
   ],
 })

@@ -3,6 +3,7 @@
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import Image from "next/image";
+import Link from "next/link";
 
 type WhyChooseBlock = {
   sectionTitle: PortableTextBlock[];
@@ -105,6 +106,17 @@ export default function WhyChoose({ data }: WhyChooseProps) {
               </div>
             </div>
           ))}
+
+          {/* Single CTA */}
+          {/* Single CTA */}
+          <div className="mt-8 pt-5 border-t border-black/10">
+            <Link
+              href="/destination/"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-black text-white text-sm font-medium tracking-wide hover:bg-[#5c4033] transition-all duration-300"
+            >
+              Discover Our Destinations
+            </Link>
+          </div>
         </div>
       </div>
     </section>

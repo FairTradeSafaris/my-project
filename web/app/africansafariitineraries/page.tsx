@@ -169,12 +169,12 @@ export default function JourneyPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <div className="bg-[#f9f7f4] py-8 sm:py-10 px-4 sm:px-8 lg:px-20 text-gray-800 font-poppins text-center">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-4">
+      <div className="bg-[#f9f7f4] py-12 sm:py-16 px-6 sm:px-10 lg:px-24 text-gray-800 font-poppins">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight mb-6">
             Safari. Reimagined.
           </h1>
-          <p className="text-base sm:text-lg leading-relaxed mb-5 text-gray-700">
+          <p className="text-lg sm:text-xl leading-relaxed mb-5 text-gray-700">
             Let’s turn your dream safari into a reality — with tailor-made
             Africa safari packages designed around your travel style, values,
             and sense of adventure. Our ethical safaris blend once-in-a-lifetime
@@ -189,7 +189,7 @@ export default function JourneyPage() {
               Start planning now.
             </a>
           </p>
-          <p className="text-base sm:text-lg leading-relaxed mb-3 text-gray-700">
+          <p className="text-lg sm:text-xl leading-relaxed mb-3 text-gray-700">
             These aren’t just trips — they’re{" "}
             <span className="text-gray-900 font-medium">
               handcrafted journeys
@@ -197,7 +197,7 @@ export default function JourneyPage() {
             rooted in purpose, powered by people, and alive with the spirit of
             Africa.
           </p>
-          <p className="text-base sm:text-lg leading-relaxed text-gray-700">
+          <p className="text-lg sm:text-xl leading-relaxed text-gray-700">
             Whether you crave <span className="italic">untamed wilderness</span>
             , <span className="italic">cultural depth</span>, or{" "}
             <span className="italic">barefoot luxury</span>, we’ll design a

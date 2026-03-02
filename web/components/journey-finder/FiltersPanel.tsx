@@ -2,7 +2,7 @@
 
 import React from "react";
 import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
+
 import { Filters, FilterKey, FilterOptions } from "./types";
 import { formatMoney } from "./utils";
 
@@ -143,7 +143,7 @@ export default function FiltersPanel({
           {!collapsed[group.filterKey as keyof typeof collapsed] && (
             <div className="flex flex-wrap gap-4">
               {group.filterKey === "duration" ? (
-                <div className="w-full">
+                <div className="w-full" style={{ touchAction: "none" }}>
                   <Slider
                     range
                     min={availableDurationRange[0]}
@@ -186,7 +186,7 @@ export default function FiltersPanel({
                   </div>
                 </div>
               ) : group.filterKey === "price" ? (
-                <div className="w-full">
+                <div className="w-full" style={{ touchAction: "none" }}>
                   <Slider
                     range
                     min={availablePriceRange[0]}

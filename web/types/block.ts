@@ -65,17 +65,20 @@ export type TextImageBlock = {
   text: PortableTextBlock;
   align?: "left" | "right";
   imageSize?: ImageSize;
+  backgroundStyle?: "default" | "neutral";
 };
 
 export type QuoteBlock = {
   _type: "quoteBlock";
   quote: string;
   attribution?: string;
+  backgroundStyle?: "default" | "neutral";
 };
 
 export type TextBlock = {
   _type: "textBlock";
   body: PortableTextBlock;
+  backgroundStyle?: "default" | "neutral";
 };
 
 export type VideoEmbedBlock = {

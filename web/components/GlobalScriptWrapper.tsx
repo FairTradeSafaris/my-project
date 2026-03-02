@@ -1,26 +1,40 @@
+"use client";
+
 import ScriptInjector, { type ScriptLike } from "@/components/ScriptInjector";
 import { client as sanity } from "@/lib/sanity";
+import { useEffect, useState } from "react";
 
-export const revalidate = 300; // cache result for 5 minutes
+export const revalidate = 300;
 
-type GlobalSettings = {
-  /** Array of raw <script> snippets or URLs stored in Sanity */
-  customHeaderScripts?: string[];
-};
+export default function GlobalScriptWrapper() {
+  const [scripts, setScripts] = useState<ScriptLike[]>([]);
 
-export default async function GlobalScriptWrapper() {
-  let scripts: ScriptLike[] = [];
+  useEffect(() => {
+    const consent = localStorage.getItem("cookieConsent");
 
-  try {
-    const query = `*[_type == "globalSettings"][0]{ customHeaderScripts }`;
-    const opts: { next: { revalidate: number } } = { next: { revalidate } };
+    if (consent === "accepted") {
+      // Fetch scripts from Sanity only if user accepted cookies
+      const fetchScripts = async () => {
+        try {
+          const query = `*[_type == "globalSettings"][0]{ customHeaderScripts }`;
+          const opts: { next: { revalidate: number } } = {
+            next: { revalidate },
+          };
+          const data = await sanity.fetch<{
+            customHeaderScripts?: string[];
+          }>(query, {}, opts);
+          setScripts(data?.customHeaderScripts ?? []);
+        } catch {
+          // silently skip if it fails
+          setScripts([]);
+        }
+      };
 
-    const data = await sanity.fetch<GlobalSettings>(query, {}, opts);
-    scripts = data?.customHeaderScripts ?? [];
-  } catch {
-    // If Sanity is offline or fetch fails, silently skip injection
-    scripts = [];
-  }
+      fetchScripts();
+    }
+  }, []);
+
+  if (!scripts.length) return null;
 
   return <ScriptInjector scripts={scripts} />;
 }

@@ -1,27 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Binoculars, PhoneCall, Info, Star, Images } from "lucide-react";
+
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Dancing_Script } from "next/font/google";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import CountryTabs from "@/components/CountryTabs";
-
-const dancingScript = Dancing_Script({ subsets: ["latin"], weight: ["700"] });
 
 // ----------------------------------------------------------------------------
 // Constants
 // ----------------------------------------------------------------------------
 const AUTOPLAY_MS = 10_000;
 const USER_PAUSE_MS = 30_000;
-const PANEL_PAUSE_MS = 60_000;
-const RESUME_GRACE_MS = 3_000;
-
 // ----------------------------------------------------------------------------
 // Types (local to this component)
 // ----------------------------------------------------------------------------
@@ -121,6 +114,10 @@ export default function DestinationClient({
       ? initialDestinations.filter(Boolean)
       : [];
   }, [initialDestinations]);
+  useEffect(() => {
+    console.log("INITIAL DESTINATIONS:", initialDestinations);
+    console.log("PROCESSED DESTINATIONS:", destinations);
+  }, [initialDestinations, destinations]);
 
   const tabItems: TabDestination[] = useMemo(() => {
     return destinations.map((d) => ({
@@ -130,15 +127,7 @@ export default function DestinationClient({
     }));
   }, [destinations]);
 
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-
   const prefersReducedMotion = usePrefersReducedMotion();
-
-  // Journey drawer (URL-driven)
-  const isOpen = searchParams?.get("open") === "true";
-  const journeyQuery = searchParams?.get("q") || "";
 
   // panels / sheets
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -148,65 +137,34 @@ export default function DestinationClient({
   // selection (index-based to make autoplay robust)
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selected = destinations[selectedIndex] ?? null;
+  useEffect(() => {
+    console.log("SELECTED OBJECT:", selected);
+    console.log("IMAGE URL:", selected?.image);
+  }, [selected]);
+  useEffect(() => {
+    console.log("INITIAL DESTINATIONS:", initialDestinations);
+    console.log("PROCESSED DESTINATIONS:", destinations);
+  }, [initialDestinations, destinations]);
 
-  // formatted reviews
-  const formattedReviews = useMemo(
-    () => (selected?.reviews ? selected.reviews.toLocaleString() : ""),
-    [selected?.reviews]
-  );
-
+  useEffect(() => {
+    console.log("SELECTED:", selected);
+  }, [selected]);
   // cross-fade support
-  const [prevBg, setPrevBg] = useState<string | null>(null);
-  const [fade, setFade] = useState(false);
 
   // autoplay control
   const [userPausedUntil, setUserPausedUntil] = useState<number>(0);
 
   // dock positioning (avoid covering CTAs)
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const [dockBottom, setDockBottom] = useState(24); // px from bottom
 
   // guard selectedIndex when list changes
-  useEffect(() => {
-    if (!destinations.length) return;
-    if (selectedIndex >= destinations.length) setSelectedIndex(0);
-  }, [destinations.length, selectedIndex]);
 
   // smooth background fade when country changes
-  useEffect(() => {
-    if (!selected?.image) return;
-    if (prefersReducedMotion) {
-      setPrevBg(selected.image);
-      return;
-    }
-    setFade(true);
-    const t = window.setTimeout(() => {
-      setPrevBg(selected.image || null);
-      setFade(false);
-    }, 450);
-    return () => window.clearTimeout(t);
-  }, [selected?.image, prefersReducedMotion]);
 
   // measure CTA block; keep dock just above it
-  useEffect(() => {
-    if (!ctaRef.current || typeof window === "undefined") return;
-    if (typeof ResizeObserver === "undefined") return; // SSR/legacy guard
 
-    const ro = new ResizeObserver(() => {
-      const h = ctaRef.current?.offsetHeight ?? 0;
-      setDockBottom(h + 24); // 24px gutter
-    });
-    ro.observe(ctaRef.current);
-    // initial
-    setDockBottom((ctaRef.current?.offsetHeight ?? 0) + 24);
-    return () => ro.disconnect();
-  }, []);
-
-  // autoplay loop (index-based, no slug matching)
   const canAutoplay =
     !prefersReducedMotion &&
     !aboutOpen &&
-    !isOpen &&
     !bookingOpen &&
     !galleryOpen &&
     Date.now() > userPausedUntil &&
@@ -234,28 +192,7 @@ export default function DestinationClient({
     setUserPausedUntil(Date.now() + USER_PAUSE_MS);
   };
 
-  // URL panel helpers
-  const openPanel = (q: string) => {
-    setUserPausedUntil(Date.now() + PANEL_PAUSE_MS);
-    const params = new URLSearchParams(searchParams?.toString() || "");
-
-    params.set("q", q);
-    params.set("open", "true");
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-  const closePanel = useCallback(() => {
-    const params = new URLSearchParams(searchParams?.toString() || "");
-
-    params.delete("q");
-    params.delete("open");
-    const next = params.toString();
-    const url = next?.length > 0 ? `${pathname}?${next}` : pathname;
-    router.push(url as string, { scroll: false });
-
-    setUserPausedUntil(Date.now() + RESUME_GRACE_MS);
-  }, [searchParams, pathname, router]);
-
-  const anyOverlayOpen = aboutOpen || bookingOpen || galleryOpen || isOpen;
+  const anyOverlayOpen = aboutOpen || bookingOpen || galleryOpen;
   useEffect(() => {
     if (typeof document === "undefined") return;
     const { body } = document;
@@ -267,19 +204,17 @@ export default function DestinationClient({
       };
     }
   }, [anyOverlayOpen]);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (galleryOpen) setGalleryOpen(false);
         if (aboutOpen) setAboutOpen(false);
         if (bookingOpen) setBookingOpen(false);
-        if (isOpen) closePanel();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [galleryOpen, aboutOpen, bookingOpen, isOpen, closePanel]);
+  }, [galleryOpen, aboutOpen, bookingOpen]);
 
   if (!destinations.length) {
     return (
@@ -297,16 +232,51 @@ export default function DestinationClient({
   return (
     <main className="relative bg-[var(--background)] text-[var(--foreground)]">
       {/* Mobile sticky chips */}
-      <section className="bg-[#f2e7db] text-center px-4 pt-8 pb-4">
-        <h2 className="text-3xl font-bold text-neutral-900 mb-2">
-          Discover Your Perfect Safari Destination
-        </h2>
-        <p className="text-lg text-neutral-700 max-w-2xl mx-auto">
-          Browse our top-rated countries and begin planning a journey rooted in
-          purpose, beauty, and local connection.
-        </p>
-      </section>
+      {/* Elegant Intro Transition */}
+      {/* Breadcrumb */}
+      <div className="w-full bg-[#f2e7db] border-b border-black/5">
+        <div className="max-w-6xl mx-auto px-6 py-3 text-sm text-black/60">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2 flex-wrap">
+              <li>
+                <Link href="/" className="hover:text-black transition">
+                  Home
+                </Link>
+              </li>
+              <li>/</li>
+              <li>
+                <Link
+                  href="/destination/"
+                  className="hover:text-black transition"
+                >
+                  Destination
+                </Link>
+              </li>
+              {selected?.title && (
+                <>
+                  <li>/</li>
+                  <li className="text-black font-medium">{selected.title}</li>
+                </>
+              )}
+            </ol>
+          </nav>
+        </div>
+      </div>
+      <section className="relative bg-gradient-to-b from-[#f8f5f0] to-[#f2e7db] py-8 md:py-12 border-b border-black/5">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-semibold text-[#2F3E46] tracking-wide">
+            Discover Africa’s Finest Safari Countries
+          </h2>
 
+          <p className="mt-4 text-base md:text-lg text-black/70 max-w-2xl mx-auto leading-relaxed">
+            Each destination offers its own rhythm — wildlife migrations,
+            dramatic landscapes, cultural richness, and meaningful travel
+            experiences.
+          </p>
+
+          <div className="mt-8 w-20 h-[2px] bg-[#2F3E46] mx-auto opacity-40" />
+        </div>
+      </section>
       <div className="md:hidden sticky top-0 z-20 bg-[#f2e7db] border-b border-[var(--border)]">
         <h2 className="text-base font-semibold px-4 py-3">
           Top-rated Safari Countries
@@ -318,276 +288,255 @@ export default function DestinationClient({
         />
       </div>
 
-      <div className="w-full flex flex-col md:flex-row h-full md:overflow-hidden">
-        {/* Sidebar (md+) */}
-        <nav
-          className="hidden md:block md:w-72 bg-[var(--surface-dark)] border-r border-[var(--border)]"
-          aria-label="Top-rated Safari Countries"
-        >
-          <h2 className="text-xl font-semibold p-6 border-b border-[var(--border)]">
-            Top-rated Safari Countries
-          </h2>
-          <ul className="max-h-[calc(100vh-380px)] overflow-y-auto">
-            {destinations.map((dest, i) => (
-              <li key={dest.slug?.current ?? `${dest.title}-${i}`}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedIndex(i);
-                    setAboutOpen(false);
-                    setUserPausedUntil(Date.now() + USER_PAUSE_MS);
-                  }}
-                  className={`w-full text-left px-6 py-3 border-b border-[var(--border)] flex items-center gap-2
-                    ${
-                      selectedIndex === i
-                        ? "bg-[var(--accent)] text-[var(--background)] font-semibold"
-                        : "text-[var(--onSurface-light)] hover:bg-[var(--accent)] hover:text-[var(--background)]"
-                    }`}
-                  aria-current={selectedIndex === i ? "true" : undefined}
-                >
-                  {dest.flagImage && (
-                    <Image
-                      src={dest.flagImage}
-                      alt={`${dest.title} flag`}
-                      width={24}
-                      height={16}
-                      className="w-6 h-4 object-cover rounded-[2px]"
-                      loading="lazy"
-                    />
-                  )}
-                  <span className="truncate">{dest.title}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Detail */}
-        <section className="relative flex-1 p-4 sm:p-6 md:p-6 text-white flex flex-col">
-          {/* Background with cross-fade */}
-          <div className="absolute inset-0 w-full h-full" aria-hidden>
-            {prevBg && (
-              <Image
-                key={`prev-${prevBg}`}
-                src={prevBg}
-                alt=""
-                fill
-                priority
-                sizes="100vw"
-                className={`object-cover transition-opacity duration-500 ${
-                  fade ? "opacity-0" : "opacity-100"
-                }`}
-              />
-            )}
-            {selected?.image && (
-              <Image
-                key={`cur-${selected.image}`}
-                src={selected.image}
-                alt={
-                  selected.title
-                    ? `${selected.title} background`
-                    : "Destination background"
-                }
-                fill
-                priority
-                sizes="100vw"
-                className="object-cover opacity-100"
-              />
-            )}
-            <div className="absolute inset-0 bg-black/45 md:bg-black/40" />
-          </div>
-
-          {/* Foreground */}
-          <div className="relative z-10 flex flex-col h-full min-h-[450px]">
-            <div className="flex-1 space-y-5 sm:space-y-6">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h2
-                  className={`text-4xl sm:text-5xl leading-tight drop-shadow-md ${dancingScript.className}`}
-                >
-                  {selected?.title}
+      <div className="w-full relative">
+        {
+          <div className="relative md:h-[200vh]">
+            <section className="relative w-full aspect-[16/10] md:h-screen text-white overflow-hidden md:sticky md:top-0">
+              {/* Background */}
+              {/* Sidebar (desktop only) */}
+              <nav
+                className="hidden md:flex absolute left-0 top-0 h-full w-72 z-40
+  flex-col justify-center
+  backdrop-blur-xl bg-black/40 border-r border-white/10 
+  text-white shadow-2xl"
+                aria-label="Top-rated Safari Countries"
+              >
+                <h2 className="text-lg font-semibold px-6 mb-4">
+                  Top-rated Safari Countries
                 </h2>
-                <div className="bg-black/50 p-1 sm:p-2 rounded-lg w-fit">
-                  <Image
-                    src="/badges/fair-trade-paw.png"
-                    alt="Fair Trade Approved"
-                    width={90}
-                    height={90}
-                    className="object-contain sm:w-[120px] sm:h-[120px]"
-                  />
-                </div>
-              </div>
-
-              {selected?.subtitle && (
-                <p className="italic text-base sm:text-lg text-white/80">
-                  {selected.subtitle}
-                </p>
-              )}
-              {selected?.description && (
-                <p className="text-white/90 leading-relaxed">
-                  {selected.description}
-                </p>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm mt-4 text-white/90">
-                {selected?.bestTime && (
-                  <div className="bg-white/10 p-3 sm:p-4 rounded-lg border border-white/10">
-                    <strong className="block text-white mb-1">
-                      Best Time to Go
-                    </strong>
-                    {selected.bestTime}
-                  </div>
-                )}
-                {selected?.highSeason && (
-                  <div className="bg-white/10 p-3 sm:p-4 rounded-lg border border-white/10">
-                    <strong className="block text-white mb-1">
-                      High Season
-                    </strong>
-                    {selected.highSeason}
-                  </div>
-                )}
-              </div>
-
-              {typeof selected?.rating === "number" && (
-                <div className="flex items-center space-x-2 text-yellow-300 mt-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      fill={
-                        i < Math.floor(selected?.rating ?? 0)
-                          ? "currentColor"
-                          : "#4b5563"
-                      }
-                      stroke="currentColor"
-                    />
+                <ul className="space-y-1">
+                  {destinations.map((dest, i) => (
+                    <li key={dest.slug?.current ?? `${dest.title}-${i}`}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedIndex(i);
+                          setUserPausedUntil(Date.now() + USER_PAUSE_MS);
+                        }}
+                        className={`w-full text-left px-6 py-3 flex items-center gap-2 transition
+            ${
+              selectedIndex === i
+                ? "bg-[#E5D5B8] text-black font-semibold"
+                : "hover:bg-white/10"
+            }`}
+                      >
+                        {dest.flagImage && (
+                          <Image
+                            src={dest.flagImage}
+                            alt={`${dest.title} flag`}
+                            width={24}
+                            height={16}
+                            className="w-6 h-4 object-cover rounded-[2px]"
+                          />
+                        )}
+                        <span className="truncate">{dest.title}</span>
+                      </button>
+                    </li>
                   ))}
-                  <span>{selected?.rating?.toFixed(1)}/5</span>
-                  {selected?.reviews && (
-                    <span className="ml-2 text-white/80">
-                      {formattedReviews} reviews
-                    </span>
+                </ul>
+              </nav>
+              <div className="absolute inset-0 z-0">
+                {selected?.image && (
+                  <Image
+                    src={selected.image}
+                    alt={selected.title ?? "Safari landscape"}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover object-center md:object-center"
+                  />
+                )}
+
+                {/* Luxury gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
+              </div>
+
+              {/* Content Wrapper */}
+              <div className="relative z-30 w-full md:pl-72 px-6 pt-16 pb-10 h-full flex flex-col justify-end">
+                {/* Top Content */}
+                <div className="max-w-2xl space-y-6 mt-24 md:mt-0">
+                  <h2
+                    className="absolute 
+  bottom-10 left-6
+  md:top-32 md:bottom-auto md:left-[20rem]
+  z-40
+  text-3xl md:text-6xl lg:text-7xl
+  font-semibold
+  uppercase tracking-[0.2em]
+  text-white
+  drop-shadow-[0_6px_20px_rgba(0,0,0,0.6)]"
+                  >
+                    {selected?.title}
+                  </h2>
+
+                  {selected?.subtitle && (
+                    <p className="text-lg md:text-xl text-white/80 italic">
+                      {selected.subtitle}
+                    </p>
+                  )}
+
+                  {selected?.description && (
+                    <p className="text-white/90 leading-relaxed">
+                      {selected.description}
+                    </p>
                   )}
                 </div>
-              )}
-            </div>
 
-            {/* ---- GALLERY: floating dock (md+) + mobile button ---- */}
-            {selected?.gallery?.length ? (
-              <>
-                {/* Dock (md+): floats above CTAs, auto offset */}
-                <div className="hidden md:block pointer-events-none">
-                  <div
-                    className="absolute left-6 right-6 transition-all"
-                    style={{ bottom: dockBottom }}
-                  >
-                    <div
-                      className="pointer-events-auto backdrop-blur-sm bg-black/30 border border-white/10 rounded-2xl px-3 py-2"
-                      onMouseEnter={() =>
-                        setUserPausedUntil(Date.now() + 15_000)
-                      }
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-xl">📸</span>
-                          <span className="font-semibold">
-                            Photo Highlights
-                          </span>
+                {/* Bottom Dock Area */}
+                <div className="mt-16 space-y-6">
+                  {/* Photo Highlights Dock */}
+                  {selected?.gallery?.length ? (
+                    <div className="hidden md:block absolute top-[58%] right-20 -translate-y-1/2 w-[500px] max-w-[85%] z-30">
+                      <div className="bg-gradient-to-r from-black/70 via-black/60 to-black/40 bg-gradient-to-r from-black/70 via-black/60 to-black/40 border border-white/10 rounded-2xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+                        <div className="text-lg font-semibold mb-4">
+                          Highlights
                         </div>
-                        <button
-                          onClick={() => {
-                            setGalleryOpen(true);
-                            setCurrentImageIndex(0); // ✅ Reset on open
-                            setUserPausedUntil(Date.now() + 60_000);
-                          }}
-                          className="text-sm underline hover:no-underline"
-                        >
-                          Open gallery
-                        </button>
-                      </div>
-                      <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                        {selected.gallery.slice(0, 10).map((img, i) => (
+                        {(selected?.bestTime || selected?.highSeason) && (
+                          <div className="flex flex-wrap gap-3 mb-4">
+                            {selected?.bestTime && (
+                              <div className="px-3 py-1.5 bg-white/10 border border-white/20 rounded-full text-xs text-white/90">
+                                <span className="text-white/60 mr-1">
+                                  Best Time:
+                                </span>
+                                {selected.bestTime}
+                              </div>
+                            )}
+
+                            {selected?.highSeason && (
+                              <div className="px-3 py-1.5 bg-white/10 border border-white/20 rounded-full text-xs text-white/90">
+                                <span className="text-white/60 mr-1">
+                                  High Season:
+                                </span>
+                                {selected.highSeason}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-4 pb-5">
+                          {selected.gallery.slice(0, 6).map((img, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                setGalleryOpen(true);
+                                setCurrentImageIndex(i);
+                              }}
+                              className="w-full aspect-[4/3] rounded-lg overflow-hidden border border-white/10 hover:scale-105 transition-transform duration-300"
+                            >
+                              <Image
+                                src={img}
+                                alt={`Thumbnail ${i + 1}`}
+                                width={320}
+                                height={220}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                        <div className="pt-6 flex flex-col gap-3">
+                          {selected?.slug?.current && (
+                            <Link
+                              href={`/africansafariitineraries?q=${selected.slug.current}`}
+                              className="w-full text-center px-8 py-3 bg-[#E5D5B8] text-black font-semibold rounded-lg hover:bg-[#d4c3a3] transition shadow-md"
+                            >
+                              Explore Itineraries
+                            </Link>
+                          )}
+
+                          {selected?.slug?.current && (
+                            <Link
+                              href={`/destination/${selected.slug.current}/`}
+                              className="w-full text-center px-8 py-3 border border-white/30 text-white rounded-lg hover:bg-white hover:text-black transition"
+                            >
+                              More About {selected?.title}
+                            </Link>
+                          )}
+
                           <button
-                            key={`${img}-${i}`}
-                            className="shrink-0 w-28 h-20 overflow-hidden rounded-md border border-white/10"
-                            onClick={() => {
-                              setGalleryOpen(true);
-                              setUserPausedUntil(Date.now() + 60_000);
-                            }}
+                            onClick={() => setBookingOpen(true)}
+                            className="w-full text-center px-8 py-3 text-white/80 hover:text-white underline underline-offset-4 transition"
                           >
-                            <Image
-                              src={img}
-                              alt={`Thumbnail ${i + 1}`}
-                              width={160}
-                              height={120}
-                              className="w-full h-full object-cover"
-                            />
+                            Book a Discovery Call
                           </button>
-                        ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : null}
+
+                  {/* CTAs */}
                 </div>
+              </div>
+            </section>{" "}
+          </div>
+        }
+      </div>
+      {/* ---------- MOBILE EDITORIAL HIGHLIGHTS ---------- */}
+      {/* ---------- MOBILE EDITORIAL HIGHLIGHTS ---------- */}
+      {selected?.gallery?.length && (
+        <section className="md:hidden bg-[#efe4d3] text-black py-5">
+          <div className="max-w-xl mx-auto px-6">
+            {/* Section Intro */}
+            <div className="mb-12">
+              <p className="uppercase tracking-widest text-xs text-black/50 mb-3">
+                Discover
+              </p>
+              <h3 className="text-3xl font-semibold leading-tight">
+                Highlights of {selected?.title}
+              </h3>
+              <div className="mt-6 w-16 h-[2px] bg-black/30" />
+            </div>
 
-                {/* Mobile: compact button (fixed Tailwind class) */}
-                <div className="md:hidden mt-6">
-                  <Button
-                    onClick={() => {
-                      setGalleryOpen(true);
-                      setCurrentImageIndex(0); // ✅ Reset on open
-                      setUserPausedUntil(Date.now() + 60_000);
-                    }}
-                    className="w-full bg-white/15 hover:bg-white/20 text-white border border-white/20"
-                    variant="ghost"
-                  >
-                    <Images size={18} className="mr-2" /> Photo Highlights
-                  </Button>
-                </div>
-              </>
-            ) : null}
+            {/* Image Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-14">
+              {selected.gallery.slice(0, 4).map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setGalleryOpen(true);
+                    setCurrentImageIndex(i);
+                  }}
+                  className="aspect-[4/3] rounded-xl overflow-hidden shadow-md"
+                >
+                  <Image
+                    src={img}
+                    alt={`Thumbnail ${i + 1}`}
+                    width={400}
+                    height={300}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
 
-            {/* CTAs (we measure this for dock placement) */}
-            <div
-              ref={ctaRef}
-              className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3"
-            >
-              <Button
-                onClick={() => selected && openPanel(selected.title)}
-                className="w-full bg-[#E5D5B8] hover:bg-[#d4c3a3] text-black font-semibold text-base px-6 py-3 flex items-center gap-2"
-                disabled={!selected}
+            {/* CTA Stack */}
+            <div className="flex flex-col gap-4">
+              {selected?.slug?.current && (
+                <Link
+                  href={`/africansafariitineraries?q=${selected.slug.current}`}
+                  className="w-full text-center px-6 py-3 bg-[#E5D5B8] text-black font-semibold rounded-lg shadow-sm"
+                >
+                  Explore Itineraries
+                </Link>
+              )}
+
+              {selected?.slug?.current && (
+                <Link
+                  href={`/destination/${selected.slug.current}/`}
+                  className="w-full text-center px-6 py-3 border border-black/30 rounded-lg"
+                >
+                  More About {selected?.title}
+                </Link>
+              )}
+
+              <button
+                onClick={() => setBookingOpen(true)}
+                className="text-center underline underline-offset-4 text-black/70"
               >
-                <Binoculars size={18} />
-                Explore Itineraries
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full border-[#E5D5B8] text-[#E5D5B8] hover:bg-[#E5D5B8] hover:text-black font-semibold text-base px-6 py-3 flex items-center gap-2"
-                onClick={() => {
-                  setAboutOpen(true);
-                  setUserPausedUntil(Date.now() + 60_000);
-                }}
-                disabled={!selected}
-              >
-                <Info size={15} />
-                More About {selected?.title ?? "Country"}
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full sm:w-auto justify-center sm:justify-start text-white hover:underline text-base px-6 py-3 flex items-center gap-2"
-                onClick={() => {
-                  setBookingOpen(true);
-                  setUserPausedUntil(Date.now() + 60_000);
-                }}
-              >
-                <PhoneCall size={18} />
                 Book a Discovery Call
-              </Button>
+              </button>
             </div>
           </div>
         </section>
-      </div>
-
+      )}
       {/* ---------- GALLERY MODAL ---------- */}
       {galleryOpen && selected?.gallery?.length ? (
         <Portal>
@@ -625,7 +574,7 @@ export default function DestinationClient({
                 onClick={(e) => {
                   e.stopPropagation();
                   setCurrentImageIndex((prev) =>
-                    prev === 0 ? selected!.gallery!.length - 1 : prev - 1
+                    prev === 0 ? selected!.gallery!.length - 1 : prev - 1,
                   );
                 }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
@@ -638,7 +587,7 @@ export default function DestinationClient({
                 onClick={(e) => {
                   e.stopPropagation();
                   setCurrentImageIndex((prev) =>
-                    prev === selected!.gallery!.length - 1 ? 0 : prev + 1
+                    prev === selected!.gallery!.length - 1 ? 0 : prev + 1,
                   );
                 }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
@@ -804,7 +753,7 @@ export default function DestinationClient({
                   <div className="rounded-lg border border-neutral-200 overflow-hidden">
                     <iframe
                       src={`https://www.google.com/maps?q=${encodeURIComponent(
-                        selected.mapLocation
+                        selected.mapLocation,
                       )}&output=embed`}
                       width="100%"
                       height="380"
@@ -815,65 +764,6 @@ export default function DestinationClient({
                   </div>
                 </section>
               )}
-            </div>
-          </aside>
-        </Portal>
-      )}
-
-      {/* ---------- JOURNEY PANEL ---------- */}
-      {isOpen && (
-        <Portal>
-          <div
-            onClick={closePanel}
-            className="fixed inset-0 bg-black/50 z-[1100]"
-            aria-hidden="true"
-          />
-          <aside
-            className="fixed right-0 top-0 h-[100dvh] w-full sm:w-[560px] md:w-[720px] lg:w-[840px] xl:w-[960px] bg-white z-[1200] shadow-2xl border-l border-neutral-200"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wide text-neutral-500">
-                  Journey
-                </p>
-                <h3
-                  className="truncate font-semibold text-lg text-neutral-900"
-                  title={journeyQuery}
-                >
-                  {journeyQuery || "Selected Itinerary"}
-                </h3>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Link
-                  href={{
-                    pathname: "/journey",
-                    query: { q: journeyQuery, open: "true" },
-                  }}
-                  className="text-sm underline text-neutral-600 hover:text-neutral-900"
-                >
-                  Open full page
-                </Link>
-                <button
-                  type="button"
-                  onClick={closePanel}
-                  className="ml-2 inline-flex items-center justify-center rounded-full w-9 h-9 border border-neutral-200 hover:bg-neutral-50"
-                  aria-label="Close panel"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div className="h-[calc(100dvh-57px)]">
-              <iframe
-                key={journeyQuery}
-                src={`/journey?q=${encodeURIComponent(journeyQuery)}&open=true`}
-                className="w-full h-full"
-                title="Journey"
-              />
             </div>
           </aside>
         </Portal>

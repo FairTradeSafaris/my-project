@@ -2,78 +2,49 @@
 
 import { client as sanity } from "@/lib/sanity";
 import Link from "next/link";
+import type { Metadata } from "next";
 import type { PortableTextBlock } from "@portabletext/types";
 import JourneyCard from "@/components/JourneyCard";
-import FeaturedAmbassador from "@/components/FeaturedAmbassador";
-import FoundersPromise from "@/components/FoundersPromise";
-import type { FoundersPromiseBlock } from "@/types/types";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
+import type { FoundersPromiseBlock } from "@/types/types";
+import Head from "next/head";
 
-import dynamic from "next/dynamic";
-import Image from "next/image";
-const WhyChoose = dynamic(() => import("@/components/WhyChoose"), {
-  loading: () => <p>Loading section...</p>,
-});
+// ✅ Client components
+import HomeClientTop from "@/components/HomeClientTop";
+import HomeClientBottom from "@/components/HomeClientBottom";
+import BlogPreview from "@/components/BlogPreview";
 
-const foundersPromise: FoundersPromiseBlock | null = await sanity.fetch(
-  `*[_type == "foundersPromise"][0]{
-    headline,
-    intro,
-    safelist,
-    buttonText,
-    buttonLink,
-    textOnLeft,
-    backgroundImage {
-      asset->{url},
-      alt
-    },
-    lineArtImage {
-      asset->{url},
-      alt
-    },
-    impactContent {
-      title,
-      body,
-      ctaText,
-      ctaLink
-    }
-  }`
-);
+/* ============================
+   METADATA
+============================ */
 
-export async function generateMetadata() {
-  return getSanityMetadata("home"); // or "about", "contact", etc.
+export async function generateMetadata(): Promise<Metadata> {
+  const { metadata } = await getSanityMetadata("home");
+
+  if (metadata.other && "ld-json" in metadata.other) {
+    delete metadata.other["ld-json"];
+  }
+
+  return metadata;
 }
+
+/* ============================
+   TYPES
+============================ */
 
 type HeroContent = {
   headline: string;
   subheadline: string;
-  backgroundImages: {
-    asset: {
-      url: string;
-    };
-    alt?: string;
-  }[];
+  backgroundImages: { asset: { url: string }; alt?: string }[];
   primaryCTA: string;
   secondaryCTA: string;
-  metaTitle?: string;
-  metaDescription?: string;
 };
 
 type WhyChooseBlock = {
   sectionTitle: PortableTextBlock[];
-  sideImage?: {
-    asset: {
-      url: string;
-    };
-    alt?: string;
-  };
+  sideImage?: { asset: { url: string }; alt?: string };
   reasons: {
-    icon?: {
-      asset: {
-        url: string;
-      };
-      alt?: string;
-    };
+    icon?: { asset: { url: string }; alt?: string };
     title: string;
     description: string;
   }[];
@@ -82,228 +53,182 @@ type WhyChooseBlock = {
 type Journey = {
   _id: string;
   title: string;
-  slug: {
-    current: string;
-  };
+  slug: { current: string };
   summary: string;
   duration: string;
   price?: string;
-  heroImage: {
-    asset: {
-      url: string;
-    };
-  };
+  heroImage: { asset: { url: string } };
   alt: string;
   ctaText: string;
-  region?: {
-    title: string;
-  };
+  region?: { title: string };
   star?: number;
   starIcon?: string;
-  featuredOnHome?: boolean;
 };
+
+/* ============================
+   PAGE
+============================ */
 
 export default async function Home() {
   const hero: HeroContent | null = await sanity.fetch(
     `*[_type == "hero"][0]{
       headline,
       subheadline,
-      backgroundImages[] {
-        asset->{url},
-        alt
-      },
+      backgroundImages[] { asset->{url}, alt },
       primaryCTA,
       secondaryCTA
-    }`
+    }`,
   );
 
   const whyChoose: WhyChooseBlock | null = await sanity.fetch(
     `*[_type == "whyChoose"][0]{
       sectionTitle,
-      sideImage {
-        asset->{url},
-        alt
-      },
+      sideImage { asset->{url}, alt },
       reasons[] {
-        icon {
-          asset->{url},
-          alt
-        },
+        icon { asset->{url}, alt },
         title,
         description
       }
-    }`
+    }`,
+  );
+
+  const foundersPromise: FoundersPromiseBlock | null = await sanity.fetch(
+    `*[_type == "foundersPromise"][0]{
+      headline,
+      intro,
+      safelist,
+      buttonText,
+      buttonLink,
+      textOnLeft,
+      backgroundImage { asset->{url}, alt },
+      lineArtImage { asset->{url}, alt },
+      impactContent { title, body, ctaText, ctaLink }
+    }`,
   );
 
   const journeys: Journey[] = await sanity.fetch(
     `*[_type == "journey" && featuredOnHome == true]{
-    _id,
-    title,
-    slug,
-    summary,
-    duration,
-    price,
-    heroImage { asset->{url} },
-    alt,
-    ctaText,
-    region->{ title },
-    star,
-    "starIcon": starIcon.asset->url,
-    featuredOnHome // ✅ <-- add this line
-  }`
-  );
-
-  const ctaBanner = await sanity.fetch(
-    `*[_type == "ctaBanner"][0]{
-      headline,
-      subheadline,
-      buttonText,
-      buttonLink,
-      "backgroundImageUrl": backgroundImage.asset->url,
-      "sideImageUrl": sideImage.asset->url,
-      textOnLeft
-    }`
+      _id,
+      title,
+      slug,
+      summary,
+      duration,
+      price,
+      heroImage { asset->{url} },
+      alt,
+      ctaText,
+      region->{ title },
+      star,
+      "starIcon": starIcon.asset->url
+    }`,
   );
 
   if (!hero) {
     return (
-      <main className="min-h-screen flex items-center justify-center text-center text-red-600">
-        <p>
-          ⚠️ Hero content not found. Please add and publish it in Sanity Studio.
-        </p>
+      <main className="min-h-screen flex items-center justify-center text-red-600">
+        ⚠️ Hero content not found.
       </main>
     );
   }
 
   return (
     <>
-      <main className="min-h-screen font-poppins bg-white text-black">
-        {/* Why Travel With Us Section */}
-        {whyChoose && <WhyChoose data={whyChoose} />}
-        {foundersPromise && <FoundersPromise data={foundersPromise} />}
-        {/* Journeys Section */}
-        <section className="relative py-20 bg-[#e6d8c7] text-black">
-          {/* Dark mode overlay */}
-          <div className="absolute inset-0 dark:bg-[#3f2e1f]/40 pointer-events-none"></div>
+      <Head>
+        {hero?.backgroundImages?.[0]?.asset?.url && (
+          <link
+            rel="preload"
+            as="image"
+            href={hero.backgroundImages[0].asset.url}
+            fetchPriority="high"
+          />
+        )}
+      </Head>
 
-          <div className="relative max-w-6xl mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-4">
+      <main className="min-h-screen bg-white text-black font-poppins">
+        {/* 1️⃣ WhyChoose + FoundersPromise */}
+        <HomeClientTop
+          whyChoose={whyChoose}
+          foundersPromise={foundersPromise}
+        />
+
+        {/* 2️⃣ Featured Journeys (MIDDLE) */}
+        {/* 2️⃣ Featured Journeys (MIDDLE) */}
+        <section className="py-16 md:py-20 bg-[#e6d8c7]">
+          <div className="max-w-6xl mx-auto px-6 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Your Journey Starts Here
             </h2>
-            <p className="text-lg text-gray-600 mb-12">
-              Handpicked safari experiences to inspire your next adventure.
+
+            <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto mb-12">
+              Handpicked safari experiences designed for travelers who value
+              purpose, privacy, and unforgettable wildlife encounters.
             </p>
+          </div>
 
-            {journeys.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-center">
-                {journeys.map((j) => (
-                  <div key={j._id} className="h-full flex">
-                    <Link
-                      href={{
-                        pathname: "/journey",
-                        query: { q: j.title, open: "true" },
-                      }}
-                      className="block h-full w-full"
-                    >
-                      <JourneyCard
-                        journeyId={j._id}
-                        slug={j.slug?.current || ""}
-                        title={j.title}
-                        summary={j.summary}
-                        imageUrl={j.heroImage.asset.url}
-                        alt={j.alt}
-                        price={j.price}
-                        duration={j.duration}
-                        region={j.region?.title}
-                        star={Number(j.star || 0)}
-                        starIcon={j.starIcon}
-                        isFeatured={j.featuredOnHome === true}
-                      />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 mt-10">
-                No featured journeys available.
-              </p>
-            )}
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
+            {journeys.map((j) => (
+              <JourneyCard
+                key={j._id}
+                journeyId={j._id}
+                title={j.title}
+                slug={j.slug.current}
+                summary={j.summary}
+                imageUrl={j.heroImage?.asset?.url}
+                alt={j.alt}
+                price={j.price}
+                duration={j.duration}
+                region={j.region?.title}
+                star={j.star}
+                starIcon={j.starIcon}
+              />
+            ))}
+          </div>
 
+          {/* Elegant CTA */}
+          <div className="mt-12 flex justify-center">
             <Link
-              href="/journey"
-              className="mt-12 inline-block text-black border border-black px-6 py-3 rounded-full font-semibold hover:bg-black hover:text-white transition"
+              href="/africansafariitineraries/"
+              className="group relative text-lg font-semibold tracking-wide text-black"
             >
-              Explore All Journeys →
+              Explore All Itineraries
+              <span className="absolute left-0 -bottom-1 w-full h-[2px] bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
             </Link>
           </div>
         </section>
 
-        {ctaBanner && (
-          <section
-            className="relative w-full py-20 flex items-center justify-center overflow-hidden bg-cover bg-center"
-            style={{ backgroundImage: `url(${ctaBanner.backgroundImageUrl})` }}
-          >
-            {/* Top & Bottom Fades (will be tinted by overlay now) */}
-            <div
-              className="absolute top-0 left-0 w-full h-32 z-10 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(to bottom, #e6d8c7, rgba(255, 255, 255, 0))",
-              }}
-            />
-            <div
-              className="absolute bottom-0 left-0 w-full h-32 z-10 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(to top, #fdf3e9, rgba(255, 255, 255, 0))",
-              }}
-            />
+        {(hero.primaryCTA || hero.secondaryCTA) && (
+          <section className="py-16 text-center bg-white">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              Ready to Start Your Adventure?
+            </h3>
 
-            {/* DARK MODE OVERLAY — above fades, below content */}
-            <div
-              aria-hidden
-              className="absolute inset-0 z-20 hidden dark:block bg-black/22 pointer-events-none"
-            />
-
-            {/* Content Row */}
-            <div
-              className={`relative z-30 flex flex-col ${
-                ctaBanner.textOnLeft ? "md:flex-row" : "md:flex-row-reverse"
-              } items-center justify-between max-w-6xl w-full px-6`}
-            >
-              {/* Side Image */}
-              {ctaBanner.sideImageUrl && (
-                <div className="w-full md:w-1/2 flex justify-center md:justify-start mb-8 md:mb-0">
-                  <Image
-                    src={ctaBanner.sideImageUrl}
-                    alt="CTA illustration"
-                    width={600}
-                    height={400}
-                    className="max-h-72 object-contain"
-                    unoptimized
-                  />
-                </div>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+              {hero.primaryCTA && (
+                <Link
+                  href={hero.primaryCTA}
+                  className="bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition"
+                >
+                  Book Your Safari
+                </Link>
               )}
 
-              {/* Text Content */}
-              <div className="w-full md:w-1/2 text-center md:text-left">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  {ctaBanner.headline}
-                </h2>
-                <p className="text-md md:text-lg mb-6">
-                  {ctaBanner.subheadline}
-                </p>
+              {hero.secondaryCTA && (
                 <Link
-                  href={ctaBanner.buttonLink}
-                  className="inline-block bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition"
+                  href={hero.secondaryCTA}
+                  className="text-black border border-black px-6 py-3 rounded-full font-semibold hover:bg-black hover:text-white transition"
                 >
-                  {ctaBanner.buttonText}
+                  Learn More
                 </Link>
-              </div>
+              )}
             </div>
           </section>
         )}
-        <FeaturedAmbassador />
+
+        {/* 3️⃣ NonProfitCarousel + FeaturedAmbassador */}
+
+        <HomeClientBottom />
+        <BlogPreview />
       </main>
     </>
   );

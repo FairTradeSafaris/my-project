@@ -35,15 +35,11 @@ type PromoCard = FeatureCard;
 
 const SafariFactFooter = dynamic(
   () => import("@/components/SafariFactFooter"),
-  {
-    ssr: false,
-  }
+  { ssr: false },
 );
 const TestimonialCarousel = dynamic(
   () => import("@/components/TestimonialCarousel"),
-  {
-    ssr: false,
-  }
+  { ssr: false },
 );
 
 export default function ClientLayout({
@@ -53,7 +49,31 @@ export default function ClientLayout({
 }) {
   const pathname = usePathname();
   const screenWidth = useBreakpoint();
+
   const hideUI = pathname?.toLowerCase() === "/project-portal";
+
+  const showHero = useMemo(() => {
+    if (!pathname) return false;
+
+    const segments = pathname.split("/").filter(Boolean);
+
+    const isDetailPage = segments.length >= 2;
+
+    // 🔒 Explicitly block pillar pages
+    const blockedPillars = [
+      "luxury-african-safaris",
+      // add more pillar slugs here if needed
+    ];
+
+    const firstSegment = segments[0];
+
+    const isBlockedPillar =
+      segments.length === 1 && blockedPillars.includes(firstSegment);
+
+    if (isBlockedPillar) return false;
+
+    return !isDetailPage;
+  }, [pathname]);
 
   const [hasMounted, setHasMounted] = useState(false);
   const [navSections, setNavSections] = useState<NavSection[]>([]);
@@ -61,13 +81,12 @@ export default function ClientLayout({
   const [promoCard, setPromoCard] = useState<PromoCard | null>(null);
   const [ready, setReady] = useState(false);
   const [heroData, setHeroData] = useState<HeroData | undefined>(undefined);
+
   const pageKey = useMemo(() => {
     if (!pathname) return "home";
     const seg = pathname.split("/").filter(Boolean)[0];
     return seg || "home";
   }, [pathname]);
-
-  const showHero = pageKey !== "destinations";
 
   useEffect(() => {
     setHasMounted(true);
@@ -90,12 +109,14 @@ export default function ClientLayout({
               image { asset->{ _ref,_type,url }, _type }
             }
           }`);
+
         if (cancelled) return;
+
         setNavSections(
-          Array.isArray(data?.navSections) ? data.navSections : []
+          Array.isArray(data?.navSections) ? data.navSections : [],
         );
         setFeatureCards(
-          Array.isArray(data?.featureCards) ? data.featureCards : []
+          Array.isArray(data?.featureCards) ? data.featureCards : [],
         );
         setPromoCard(data?.promoCard || null);
       } catch {
@@ -117,23 +138,27 @@ export default function ClientLayout({
             "items": [
               ...*[_type == "hero" && (scope == $k || (scope == "custom" && customScope == $k))]{
                 headline, subheadline, primaryCTA, secondaryCTA, action,
-                backgroundImages[] {
-                  _type, alt, asset->{ _ref, _type, url },
-                  desktopImage{ asset->{ _ref, _type, url } },
-                  mobileImage{ asset->{ _ref, _type, url } }
-                }
+backgroundImages[] {
+  alt,
+  desktopImage { asset-> },
+  mobileImage { asset-> }
+}
+
               }[0...1],
               ...*[_type == "hero" && scope == "default"]{
                 headline, subheadline, primaryCTA, secondaryCTA, action,
-                backgroundImages[] {
-                  _type, alt, asset->{ _ref, _type, url },
-                  desktopImage{ asset->{ _ref, _type, url } },
-                  mobileImage{ asset->{ _ref, _type, url } }
-                }
-              }[0...1]
+backgroundImages[] {
+  alt,
+  desktopImage { asset-> },
+  mobileImage { asset-> }
+}}[0...1]
             ]
           }`,
-          { k: pageKey }
+          { k: pageKey },
+        );
+        console.log(
+          "📥 Sanity hero data fetched:",
+          JSON.stringify(data, null, 2),
         );
 
         if (cancelled) return;
@@ -144,6 +169,7 @@ export default function ClientLayout({
             : undefined;
 
         if (!h) {
+          console.warn("⚠️ No hero data returned from Sanity!");
           setHeroData(undefined);
           return;
         }
@@ -155,6 +181,9 @@ export default function ClientLayout({
           ? [imgs[Math.floor(Math.random() * imgs.length)]]
           : [];
 
+        console.log("📦 Setting heroData with hero object:", h);
+        console.log("🖼️ Hero images available:", imgs);
+
         setHeroData({
           headline: h.headline ?? undefined,
           subheadline: h.subheadline ?? undefined,
@@ -163,8 +192,7 @@ export default function ClientLayout({
           backgroundImages: chosen,
           action: h.action ?? undefined,
         });
-      } catch (err) {
-        console.log("❌ Hero fetch error:", err);
+      } catch {
         setHeroData(undefined);
       }
     };
@@ -177,9 +205,10 @@ export default function ClientLayout({
     };
   }, [pageKey, showHero]);
 
+  // 🔍 DEBUG LOGS
+
   return (
     <>
-      {/* Navbar First */}
       {!hideUI && ready && hasMounted && screenWidth !== null && (
         <>
           {screenWidth < 1024 ? (
@@ -194,10 +223,9 @@ export default function ClientLayout({
         </>
       )}
 
-      {/* Hero Section Below Navbar */}
       {showHero && <HeroController heroData={heroData} />}
 
-      <main>{children}</main>
+      <div>{children}</div>
 
       {!hideUI && screenWidth !== null && screenWidth < 1024 && (
         <BottomTabBar />

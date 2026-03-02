@@ -7,9 +7,12 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import type { FoundersPromiseBlock } from "@/types/types";
 
+/* ------------------------------
+   Motion (desktop only)
+-------------------------------- */
 const MotionDiv = dynamic(
   () => import("framer-motion").then((m) => m.motion.div),
-  { ssr: false }
+  { ssr: false, loading: () => null },
 );
 
 type Props = { data: FoundersPromiseBlock };
@@ -19,6 +22,9 @@ function splitOnce(s: string) {
   return m ? { title: m[1], detail: m[2] } : { title: s, detail: "" };
 }
 
+/* ------------------------------
+   Mobile clamp
+-------------------------------- */
 function ClampMobile({
   children,
   collapsedHeight = 190,
@@ -27,19 +33,19 @@ function ClampMobile({
   collapsedHeight?: number;
 }) {
   const [open, setOpen] = useState(false);
+
   return (
     <div className="relative">
       <div
-        className="md:overflow-visible"
         style={{
           overflow: open ? "visible" : "hidden",
           maxHeight: open ? "none" : `${collapsedHeight}px`,
           WebkitMaskImage: open
             ? "none"
-            : "linear-gradient(to bottom, black 68%, transparent)",
+            : "linear-gradient(to bottom, black 70%, transparent)",
           maskImage: open
             ? "none"
-            : "linear-gradient(to bottom, black 78%, transparent)",
+            : "linear-gradient(to bottom, black 70%, transparent)",
         }}
       >
         {children}
@@ -57,6 +63,9 @@ function ClampMobile({
   );
 }
 
+/* ==============================
+   Component
+================================ */
 export default function FoundersPromise({ data }: Props) {
   const {
     headline,
@@ -72,199 +81,162 @@ export default function FoundersPromise({ data }: Props) {
   return (
     <section
       className={`
-        relative
-        pt-24 sm:pt-28 md:pt-32
-        pb-24 sm:pb-28 md:pb-36
-        px-5 sm:px-6 md:px-8
-        bg-cover bg-center bg-no-repeat text-black
-      `}
-      style={{
-        backgroundImage: backgroundImage?.asset?.url
-          ? `url(${backgroundImage.asset.url})`
-          : "none",
-      }}
+      relative z-0
+      pt-28 sm:pt-32 md:pt-[220px]
+      pb-24 sm:pb-28 md:pb-36
+      px-5 sm:px-6 md:px-8
+      bg-cover bg-center bg-no-repeat text-black
+    `}
     >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 opacity-60 z-0 pointer-events-none" />
+      {/* Background */}
+      {backgroundImage?.asset?.url && (
+        <div className="absolute inset-0 -z-10">
+          <Image
+            src={backgroundImage.asset.url}
+            alt={backgroundImage.alt || "Background"}
+            fill
+            sizes="100vw"
+            className="object-cover object-[center] md:object-[50%_30%] brightness-[0.97] contrast-[0.95] grayscale-[10%]"
+          />
+          <div className="absolute inset-0 bg-black/10 mix-blend-multiply pointer-events-none" />
+        </div>
+      )}
 
-      {/* ✅ Fixed: Top fade matches previous gray tone */}
+      {/* Top fade */}
       <div
-        className="absolute top-0 left-0 w-full h-20 sm:h-24 z-20 pointer-events-none dark:hidden"
+        className="absolute top-0 left-0 w-full h-20 sm:h-24 z-20 pointer-events-none"
         style={{
           background:
-            "linear-gradient(to bottom, #e6d8c7, rgba(200, 161, 101, 0))",
+            "linear-gradient(to bottom, #e6d8c7, rgba(200,161,101,0))",
         }}
       />
 
-      {/* Bottom white fade — optional, unchanged */}
-      {/* Bottom fade — visible in light mode only */}
+      {/* Bottom fade */}
       <div
         className="absolute bottom-0 left-0 w-full h-28 sm:h-32 z-20 pointer-events-none"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(200, 161, 101, 0) 0%, #e6d8c7 100%)",
+            "linear-gradient(to bottom, rgba(200,161,101,0), #e6d8c7)",
         }}
       />
-      {/* Line Art */}
-      {lineArtImage?.asset?.url && (
-        <MotionDiv
-          initial={{ opacity: 0, y: -24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="absolute top-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
-        >
-          <Image
-            src={lineArtImage.asset.url}
-            alt={lineArtImage.alt || "Bird bridge illustration"}
-            className="object-contain w-[220px] sm:w-[280px] md:w-[360px]"
-            width={360}
-            height={220}
-          />
-        </MotionDiv>
-      )}
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row items-stretch justify-between gap-8 sm:gap-12 lg:gap-20">
-        {/* Left Card */}
+      {/* SECTION HEADER */}
+      <div className="relative z-20 max-w-4xl mx-auto text-center mb-14 md:mb-24">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+          Travel with integrity.
+          <br />
+          Impact with intention.
+        </h2>
+
+        {/* LINE ART */}
+        {lineArtImage?.asset?.url && (
+          <MotionDiv
+            className="hidden md:block mx-auto mt-2 -mb-40 w-[360px] aspect-[18/11] pointer-events-none"
+            initial={{ opacity: 0, y: -24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
+          >
+            <div className="relative w-full h-full">
+              <Image
+                src={lineArtImage.asset.url}
+                alt=""
+                aria-hidden
+                fill
+                sizes="360px"
+                className="object-contain"
+              />
+            </div>
+          </MotionDiv>
+        )}
+      </div>
+
+      {/* CONTENT */}
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
+        {/* LEFT CARD */}
         <MotionDiv
-          id="promise"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className={`
-            w-full lg:w-1/2 min-h-[450px]
-            border border-white/10 rounded-md shadow-md
-            p-6 sm:p-8 md:p-10
-            flex flex-col justify-between
-            backdrop-blur-sm
-          `}
+          transition={{ duration: 0.8 }}
+          className="w-full lg:w-1/2 min-h-[450px] p-8 rounded-md shadow-md backdrop-blur-sm"
           style={{ backgroundColor: "#e6d8c7" }}
         >
-          <div>
-            <div
-              className={`
-                mb-4 text-[10px] sm:text-xs uppercase tracking-widest
-                border border-black px-3 py-1 sm:px-4 rounded-full inline-block
-                whitespace-nowrap text-black
-              `}
-            >
-              Our Promise
+          <span className="inline-block mb-4 text-xs uppercase tracking-widest border border-black px-4 py-1 rounded-full">
+            Our Promise
+          </span>
+
+          <h3 className="text-3xl font-bold mb-4">{headline}</h3>
+
+          <ClampMobile>
+            <PortableText value={intro} />
+
+            <ul className="mt-4 list-disc pl-5 space-y-2">
+              {safelist.map((item, i) => {
+                const { title, detail } = splitOnce(item);
+                return (
+                  <li key={i}>
+                    <strong>{title}</strong>
+                    {detail && ` – ${detail}`}
+                  </li>
+                );
+              })}
+            </ul>
+          </ClampMobile>
+
+          {/* ACTION SECTION */}
+          {buttonText && buttonLink && (
+            <div className="mt-10 pt-6 border-t border-black/20">
+              <Link
+                href={buttonLink}
+                className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-black text-white font-semibold tracking-wide hover:bg-[#5c4033] transition-colors duration-300"
+              >
+                {buttonText}
+              </Link>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-black">
-              {headline}
-            </h2>
-
-            <ClampMobile>
-              <div className="text-[0.985rem] sm:text-base text-black leading-7 sm:leading-8">
-                <PortableText value={intro} />
-              </div>
-
-              <ul className="mt-4 list-disc pl-5 space-y-2 text-[0.985rem] sm:text-base text-black">
-                {safelist.map((item, idx) => {
-                  const { title, detail } = splitOnce(item);
-                  return (
-                    <li key={idx}>
-                      <strong>{title}</strong>
-                      {detail && ` – ${detail}`}
-                    </li>
-                  );
-                })}
-              </ul>
-            </ClampMobile>
-          </div>
-
-          {buttonLink && buttonText && (
-            <Link
-              href={buttonLink}
-              className={`
-    mt-8 inline-flex items-center justify-center
-    whitespace-nowrap
-    text-sm sm:text-base leading-none
-    px-5 sm:px-6 py-3
-    rounded-full font-semibold
-   border-2 border-black text-black
-    min-w-[200px]
-    self-start
-  `}
-              aria-label={buttonText}
-              title={buttonText}
-            >
-              {buttonText}
-            </Link>
           )}
         </MotionDiv>
 
-        {/* Right Card */}
+        {/* RIGHT CARD */}
         {impactContent && (
           <MotionDiv
-            id="sustainability"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.9, ease: "easeOut", delay: 0.1 }}
-            className={`
-              w-full lg:w-1/2 min-h-[450px]
-              border border-white/10 rounded-md shadow-md
-              p-6 sm:p-8 md:p-10
-              flex flex-col justify-between
-              backdrop-blur-sm
-            `}
+            transition={{ duration: 0.9, delay: 0.1 }}
+            className="w-full lg:w-1/2 min-h-[450px] p-8 rounded-md shadow-md backdrop-blur-sm"
             style={{ backgroundColor: "#e6d8c7" }}
           >
-            <div>
-              <div
-                className={`
-                  mb-4 text-[10px] sm:text-xs uppercase
-                  tracking-widest border border-black
-                  px-3 py-1 sm:px-4 rounded-full inline-block
-                  whitespace-nowrap text-black
-                `}
-              >
-                Travel with Purpose
+            <span className="inline-block mb-4 text-xs uppercase tracking-widest border border-black px-4 py-1 rounded-full">
+              Travel with Purpose
+            </span>
+
+            <h3 className="text-3xl font-bold mb-4">{impactContent.title}</h3>
+
+            <ClampMobile>
+              <PortableText value={impactContent.body} />
+            </ClampMobile>
+
+            {/* ACTION SECTION */}
+            {impactContent.ctaText && impactContent.ctaLink && (
+              <div className="mt-10 pt-6 border-t border-black/20">
+                <Link
+                  href={impactContent.ctaLink}
+                  className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-black text-white font-semibold tracking-wide hover:bg-[#5c4033] transition-colors duration-300"
+                >
+                  {impactContent.ctaText}
+                </Link>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4 text-black">
-                {impactContent.title}
-              </h3>
-
-              <ClampMobile>
-                <div className="text-[0.985rem] sm:text-base text-black leading-7 sm:leading-8">
-                  <PortableText value={impactContent.body} />
-                </div>
-              </ClampMobile>
-            </div>
-
-            {impactContent.ctaLink && impactContent.ctaText && (
-              <Link
-                href={impactContent.ctaLink}
-                className={`
-                  mt-8 inline-flex items-center justify-center
-                  whitespace-nowrap
-                  uppercase tracking-wide sm:tracking-wider
-                  text-xs sm:text-sm leading-none
-                  px-5 sm:px-6 py-3
-                  border-2 border-black text-black
-                  rounded-full font-semibold
-
-                  min-w-[200px]
-                  self-start
-                `}
-                aria-label={impactContent.ctaText}
-                title={impactContent.ctaText}
-              >
-                {impactContent.ctaText}
-              </Link>
             )}
           </MotionDiv>
         )}
       </div>
 
+      {/* Reduced motion */}
       <style jsx>{`
         @media (prefers-reduced-motion: reduce) {
           * {
             animation: none !important;
             transition: none !important;
-            scroll-behavior: auto !important;
           }
         }
       `}</style>

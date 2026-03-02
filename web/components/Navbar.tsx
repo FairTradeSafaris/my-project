@@ -77,7 +77,7 @@ function BadgeVisual({ size }: { size: number }) {
   return (
     <>
       <Image
-        src="/logos/badge-light.png"
+        src="/logos/badge-light.webp"
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
@@ -105,7 +105,7 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
         "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl",
         "border-4 border-red-500 rounded-3xl px-8 py-6",
         "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8",
-        "items-start content-stretch"
+        "items-start content-stretch",
       )}
       style={{ width: size.box, height: size.box }}
     >
@@ -164,7 +164,7 @@ export default function Navbar({
       visible: { opacity: 1 },
       exit: { opacity: 0 },
     }),
-    []
+    [],
   );
   const panelVariants = useMemo(
     () => ({
@@ -172,7 +172,7 @@ export default function Navbar({
       visible: { y: 0, opacity: 1 },
       exit: { y: -12, opacity: 0 },
     }),
-    []
+    [],
   );
 
   return (
@@ -186,14 +186,14 @@ export default function Navbar({
           "md:hidden sticky top-0 z-50 w-full",
           "backdrop-blur supports-[backdrop-filter]:bg-white/65 dark:supports-[backdrop-filter]:bg-neutral-900/60",
           "bg-white/90 dark:bg-neutral-900/85",
-          "border-b border-black/5 dark:border-white/10"
+          "border-b border-black/5 dark:border-white/10",
         )}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div
           className={cx(
             "flex items-center justify-between gap-3 px-4",
-            scrolled ? "h-14" : "h-16"
+            scrolled ? "h-14" : "h-16",
           )}
         >
           <div className="flex items-center gap-3">
@@ -224,7 +224,7 @@ export default function Navbar({
 
           <div className="flex items-center gap-3">
             <Link
-              href="/journey"
+              href="/africansafariitineraries/"
               title="Search"
               className="p-2 rounded-xl active:scale-95 transition"
             >
@@ -235,7 +235,7 @@ export default function Navbar({
             </SignedIn>
             <SignedOut>
               <Link
-                href="/sign-in"
+                href="/sign-in/"
                 title="My Journey"
                 className="p-2 rounded-xl active:scale-95"
               >
@@ -261,7 +261,7 @@ export default function Navbar({
           "items-center justify-between gap-6",
           "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
           scrolled ? "py-1" : "py-3",
-          "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white"
+          "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white",
         )}
       >
         <div className="flex items-center gap-3 pl-4 pt-2 md:pt-0">
@@ -277,7 +277,7 @@ export default function Navbar({
               height={scrolled ? 40 : 60}
               className={cx(
                 "block dark:hidden object-contain transition-all duration-300 ease-in-out",
-                scrolled ? "scale-100" : "scale-105"
+                scrolled ? "scale-100" : "scale-105",
               )}
               priority
             />
@@ -288,7 +288,7 @@ export default function Navbar({
               height={scrolled ? 40 : 60}
               className={cx(
                 "hidden dark:block object-contain transition-all duration-300 ease-in-out",
-                scrolled ? "scale-100" : "scale-105"
+                scrolled ? "scale-100" : "scale-105",
               )}
               priority
             />
@@ -296,7 +296,11 @@ export default function Navbar({
         </div>
 
         <div className="flex items-center gap-4 md:gap-6 pr-3">
-          <Link href="/journey" title="Search" className="p-2 rounded-xl">
+          <Link
+            href="/africansafariitineraries/"
+            title="Search"
+            className="p-2 rounded-xl"
+          >
             <Search size={20} />
           </Link>
           <SignedIn>
@@ -389,7 +393,7 @@ export default function Navbar({
                 {/* Search / Sign in row */}
                 <div className="px-4 py-3 border-b border-black/5 dark:border-white/10 flex items-center gap-3">
                   <Link
-                    href="/journey"
+                    href="/africansafariitineraries/"
                     className="flex-1 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 px-4 grid grid-cols-[20px_1fr] items-center gap-3 text-sm"
                     onClick={() => setMenuOpen(false)}
                   >
@@ -406,7 +410,7 @@ export default function Navbar({
                   </SignedIn>
                   <SignedOut>
                     <Link
-                      href="/sign-in"
+                      href="/sign-in/"
                       onClick={() => setMenuOpen(false)}
                       className="px-3 py-2 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm font-medium"
                     >
@@ -434,7 +438,7 @@ export default function Navbar({
                                   "text-neutral-900 dark:text-neutral-100",
                                   pathname === item.href
                                     ? "bg-neutral-200 dark:bg-neutral-800 font-semibold"
-                                    : "bg-neutral-100 dark:bg-neutral-800/60 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                                    : "bg-neutral-100 dark:bg-neutral-800/60 hover:bg-neutral-200 dark:hover:bg-neutral-700",
                                 )}
                               >
                                 {item.title}
@@ -534,7 +538,7 @@ export default function Navbar({
               "hidden md:flex flex-wrap justify-between items-stretch gap-5",
               "fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl",
               "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl",
-              "border-4 border-red-500 rounded-3xl px-6 py-4"
+              "border-4 border-red-500 rounded-3xl px-6 py-4",
             )}
           >
             {/* Navigation Sections */}
@@ -561,7 +565,7 @@ export default function Navbar({
                             "text-sm px-3 py-2 rounded-md transition block",
                             pathname === item.href
                               ? "bg-gray-200 dark:bg-neutral-700 font-semibold"
-                              : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700"
+                              : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700",
                           )}
                         >
                           {item.title}

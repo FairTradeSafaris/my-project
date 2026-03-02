@@ -58,6 +58,9 @@ export async function generateMetadata({
       description: author.bio?.slice(0, 155),
       images: author.image ? [urlFor(author.image).url()] : [],
     },
+    alternates: {
+      canonical: `https://www.fairtradesafaris.com/authors/${params.slug}`,
+    },
   };
 }
 

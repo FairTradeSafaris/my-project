@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import Link from "next/link";
 export default function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -12,6 +12,9 @@ export default function CookieConsent() {
   const handleConsent = (value: string) => {
     localStorage.setItem("cookieConsent", value);
     setIsVisible(false);
+    if (value === "accepted") {
+      location.reload(); // 🔄 Force a refresh only on Accept
+    }
   };
 
   if (!isVisible) return null;
@@ -25,12 +28,12 @@ export default function CookieConsent() {
         <p className="mb-4 leading-relaxed">
           This website uses cookies to analyze traffic and remember your website
           choices. Read more in our{" "}
-          <a
-            href="/privacy"
+          <Link
+            href="/privacy/"
             className="underline font-semibold hover:text-black"
           >
             Privacy Policy
-          </a>
+          </Link>
           .
         </p>
         <div className="flex flex-col sm:flex-row gap-3">

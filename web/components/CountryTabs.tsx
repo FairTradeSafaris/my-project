@@ -53,7 +53,7 @@ export default function CountryTabs({
                 <span className="relative w-5 h-3">
                   <Image
                     src={dest.flagImage}
-                    alt=""
+                    alt={`Flag of ${dest.title}`}
                     fill
                     className="rounded-[2px] object-cover"
                     sizes="20px"

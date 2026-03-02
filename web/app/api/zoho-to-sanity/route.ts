@@ -17,7 +17,7 @@ async function refreshAccessToken() {
 
   const res = await fetch(
     `https://accounts.zoho.com/oauth/v2/token?${params.toString()}`,
-    { method: "POST" }
+    { method: "POST" },
   );
 
   if (!res.ok) {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         JSON.stringify({
           error: "Missing required fields: email, file_url, or title",
         }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     // Look up trip by clientEmail AND title
     const query = `*[_type == "trip" && clientEmail == $email && title == $title][0]{_id}`;
     const sanityQueryUrl = `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/query/${sanityDataset}?query=${encodeURIComponent(
-      query
+      query,
     )}&$email="${encodeURIComponent(email)}"&$title="${encodeURIComponent(title)}"`;
 
     const sanityQueryResp = await fetch(sanityQueryUrl, {
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
             mutations: [{ create: createDoc }],
             returnIds: true,
           }),
-        }
+        },
       );
 
       if (!createResp.ok) {
@@ -110,6 +110,35 @@ export async function POST(request: NextRequest) {
 
       const createResult = await createResp.json();
       tripId = createResult.results[0].id;
+    }
+
+    // 🔥 CLEAR existing documents (Zoho is source of truth)
+    const clearResp = await fetch(
+      `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sanityToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mutations: [
+            {
+              patch: {
+                id: tripId,
+                set: {
+                  documents: [],
+                },
+              },
+            },
+          ],
+        }),
+      },
+    );
+
+    if (!clearResp.ok) {
+      const text = await clearResp.text();
+      throw new Error(`Failed to clear existing documents: ${text}`);
     }
 
     // Download file from Zoho
@@ -131,7 +160,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: { Authorization: `Bearer ${sanityToken}` },
         body: fileBuffer,
-      }
+      },
     );
 
     if (!uploadResp.ok) {
@@ -141,41 +170,8 @@ export async function POST(request: NextRequest) {
 
     const uploadResult = await uploadResp.json();
     const assetId = uploadResult.document._id;
-    console.log(
-      "🧪 Patch mutation payload:",
-      JSON.stringify(
-        {
-          mutations: [
-            {
-              patch: {
-                id: tripId,
-                setIfMissing: { documents: [] },
-                insert: {
-                  after: "documents[-1]",
-                  items: [
-                    {
-                      label: "other",
-                      file: {
-                        _type: "file",
-                        asset: {
-                          _type: "reference",
-                          _ref: assetId,
-                        },
-                      },
-                      originalFilename: file_name || "unknown.pdf",
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-        },
-        null,
-        2
-      )
-    );
 
-    // Patch trip to add file to `documents[]`
+    // Insert new document
     const patchResp = await fetch(
       `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
       {
@@ -189,7 +185,6 @@ export async function POST(request: NextRequest) {
             {
               patch: {
                 id: tripId,
-                setIfMissing: { documents: [] },
                 insert: {
                   after: "documents[-1]",
                   items: [
@@ -210,7 +205,7 @@ export async function POST(request: NextRequest) {
             },
           ],
         }),
-      }
+      },
     );
 
     if (!patchResp.ok) {
@@ -225,6 +220,8 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error("API error:", errorMsg);
-    return new Response(JSON.stringify({ error: errorMsg }), { status: 500 });
+    return new Response(JSON.stringify({ error: errorMsg }), {
+      status: 500,
+    });
   }
 }

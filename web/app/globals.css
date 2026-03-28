@@ -10,15 +10,6 @@
   --border: #d9cfc4;
 }
 
-.dark {
-  --background: #1f1b17;
-  --background-rgb: 31, 27, 23;
-  --foreground: #ededed;
-  --accent: #755d45;
-  --surface: #2a2420;
-  --border: #3a332e; /* 🛠 softened to reduce visual border impact */
-}
-
 /* Apply theme globally */
 html,
 body {

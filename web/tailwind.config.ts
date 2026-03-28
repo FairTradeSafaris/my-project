@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import lineClamp from "@tailwindcss/line-clamp";
+import typography from "@tailwindcss/typography";
 
 const config: Config = {
   darkMode: "class",
@@ -21,12 +22,12 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       colors: {
-        background: "#f5efe6", // Soft light beige
-        foreground: "#000000", // Black for text
-        accent: "#5d4037", // Safari brown
-        surface: "#d7ccc8", // Light brown / surface
-        border: "#bcae9e", // Muted outline
-        "onSurface-light": "#2a2a2a", // Contrast for light bg
+        background: "#f5efe6",
+        foreground: "#000000",
+        accent: "#5d4037",
+        surface: "#d7ccc8",
+        border: "#bcae9e",
+        "onSurface-light": "#2a2a2a",
       },
       keyframes: {
         fadeIn: {
@@ -69,14 +70,14 @@ const config: Config = {
             boxShadow: "0 2px 8px 0 rgba(163, 120, 60, 0.12)",
             transform: "scale(1)",
           },
-          heroZoom: {
-            "0%": { transform: "scale(1.03)" },
-            "100%": { transform: "scale(1)" },
-          },
-          heroTextUp: {
-            "0%": { opacity: "0", transform: "translateY(16px)" },
-            "100%": { opacity: "1", transform: "translateY(0)" },
-          },
+        },
+        heroZoom: {
+          "0%": { transform: "scale(1.03)" },
+          "100%": { transform: "scale(1)" },
+        },
+        heroTextUp: {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
@@ -94,7 +95,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [lineClamp],
+  plugins: [lineClamp, typography],
 };
 
 export default config;

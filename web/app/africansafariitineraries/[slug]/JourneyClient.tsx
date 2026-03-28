@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { PortableText } from "@portabletext/react";
+import type { PortableTextComponents } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 
 /* ================= TYPES ================= */
@@ -34,6 +35,7 @@ type Journey = {
   starIcon?: { asset?: { url: string } };
   wetuLink?: string;
 };
+
 type RelatedBlog = {
   _id: string;
   title: string;
@@ -47,6 +49,21 @@ type Props = {
   destinations: Destination[];
   relatedBlogs: RelatedBlog[];
 };
+
+/* ================= PORTABLE TEXT ================= */
+
+const components: PortableTextComponents = {
+  block: {
+    h2: ({ children }) => (
+      <h2 className="text-2xl font-bold mt-6 mb-3">{children}</h2>
+    ),
+    h4: ({ children }) => (
+      <h4 className="text-lg font-semibold mt-4 mb-2">{children}</h4>
+    ),
+    normal: ({ children }) => <p className="mb-4 text-gray-700">{children}</p>,
+  },
+};
+
 /* ================= COMPONENT ================= */
 
 export default function JourneyClient({
@@ -80,8 +97,11 @@ export default function JourneyClient({
                       )}
 
                       {dest.travelInfo && (
-                        <div className="prose max-w-none">
-                          <PortableText value={dest.travelInfo} />
+                        <div className="prose prose-lg max-w-none">
+                          <PortableText
+                            value={dest.travelInfo}
+                            components={components}
+                          />
                         </div>
                       )}
 
@@ -89,7 +109,7 @@ export default function JourneyClient({
                         href={`/destination/${dest.slug.current}/`}
                         className="inline-block mt-4 font-semibold text-[#8A6F3D] hover:underline"
                       >
-                        Explore {dest.title} →
+                        Explore {dest.title} safaris →
                       </Link>
                     </div>
 

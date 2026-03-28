@@ -18,24 +18,25 @@ export default defineType({
       type: 'image',
       options: {hotspot: true},
       fields: [
-        {
+        defineField({
           name: 'alt',
           title: 'Alt Text',
           type: 'string',
           validation: (Rule) => Rule.required().error('Alt text is required for accessibility.'),
-        },
+        }),
 
         defineField({
-          name: 'backgroundStyle',
-          title: 'Background Style',
+          name: 'caption',
+          title: 'Image Caption',
           type: 'string',
-          options: {
-            list: [
-              {title: 'Default (White)', value: 'default'},
-              {title: 'Soft Neutral', value: 'neutral'},
-            ],
-          },
-          initialValue: 'default',
+          description: 'Text displayed below the image.',
+        }),
+
+        defineField({
+          name: 'credit',
+          title: 'Photo Credit / Description',
+          type: 'string',
+          description: 'Optional credit or description under the caption.',
         }),
       ],
       validation: (Rule) =>
@@ -89,6 +90,22 @@ export default defineType({
         direction: 'horizontal',
       },
       initialValue: 'left',
+    }),
+    defineField({
+      name: 'padding',
+      title: 'Section Padding',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Default (Top & Bottom)', value: 'default'},
+          {title: 'Top Only', value: 'top'},
+          {title: 'Bottom Only', value: 'bottom'},
+          {title: 'No Padding', value: 'none'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'default',
+      description: 'Control vertical spacing for this section.',
     }),
     defineField({
       name: 'imageSize',

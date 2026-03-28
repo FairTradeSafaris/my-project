@@ -50,6 +50,11 @@ export default defineType({
               type: 'string',
             },
             {
+              name: 'credit',
+              title: 'Photo Credit',
+              type: 'string',
+            },
+            {
               name: 'buttonText',
               title: 'Button Text',
               type: 'string',

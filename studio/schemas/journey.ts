@@ -19,6 +19,12 @@ export default defineType({
       options: {source: 'title', maxLength: 96},
     }),
     defineField({name: 'summary', title: 'Short Summary', type: 'text', rows: 3}),
+    defineField({
+      name: 'summaryRich',
+      title: 'Short Summary (Rich)',
+      type: 'array',
+      of: [{type: 'block'}],
+    }),
     defineField({name: 'duration', title: 'Trip Duration', type: 'string'}),
     defineField({
       name: 'price',

@@ -5,6 +5,10 @@ export type SanityImage = {
     url?: string;
   };
   alt?: string;
+  caption?: string;
+  credit?: string;
+  width?: number;
+  height?: number;
 };
 
 export type PortableTextBlock = {
@@ -25,12 +29,14 @@ export type PortableTextBlock = {
 // Optional: Enum for stricter typing
 export type ImageSize = "sm" | "md" | "lg" | "full";
 
-// ✅ New: Content Block Hero (used in content[])
+// ✅ Content Block Hero
 export type HeroBlock = {
   _type: "heroBlock";
   image?: {
     url?: string;
     alt?: string;
+    caption?: string;
+    credit?: string;
   };
   galleryImage?: {
     image: SanityImage;
@@ -42,7 +48,7 @@ export type HeroBlock = {
   alignment?: string;
 };
 
-// ✅ Still valid: Optional top-level HeroImage (if still in use elsewhere)
+// Optional older hero format
 export type HeroImageBlock = {
   _type: "heroImage";
   image?: SanityImage;
@@ -66,6 +72,7 @@ export type TextImageBlock = {
   align?: "left" | "right";
   imageSize?: ImageSize;
   backgroundStyle?: "default" | "neutral";
+  padding?: "default" | "none";
 };
 
 export type QuoteBlock = {
@@ -79,8 +86,8 @@ export type TextBlock = {
   _type: "textBlock";
   body: PortableTextBlock;
   backgroundStyle?: "default" | "neutral";
+  padding?: "default" | "none";
 };
-
 export type VideoEmbedBlock = {
   _type: "videoEmbed";
   url: string;
@@ -119,6 +126,7 @@ export type SmartCarouselBlock = {
   slides: {
     image: SanityImage;
     caption?: string;
+    credit?: string;
     buttonText?: string;
     buttonLink?: string;
   }[];
@@ -131,7 +139,17 @@ export type TableBlock = {
   }[];
 };
 
-// ✅ Unified Block type for rendering
+export type JourneyStepsBlock = {
+  _type: "journeySteps";
+  headline?: string;
+  intro?: string;
+  steps: {
+    title: string;
+    description: string;
+  }[];
+};
+
+// Unified block type
 export type Block =
   | HeroBlock
   | HeroImageBlock
@@ -144,4 +162,5 @@ export type Block =
   | ZohoFormBlock
   | GalleryBlock
   | SmartCarouselBlock
-  | TableBlock;
+  | TableBlock
+  | JourneyStepsBlock;

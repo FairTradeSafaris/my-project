@@ -12,7 +12,13 @@ import Modal from "react-modal";
 
 // Accepts flat {url,alt} or Sanity {asset:{url|_ref}, alt}
 type ImageLike =
-  | { url?: string; alt?: string; asset?: { url?: string; _ref?: string } }
+  | {
+      url?: string;
+      alt?: string;
+      caption?: string;
+      credit?: string;
+      asset?: { url?: string; _ref?: string };
+    }
   | null
   | undefined;
 
@@ -38,14 +44,23 @@ const portableComponents: Partial<PortableTextReactComponents> = {
     image: ({ value }: { value: any }) => {
       const src = getUrl(value);
       if (!src) return null;
+
       return (
-        <Image
-          src={src}
-          alt={getAlt(value)}
-          width={800}
-          height={600}
-          className="my-4 rounded"
-        />
+        <figure className="my-6">
+          <Image
+            src={src}
+            alt={getAlt(value)}
+            width={800}
+            height={600}
+            className="rounded"
+          />
+          {(value.caption || value.credit) && (
+            <figcaption className="mt-2 text-sm text-gray-500 text-center">
+              {value.caption}
+              {value.credit && <span className="block">{value.credit}</span>}
+            </figcaption>
+          )}
+        </figure>
       );
     },
   },
@@ -122,16 +137,29 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                 }`}
               >
                 {imageUrl && (
-                  <div className="w-full flex justify-center">
+                  <figure className="w-full flex flex-col items-center">
                     <Image
                       src={imageUrl}
-                      alt={block.text || "Hero Image"}
+                      alt={block.image?.alt || block.text || "Hero Image"}
                       width={1600}
                       height={900}
                       className="w-full md:w-3/4 lg:w-1/2 h-auto rounded"
                       priority
                     />
-                  </div>
+                    {(block.image?.caption ||
+                      block.galleryImage?.caption ||
+                      block.image?.credit) && (
+                      <figcaption className="mt-2 text-sm text-gray-500">
+                        {block.image?.caption || block.galleryImage?.caption}
+                        {(block.image?.credit ||
+                          block.galleryImage?.credit) && (
+                          <span className="block">
+                            {block.image?.credit || block.galleryImage?.credit}
+                          </span>
+                        )}
+                      </figcaption>
+                    )}
+                  </figure>
                 )}
 
                 {block.text && (
@@ -148,47 +176,52 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
           case "textImage": {
             const imageUrl =
               getUrl(block.image) || block.galleryImage?.imageUrl;
+
             const altText =
               block.image?.alt || block.galleryImage?.alt || "Image";
 
-            const imageSize = (block.imageSize || "md") as
-              | "sm"
-              | "md"
-              | "lg"
-              | "full";
+            const caption =
+              block.image?.caption || block.galleryImage?.caption || null;
 
-            const imageSizeClass: Record<"sm" | "md" | "lg" | "full", string> =
-              {
-                sm: "md:w-1/4",
-                md: "md:w-1/3",
-                lg: "md:w-1/2",
-                full: "md:w-full",
-              };
+            const credit =
+              block.image?.credit || block.galleryImage?.credit || null;
 
             const backgroundClass =
               block.backgroundStyle === "neutral" ? "bg-[#f5f1ea]" : "bg-white";
 
-            return (
-              <section key={index} className={`${backgroundClass} w-full py-5`}>
-                <div
-                  className={`max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row ${
-                    block.align === "right" ? "md:flex-row-reverse" : ""
-                  } gap-8 items-stretch`}
-                >
-                  {imageUrl && (
-                    <div className={`w-full ${imageSizeClass[imageSize]}`}>
-                      <Image
-                        src={imageUrl}
-                        alt={altText}
-                        width={1200}
-                        height={900}
-                        className="w-full h-full object-cover rounded"
-                      />
-                    </div>
-                  )}
+            const isRight = block.align === "right";
 
-                  <div className="w-full flex items-center">
-                    <div className="prose max-w-none text-left sm:text-justify w-full">
+            return (
+              <section
+                key={index}
+                className={`${backgroundClass} w-full py-12`}
+              >
+                <div className="max-w-4xl mx-auto px-6">
+                  <div
+                    className={`flex flex-col md:flex-row gap-10 items-start ${
+                      isRight ? "md:flex-row-reverse" : ""
+                    }`}
+                  >
+                    {imageUrl && (
+                      <figure className="w-full md:w-[35%] lg:w-[32%] flex-shrink-0">
+                        <Image
+                          src={imageUrl}
+                          alt={altText}
+                          width={block.image?.width || 800}
+                          height={block.image?.height || 1000}
+                          className="w-full rounded-xl object-cover"
+                        />
+
+                        {(caption || credit) && (
+                          <figcaption className="mt-2 text-sm text-gray-500">
+                            {caption}
+                            {credit && <span className="block">{credit}</span>}
+                          </figcaption>
+                        )}
+                      </figure>
+                    )}
+
+                    <div className="flex-1 prose max-w-none">
                       <PortableText
                         value={block.text}
                         components={portableComponents}
@@ -347,14 +380,23 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                     const src = getUrl(img);
                     if (!src) return null;
                     return (
-                      <Image
-                        key={i}
-                        src={src}
-                        alt={getAlt(img, `Gallery Image ${i + 1}`)}
-                        width={400}
-                        height={300}
-                        className="w-full h-64 object-cover rounded"
-                      />
+                      <figure key={i}>
+                        <Image
+                          src={src}
+                          alt={getAlt(img, `Gallery Image ${i + 1}`)}
+                          width={400}
+                          height={300}
+                          className="w-full h-64 object-cover rounded"
+                        />
+                        {(img.caption || img.credit) && (
+                          <figcaption className="mt-2 text-sm text-gray-500 text-center">
+                            {img.caption}
+                            {img.credit && (
+                              <span className="block">{img.credit}</span>
+                            )}
+                          </figcaption>
+                        )}
+                      </figure>
                     );
                   })}
                 </div>
@@ -427,18 +469,44 @@ export default function BlogContent({ blocks }: { blocks: Block[] }) {
                           className="flex-shrink-0 w-full sm:w-[80%] snap-center"
                         >
                           {imageUrl ? (
-                            <Image
-                              src={imageUrl}
-                              alt={slide.caption || `Slide ${i + 1}`}
-                              width={1200}
-                              height={600}
-                              className="w-full h-96 object-cover rounded"
-                            />
+                            <figure>
+                              <Image
+                                src={imageUrl}
+                                alt={
+                                  slide.image?.alt ||
+                                  slide.caption ||
+                                  `Slide ${i + 1}`
+                                }
+                                width={1200}
+                                height={600}
+                                className="w-full h-96 object-cover rounded"
+                              />
+                              {(slide.caption || slide.credit) && (
+                                <figcaption className="mt-2 text-center text-sm text-gray-500">
+                                  {slide.caption}
+                                  {slide.credit && (
+                                    <span className="block">
+                                      {slide.credit}
+                                    </span>
+                                  )}
+                                </figcaption>
+                              )}
+                            </figure>
                           ) : (
                             <div className="w-full h-96 bg-gray-200 rounded flex items-center justify-center">
                               Image Not Available
                             </div>
                           )}
+                          <div className="mt-2 text-center">
+                            {slide.buttonText && slide.buttonLink && (
+                              <a
+                                href={slide.buttonLink}
+                                className="inline-block mt-2 bg-black text-white px-4 py-2 rounded"
+                              >
+                                {slide.buttonText}
+                              </a>
+                            )}
+                          </div>
                           <div className="mt-2 text-center">
                             {slide.caption && <p>{slide.caption}</p>}
                             {slide.buttonText && slide.buttonLink && (

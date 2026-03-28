@@ -21,7 +21,17 @@ export default defineType({
           name: 'alt',
           title: 'Alt Text',
           type: 'string',
-          validation: (Rule) => Rule.required().error('Alt text is required for accessibility.'),
+          validation: (Rule) => Rule.required().error('Alt text is required for every image.'),
+        },
+        {
+          name: 'caption',
+          title: 'Caption',
+          type: 'string',
+        },
+        {
+          name: 'credit',
+          title: 'Photo Credit',
+          type: 'string',
         },
       ],
       validation: (Rule) =>

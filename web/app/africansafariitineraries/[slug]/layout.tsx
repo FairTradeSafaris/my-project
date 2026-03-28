@@ -55,6 +55,25 @@ export async function generateMetadata({
       : undefined,
   };
 
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${canonicalUrl}#product`,
+    name: data.title,
+    description,
+    image: imageUrl,
+    brand: {
+      "@type": "Brand",
+      name: "Fair Trade Safaris",
+    },
+    offers: {
+      "@type": "Offer",
+      url: canonicalUrl,
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+    },
+  };
+
   return {
     title,
     description,
@@ -76,7 +95,7 @@ export async function generateMetadata({
       images: imageUrl ? [imageUrl] : undefined,
     },
     other: {
-      "script:ld+json": JSON.stringify(webPageSchema),
+      "script:ld+json": JSON.stringify([webPageSchema, productSchema]),
     },
   };
 }

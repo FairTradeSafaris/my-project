@@ -24,5 +24,22 @@ export default defineType({
       },
       initialValue: 'default',
     }),
+
+    defineField({
+      name: 'padding',
+      title: 'Section Padding',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Default (Top & Bottom)', value: 'default'},
+          {title: 'Top Only', value: 'top'},
+          {title: 'Bottom Only', value: 'bottom'},
+          {title: 'No Padding', value: 'none'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'default',
+      description: 'Control vertical spacing for this section.',
+    }),
   ],
 })

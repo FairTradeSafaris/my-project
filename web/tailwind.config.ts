@@ -84,7 +84,7 @@ const config: Config = {
         fadeIn: "fadeIn 0.8s ease-out forwards",
         fadeInSlow: "fadeInSlow 1.4s ease-out forwards",
         "pulse-once": "pulseOnce 0.5s ease",
-        bounceSlow: "bounceSlow 15s ease-in-out infinite",
+        bounceSlow: "bounceSlow 3s ease-in-out infinite",
         cornerWiggle: "cornerWiggle 1.8s ease-in-out infinite",
         leadMagnetPulse: "leadMagnetPulse 0.8s cubic-bezier(.4,0,.2,1)",
         heroZoom: "heroZoom 10s ease-out forwards",

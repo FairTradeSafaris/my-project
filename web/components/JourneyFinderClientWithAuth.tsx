@@ -9,7 +9,7 @@ import JourneyFiltersSidebar from "@/components/JourneyFiltersSidebar";
 import { useUser } from "@clerk/nextjs";
 import { useWishlistGrid } from "@/hooks/useWishlistGrid";
 import { useSearchParams } from "next/navigation";
-
+import StickySafariCTA from "@/components/StickySafariCTA";
 export default function JourneyFinderClientWithAuth() {
   const [journeys, setJourneys] = useState<Journey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -392,6 +392,7 @@ export default function JourneyFinderClientWithAuth() {
           </div>
         </div>
       )}
+      <StickySafariCTA />
     </main>
   );
 }

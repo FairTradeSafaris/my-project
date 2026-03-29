@@ -74,6 +74,21 @@ export default defineType({
     }),
 
     defineField({
+      name: 'safariLinks',
+      title: 'Safari Links',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {name: 'label', type: 'string'},
+            {name: 'href', type: 'string'},
+          ],
+        },
+      ],
+    }),
+
+    defineField({
       name: 'exploreLinks',
       title: 'Explore Links',
       type: 'array',

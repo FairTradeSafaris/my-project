@@ -7,7 +7,8 @@
     "build": "npm run generate:routes && npm run generate:redirects && next build",
     "generate:routes": "node lib/generateAppRoutes.js",
     "generate:redirects": "ts-node ./scripts/fetchRedirects.js",
-    "postbuild": "next-sitemap && node scripts/submit-to-indexnow.js",
+    "postbuild": "next-sitemap && next-sitemap --config next-sitemap.journeys.config.js && node scripts/submit-to-indexnow.js",
+    "sitemap:journeys": "next-sitemap --config next-sitemap.journeys.config.js",
     "start": "next start",
     "lint": "next lint"
   },

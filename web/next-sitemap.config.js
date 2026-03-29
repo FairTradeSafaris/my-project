@@ -4,13 +4,16 @@ const getStaticUrls = require("./scripts/get-static-urls.js");
 const getBlogUrls = require("./scripts/get-blog-urls.js");
 const getDestinationUrls = require("./scripts/get-destination-urls.js");
 const getAuthorUrls = require("./scripts/getAuthorUrls.js");
-const getJourneyUrls = require("./scripts/get-journey-urls.js");
+// ❌ removed journey import
 const getAmbassadorUrls = require("./scripts/get-ambassador-urls.js");
 const getVideoTestimonialUrls = require("./scripts/get-video-testimonial-urls.js");
 const getPillarUrls = require("./scripts/get-pillar-urls.js");
 
 module.exports = {
   siteUrl: "https://www.fairtradesafaris.com",
+
+  additionalSitemaps: ["https://www.fairtradesafaris.com/journeys-sitemap.xml"],
+
   generateRobotsTxt: true,
   exclude: [
     "/404",
@@ -20,6 +23,7 @@ module.exports = {
     "/project-portal",
     "/robots.txt",
   ],
+
   changefreq: "weekly",
   priority: 0.7,
   sitemapSize: 5000,
@@ -28,7 +32,7 @@ module.exports = {
     const blogPaths = await getBlogUrls();
     const destinationPaths = await getDestinationUrls();
     const authorPaths = await getAuthorUrls();
-    const journeyPaths = await getJourneyUrls();
+    // ❌ removed journeyPaths
     const ambassadorPaths = await getAmbassadorUrls();
     const homePage = [{ loc: "/", changefreq: "weekly", priority: 1.0 }];
     const videoTestimonialPaths = await getVideoTestimonialUrls();
@@ -42,12 +46,15 @@ module.exports = {
       ...destinationPaths,
       ...videoTestimonialPaths,
       ...authorPaths,
-      ...journeyPaths,
+      // ❌ removed journeys here
       ...ambassadorPaths,
     ];
   },
 
   robotsTxtOptions: {
+    additionalSitemaps: [
+      "https://www.fairtradesafaris.com/journeys-sitemap.xml",
+    ],
     policies: [
       { userAgent: "*", allow: "/" },
       { userAgent: "GPTBot", allow: "/" },

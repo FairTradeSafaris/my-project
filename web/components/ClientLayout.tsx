@@ -59,10 +59,10 @@ export default function ClientLayout({
 
     const isDetailPage = segments.length >= 2;
 
-    // 🔒 Explicitly block pillar pages
     const blockedPillars = [
       "luxury-african-safaris",
-      // add more pillar slugs here if needed
+      "private-african-safaris",
+      "small-group-african-safaris",
     ];
 
     const firstSegment = segments[0];

@@ -34,7 +34,7 @@ const addSecurityHeaders = (res: NextResponse) => {
       "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https:;",
       "style-src 'self' 'unsafe-inline' https:;",
       "img-src 'self' data: blob: https:;",
-      "media-src 'self' https:;", // ← ADD THIS
+      "media-src 'self' https:;",
       "connect-src 'self' https:;",
       "font-src 'self' data: https:;",
       "frame-src https:;",
@@ -49,7 +49,12 @@ const addSecurityHeaders = (res: NextResponse) => {
 const middlewareLogic = async (auth: ClerkMiddlewareAuth, req: NextRequest) => {
   const pathname = req.nextUrl.pathname;
 
-  // ✅ ABSOLUTE BYPASS FOR API ROUTES (Zoho fix)
+  // ✅ CRITICAL FIX: bypass static files (HTML, XML, etc.)
+  if (pathname.includes(".") && !pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // ✅ ABSOLUTE BYPASS FOR API ROUTES
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
@@ -95,7 +100,7 @@ const middlewareLogic = async (auth: ClerkMiddlewareAuth, req: NextRequest) => {
   if (cleanPath.startsWith("/destinations/")) {
     const newPath = cleanPath
       .replace("/destinations/", "/destination/")
-      .replace(/\/?$/, "/"); // force trailing slash
+      .replace(/\/?$/, "/");
 
     const redirectUrl = new URL(newPath, req.url);
     redirectUrl.search = url.search;

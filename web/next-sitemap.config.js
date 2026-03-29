@@ -7,6 +7,7 @@ const getAuthorUrls = require("./scripts/getAuthorUrls.js");
 const getJourneyUrls = require("./scripts/get-journey-urls.js");
 const getAmbassadorUrls = require("./scripts/get-ambassador-urls.js");
 const getVideoTestimonialUrls = require("./scripts/get-video-testimonial-urls.js");
+const getPillarUrls = require("./scripts/get-pillar-urls.js");
 
 module.exports = {
   siteUrl: "https://www.fairtradesafaris.com",
@@ -27,6 +28,7 @@ module.exports = {
 
     return [
       ...homePage,
+      ...pillarPaths,
       ...staticPaths,
       ...blogPaths,
       ...destinationPaths,

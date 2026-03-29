@@ -63,6 +63,7 @@ export default function ClientLayout({
       "luxury-african-safaris",
       "private-african-safaris",
       "small-group-african-safaris",
+      "expert-led-african-safaris",
     ];
 
     const firstSegment = segments[0];

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://www.fairtradesafaris.com/</loc><changefreq>weekly</changefreq><priority>1</priority></url>
+<url><loc>https://www.fairtradesafaris.com/</loc><changefreq>monthly</changefreq><priority>1</priority></url>
 <url><loc>https://www.fairtradesafaris.com/expert-led-african-safaris/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
 <url><loc>https://www.fairtradesafaris.com/small-group-african-safaris/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
 <url><loc>https://www.fairtradesafaris.com/private-african-safaris/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
 <url><loc>https://www.fairtradesafaris.com/luxury-african-safaris/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-<url><loc>https://www.fairtradesafaris.com/expert-led-african-safaris/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
 <url><loc>https://www.fairtradesafaris.com/solo-african-safaris/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
 <url><loc>https://www.fairtradesafaris.com/africansafariitineraries/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 <url><loc>https://www.fairtradesafaris.com/faq/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
@@ -14,7 +13,6 @@
 <url><loc>https://www.fairtradesafaris.com/ambassadors/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 <url><loc>https://www.fairtradesafaris.com/blog/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 <url><loc>https://www.fairtradesafaris.com/founderspromise/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-<url><loc>https://www.fairtradesafaris.com/</loc><changefreq>monthly</changefreq><priority>1</priority></url>
 <url><loc>https://www.fairtradesafaris.com/contact/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 <url><loc>https://www.fairtradesafaris.com/videoTestimonial/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 <url><loc>https://www.fairtradesafaris.com/nonprofits/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
@@ -46,9 +44,6 @@
 <url><loc>https://www.fairtradesafaris.com/blog/the-majestic-brotherhood-exploring-the-fascinating-world-of-lion-coalitions/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 <url><loc>https://www.fairtradesafaris.com/blog/the-ultimate-safari-planning-guide-explore-kenya-south-africa-and-beyond/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 <url><loc>https://www.fairtradesafaris.com/blog/great-add-ons-to-a-safari-experience/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://www.fairtradesafaris.com/blog/eric-bear-championing-sustainable-travel-and-wildlife-conservation/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://www.fairtradesafaris.com/blog/a-birder-s-guide-to-africa-15-standout-birds-to-spot-on-safari/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://www.fairtradesafaris.com/blog/2025-year-in-review-a-journey-of-impact-innovation-and-unforgettable-moments/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 <url><loc>https://www.fairtradesafaris.com/blog/eric-bear-championing-sustainable-travel-and-wildlife-conservation/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 <url><loc>https://www.fairtradesafaris.com/blog/the-ultimate-cool-down-breathtaking-safari-spots-away-from-the-heat/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 <url><loc>https://www.fairtradesafaris.com/blog/the-rankin-family-s-life-changing-journey-through-southern-africa/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -83,7 +78,6 @@
 <url><loc>https://www.fairtradesafaris.com/videoTestimonial/greg-and-megan-shindler/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://www.fairtradesafaris.com/videoTestimonial/dayna-blazey-wagner1/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://www.fairtradesafaris.com/videoTestimonial/salva-and-farhan1/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-<url><loc>https://www.fairtradesafaris.com/videoTestimonial/sharon-wagner/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://www.fairtradesafaris.com/videoTestimonial/shadia-igam-and-omar-aktar/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 <url><loc>https://www.fairtradesafaris.com/authors/devon-heuer/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
 </urlset>

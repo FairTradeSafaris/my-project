@@ -4,7 +4,6 @@ const getStaticUrls = require("./scripts/get-static-urls.js");
 const getBlogUrls = require("./scripts/get-blog-urls.js");
 const getDestinationUrls = require("./scripts/get-destination-urls.js");
 const getAuthorUrls = require("./scripts/getAuthorUrls.js");
-// ❌ removed journey import
 const getAmbassadorUrls = require("./scripts/get-ambassador-urls.js");
 const getVideoTestimonialUrls = require("./scripts/get-video-testimonial-urls.js");
 const getPillarUrls = require("./scripts/get-pillar-urls.js");
@@ -15,6 +14,7 @@ module.exports = {
   additionalSitemaps: ["https://www.fairtradesafaris.com/journeys-sitemap.xml"],
 
   generateRobotsTxt: true,
+
   exclude: [
     "/404",
     "/500",
@@ -27,18 +27,20 @@ module.exports = {
   changefreq: "weekly",
   priority: 0.7,
   sitemapSize: 5000,
+
   additionalPaths: async () => {
     const staticPaths = await getStaticUrls();
     const blogPaths = await getBlogUrls();
     const destinationPaths = await getDestinationUrls();
     const authorPaths = await getAuthorUrls();
-    // ❌ removed journeyPaths
     const ambassadorPaths = await getAmbassadorUrls();
-    const homePage = [{ loc: "/", changefreq: "weekly", priority: 1.0 }];
     const videoTestimonialPaths = await getVideoTestimonialUrls();
     const pillarPaths = await getPillarUrls();
 
-    return [
+    const homePage = [{ loc: "/", changefreq: "weekly", priority: 1.0 }];
+
+    // Combine everything
+    const allPaths = [
       ...homePage,
       ...pillarPaths,
       ...staticPaths,
@@ -46,9 +48,18 @@ module.exports = {
       ...destinationPaths,
       ...videoTestimonialPaths,
       ...authorPaths,
-      // ❌ removed journeys here
       ...ambassadorPaths,
     ];
+
+    // 🔥 GLOBAL DEDUPLICATION
+    const uniqueMap = new Map();
+
+    allPaths.forEach((item) => {
+      if (!item || !item.loc) return;
+      uniqueMap.set(item.loc, item);
+    });
+
+    return Array.from(uniqueMap.values());
   },
 
   robotsTxtOptions: {
@@ -62,6 +73,7 @@ module.exports = {
       { userAgent: "CCBot", allow: "/" },
     ],
   },
+
   transformRobotsTxt: async (robotsTxt) => {
     return `Host: https://www.fairtradesafaris.com\n\n${robotsTxt}`;
   },

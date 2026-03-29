@@ -12,7 +12,14 @@ const getPillarUrls = require("./scripts/get-pillar-urls.js");
 module.exports = {
   siteUrl: "https://www.fairtradesafaris.com",
   generateRobotsTxt: true,
-  exclude: ["/404", "/500", "/client-home", "/books", "/project-portal"],
+  exclude: [
+    "/404",
+    "/500",
+    "/client-home",
+    "/books",
+    "/project-portal",
+    "/robots.txt",
+  ],
   changefreq: "weekly",
   priority: 0.7,
   sitemapSize: 5000,

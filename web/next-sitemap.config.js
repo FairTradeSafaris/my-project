@@ -25,6 +25,7 @@ module.exports = {
     const ambassadorPaths = await getAmbassadorUrls();
     const homePage = [{ loc: "/", changefreq: "weekly", priority: 1.0 }];
     const videoTestimonialPaths = await getVideoTestimonialUrls();
+    const pillarPaths = await getPillarUrls();
 
     return [
       ...homePage,

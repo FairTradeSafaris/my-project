@@ -51,25 +51,23 @@ export default function ClientLayout({
   const screenWidth = useBreakpoint();
 
   const hideUI = pathname?.toLowerCase() === "/project-portal";
-
+  const [pillarSlugs, setPillarSlugs] = useState<string[]>([]);
   const showHero = useMemo(() => {
     if (!pathname) return false;
 
-    // ✅ Blog pages always show hero
-    if (pathname.startsWith("/blog/")) return true;
-
-    // ❌ Pillar pages (root-level slugs WITHOUT known system prefixes)
     const segments = pathname.split("/").filter(Boolean);
 
-    const systemRoutes = ["blog", "destination", "project-portal"];
+    const isDetailPage = segments.length >= 2;
 
-    const isPillarPage =
-      segments.length === 1 && !systemRoutes.includes(segments[0]);
+    const firstSegment = segments[0];
 
-    if (isPillarPage) return false;
+    if (segments.length === 1) {
+      // check dynamically from Sanity
+      if (pillarSlugs.includes(firstSegment)) return false;
+    }
 
-    return true;
-  }, [pathname]);
+    return !isDetailPage;
+  }, [pathname, pillarSlugs]);
 
   const [hasMounted, setHasMounted] = useState(false);
   const [navSections, setNavSections] = useState<NavSection[]>([]);
@@ -192,9 +190,13 @@ backgroundImages[] {
         setHeroData(undefined);
       }
     };
-
+    const fetchPillarSlugs = async () => {
+      const slugs = await client.fetch(`*[_type == "pillarPage"].slug.current`);
+      setPillarSlugs(slugs || []);
+    };
     fetchMenuData();
     fetchHeroData();
+    fetchPillarSlugs();
 
     return () => {
       cancelled = true;

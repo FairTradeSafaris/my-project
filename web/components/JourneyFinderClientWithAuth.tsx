@@ -106,7 +106,7 @@ export default function JourneyFinderClientWithAuth() {
   useEffect(() => {
     sanityClient
       .fetch(
-        `*[_type == "journey"]{
+        `*[_type == "journey" && (isActive != false)]{
           _id,
           title,
           slug,

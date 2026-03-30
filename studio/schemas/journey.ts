@@ -121,5 +121,12 @@ export default defineType({
       initialValue: false,
       description: 'If checked, this journey will appear in SEO/AI Top 10 structured data.',
     }),
+    defineField({
+      name: 'isActive',
+      title: 'Show Journey',
+      type: 'boolean',
+      initialValue: true,
+      description: 'Turn off to hide this journey from the website',
+    }),
   ],
 })

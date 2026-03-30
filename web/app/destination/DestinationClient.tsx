@@ -435,10 +435,10 @@ export default function DestinationClient({
                         <div className="pt-6 flex flex-col gap-3">
                           {selected?.slug?.current && (
                             <Link
-                              href={`/africansafariitineraries?q=${selected.slug.current}`}
+                              href={`/destination/${selected.slug.current}/safaris/`}
                               className="w-full text-center px-8 py-3 bg-[#E5D5B8] text-black font-semibold rounded-lg hover:bg-[#d4c3a3] transition shadow-md"
                             >
-                              Explore Itineraries
+                              Explore {selected.title} Safaris
                             </Link>
                           )}
 
@@ -511,10 +511,10 @@ export default function DestinationClient({
             <div className="flex flex-col gap-4">
               {selected?.slug?.current && (
                 <Link
-                  href={`/africansafariitineraries?q=${selected.slug.current}`}
+                  href={`/destination/${selected.slug.current}/safaris/`}
                   className="w-full text-center px-6 py-3 bg-[#E5D5B8] text-black font-semibold rounded-lg shadow-sm"
                 >
-                  Explore Itineraries
+                  Explore {selected.title} Safaris
                 </Link>
               )}
 

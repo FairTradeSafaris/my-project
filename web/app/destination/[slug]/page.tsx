@@ -342,6 +342,16 @@ export default async function DestinationPage({
                 {data.region && (
                   <p className="text-white/80 mt-2">{data.region}</p>
                 )}
+
+                {/* ✅ NEW BUTTON */}
+                <div className="mt-6">
+                  <Link
+                    href={`/destination/${data.slug}/safaris/`}
+                    className="inline-block bg-[#E5D5B8] text-black px-6 py-3 rounded-md font-semibold hover:bg-[#d6c4a3] transition"
+                  >
+                    Explore {data.title} Safaris
+                  </Link>
+                </div>
               </div>
             </div>
           )}

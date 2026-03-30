@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Poppins } from "next/font/google";
 import { Suspense } from "react";
+import SafariBuilderProvider from "@/components/SafariBuilderProvider";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
@@ -136,6 +137,9 @@ export default async function RootLayout({
                 ) : (
                   <ClientLayout>{children}</ClientLayout>
                 )}
+                <SafariBuilderProvider /> {/* 👈 ADD HERE */}
+                <GlobalBookingPortal />
+                <LeadMagnetGate />
                 <GlobalBookingPortal />
                 <LeadMagnetGate />
               </ClerkConsentGate>

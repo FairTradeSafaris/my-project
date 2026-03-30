@@ -55,25 +55,20 @@ export default function ClientLayout({
   const showHero = useMemo(() => {
     if (!pathname) return false;
 
+    // ✅ Blog pages always show hero
+    if (pathname.startsWith("/blog/")) return true;
+
+    // ❌ Pillar pages (root-level slugs WITHOUT known system prefixes)
     const segments = pathname.split("/").filter(Boolean);
 
-    const isDetailPage = segments.length >= 2;
+    const systemRoutes = ["blog", "destination", "project-portal"];
 
-    const blockedPillars = [
-      "luxury-african-safaris",
-      "private-african-safaris",
-      "small-group-african-safaris",
-      "expert-led-african-safaris",
-    ];
+    const isPillarPage =
+      segments.length === 1 && !systemRoutes.includes(segments[0]);
 
-    const firstSegment = segments[0];
+    if (isPillarPage) return false;
 
-    const isBlockedPillar =
-      segments.length === 1 && blockedPillars.includes(firstSegment);
-
-    if (isBlockedPillar) return false;
-
-    return !isDetailPage;
+    return true;
   }, [pathname]);
 
   const [hasMounted, setHasMounted] = useState(false);

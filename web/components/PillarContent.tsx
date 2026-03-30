@@ -269,6 +269,32 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               </section>
             );
           }
+          case "videoEmbed": {
+            if (!block.url) return null;
+
+            return (
+              <section key={index} className="py-16 bg-white">
+                <Container>
+                  <div className="w-full max-w-3xl mx-auto">
+                    {block.caption && (
+                      <h3 className="text-2xl font-semibold text-center mb-6">
+                        {block.caption}
+                      </h3>
+                    )}
+                    <div className="relative w-full aspect-video rounded-xl overflow-hidden">
+                      <iframe
+                        src={block.url}
+                        title="Video"
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                </Container>
+              </section>
+            );
+          }
           default:
             return null;
         }

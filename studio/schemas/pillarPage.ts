@@ -104,6 +104,7 @@ export default defineType({
         {type: 'table'},
         {type: 'zohoForm'},
         {type: 'smartCarousel'},
+        {type: 'safariBuilderBlock'}, // 👈 ADD THIS LINE
       ],
       group: 'content',
     }),

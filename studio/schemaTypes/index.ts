@@ -45,6 +45,7 @@ import leadMagnetPopup from '../schemas/leadMagnetPopup'
 import pillarPage from '../schemas/pillarPage'
 import teamPage from '../schemas/teamPage'
 import category from '../schemas/category'
+import safariBuilderBlock from '../schemas/blocks/safariBuilderBlock'
 
 export const schemaTypes = [
   blog,
@@ -94,4 +95,5 @@ export const schemaTypes = [
   pillarPage,
   teamPage,
   category,
+  safariBuilderBlock,
 ]

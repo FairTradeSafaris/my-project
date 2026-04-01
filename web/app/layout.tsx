@@ -128,6 +128,7 @@ export default async function RootLayout({
             attribute="class"
             defaultTheme="light"
             enableSystem={false}
+            forcedTheme="light"
           >
             <GlobalScriptWrapper />
             <Suspense fallback={null}>

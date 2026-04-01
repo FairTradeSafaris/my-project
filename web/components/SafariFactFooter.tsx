@@ -117,7 +117,7 @@ export default function SafariFactFooter() {
       {/* Dark overlay ONLY when site is in dark mode */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 hidden dark:block bg-black/22"
+        className="pointer-events-none absolute inset-0 z-0 hidden  bg-black/22"
       />
 
       {/* Main grid — three columns: logo | links | illustration */}

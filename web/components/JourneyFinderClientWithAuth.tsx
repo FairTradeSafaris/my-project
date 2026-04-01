@@ -251,7 +251,7 @@ export default function JourneyFinderClientWithAuth() {
   const availableActivities = getAvailableByCategory("feature");
 
   return (
-    <main className="min-h-screen bg-[#fdf8f3] text-black px-4 py-6">
+    <main className="min-h-screen bg-white text-black px-4 py-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">African Safari Itineraries</h1>
 
@@ -319,29 +319,72 @@ export default function JourneyFinderClientWithAuth() {
             ) : filteredJourneys.length === 0 ? (
               <p className="text-gray-500">No journeys found.</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredJourneys.map((j) => (
-                  <JourneyCard
-                    key={j._id}
-                    journeyId={j._id}
-                    slug={j.slug?.current || ""}
-                    title={j.title}
-                    summary={j.summary}
-                    imageUrl={j.heroUrl || "/fallback.jpg"}
-                    alt={j.alt || j.title}
-                    duration={j.duration || ""}
-                    price={
-                      !isNaN(parseFloat(j.price || "")) &&
-                      parseFloat(j.price || "") > 1
-                        ? j.price
-                        : "Price on request"
-                    }
-                    star={j.star ? parseInt(j.star) : 0}
-                    starIcon={j.starIcon}
-                    region={j.region?.title || ""}
-                    isFeatured={j.featuredOnHome === true}
-                    isWishlisted={wishlistedMap[j._id] === true}
-                  />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredJourneys.map((j, index) => (
+                  <React.Fragment key={j._id}>
+                    {/* 👉 Inject custom card at position 2 (change index if needed) */}
+                    {index === 0 && (
+                      <div className="relative rounded-2xl overflow-hidden group h-full min-h-[420px]">
+                        {/* Background Image */}
+                        <img
+                          src="/images/Custom-Tours.jpg" // 👉 replace with your image
+                          alt="Tailor made safari"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition" />
+
+                        {/* Content */}
+                        <div className="relative z-10 p-6 flex flex-col justify-end h-full text-white">
+                          <div className="mb-4">
+                            <p className="text-xs uppercase tracking-widest opacity-80 mb-2">
+                              Tailor-Made Experience
+                            </p>
+
+                            <h3 className="text-2xl font-semibold leading-tight mb-3">
+                              Your Safari. Your Story.
+                            </h3>
+
+                            <p className="text-sm opacity-90">
+                              Designed around you — no templates, no limits.
+                              Just unforgettable journeys crafted with purpose.
+                            </p>
+                          </div>
+                          <a
+                            href="https://bookings.fairtradesafaris.com/#/fairtradesafaris"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-4 bg-white text-black py-3 px-4 rounded-full text-sm font-medium hover:bg-gray-200 transition w-fit inline-block text-center"
+                          >
+                            Start Planning
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Normal journey card */}
+                    <JourneyCard
+                      journeyId={j._id}
+                      slug={j.slug?.current || ""}
+                      title={j.title}
+                      summary={j.summary}
+                      imageUrl={j.heroUrl || "/fallback.jpg"}
+                      alt={j.alt || j.title}
+                      duration={j.duration || ""}
+                      price={
+                        !isNaN(parseFloat(j.price || "")) &&
+                        parseFloat(j.price || "") > 1
+                          ? j.price
+                          : "Price on request"
+                      }
+                      star={j.star ? parseInt(j.star) : 0}
+                      starIcon={j.starIcon}
+                      region={j.region?.title || ""}
+                      isFeatured={j.featuredOnHome === true}
+                      isWishlisted={wishlistedMap[j._id] === true}
+                    />
+                  </React.Fragment>
                 ))}
               </div>
             )}

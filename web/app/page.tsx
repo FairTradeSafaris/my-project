@@ -8,7 +8,7 @@ import JourneyCard from "@/components/JourneyCard";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import type { FoundersPromiseBlock } from "@/types/types";
 import Head from "next/head";
-
+import React from "react";
 // ✅ Client components
 import HomeClientTop from "@/components/HomeClientTop";
 import HomeClientBottom from "@/components/HomeClientBottom";
@@ -159,29 +159,76 @@ export default async function Home() {
               Your Journey Starts Here
             </h2>
 
-            <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto mb-12">
+            <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto mb-6">
               Handpicked safari experiences designed for travelers who value
               purpose, privacy, and unforgettable wildlife encounters.
             </p>
+
+            {/* 👉 ADD THIS */}
+            <Link
+              href="/luxury-african-safaris/"
+              className="font-semibold underline hover:text-black"
+            >
+              luxury African safaris
+            </Link>
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
-            {journeys.map((j) => (
-              <JourneyCard
-                key={j._id}
-                journeyId={j._id}
-                title={j.title}
-                slug={j.slug.current}
-                summary={j.summary}
-                imageUrl={j.heroImage?.asset?.url}
-                alt={j.alt}
-                price={j.price}
-                duration={j.duration}
-                region={j.region?.title}
-                star={j.star}
-                starIcon={j.starIcon}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto px-6">
+            {journeys.map((j, index) => (
+              <React.Fragment key={j._id}>
+                {/* 👉 Custom Featured Card */}
+                {index === 0 && (
+                  <div className="relative rounded-2xl overflow-hidden group min-h-[420px]">
+                    <img
+                      src="/images/Custom-Tours.jpg"
+                      alt="Tailor made safari"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition" />
+
+                    <div className="relative z-10 p-6 flex flex-col justify-end h-full text-white">
+                      <p className="text-xs uppercase tracking-widest opacity-80 mb-2">
+                        Tailor-Made Experience
+                      </p>
+
+                      <h3 className="text-2xl font-semibold mb-3 leading-tight">
+                        Your Safari. Your Story.
+                      </h3>
+
+                      <p className="text-sm opacity-90 mb-4">
+                        Designed around you — no templates, no limits. Just
+                        unforgettable journeys crafted with purpose.
+                      </p>
+
+                      <a
+                        href="https://bookings.fairtradesafaris.com/#/fairtradesafaris"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white text-black py-3 px-4 rounded-full text-sm font-medium hover:bg-gray-200 transition w-fit"
+                      >
+                        Start Planning
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Normal Journey Card */}
+                <JourneyCard
+                  journeyId={j._id}
+                  title={j.title}
+                  slug={j.slug.current}
+                  summary={j.summary}
+                  imageUrl={j.heroImage?.asset?.url}
+                  alt={j.alt}
+                  price={j.price}
+                  duration={j.duration}
+                  region={j.region?.title}
+                  star={j.star}
+                  starIcon={j.starIcon}
+                />
+              </React.Fragment>
             ))}
           </div>
 

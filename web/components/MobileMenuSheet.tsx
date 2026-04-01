@@ -38,7 +38,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="block dark:hidden object-contain"
+        className="block  object-contain"
         priority
       />
       <Image
@@ -46,7 +46,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="hidden dark:block object-contain"
+        className="hidden  object-contain"
         priority
       />
     </>
@@ -64,7 +64,7 @@ function ClerkMenuSection({ onClose }: { onClose: () => void }) {
         <Link
           href="/sign-in/"
           onClick={onClose}
-          className="px-3 py-2 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm font-medium"
+          className="px-3 py-2 rounded-xl bg-neutral-900 text-white   text-sm font-medium"
         >
           Sign in
         </Link>
@@ -130,45 +130,40 @@ export default function MobileMenuSheet({
           damping: 28,
           duration: 0.22,
         }}
-        className="fixed inset-0 z-[80] bg-white dark:bg-neutral-900 flex flex-col"
+        className="fixed inset-0 z-[80] bg-white  flex flex-col"
         style={{
           paddingTop: "env(safe-area-inset-top)",
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 h-14 px-4 flex items-center justify-between border-b border-black/5 dark:border-white/10 bg-white/95 dark:bg-neutral-900/95 backdrop-blur">
+        <div className="sticky top-0 z-10 h-14 px-4 flex items-center justify-between border-b border-black/5  bg-white/95  backdrop-blur">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#d7ccc8] dark:bg-[#1f1410] grid place-items-center shadow-sm">
+            <div className="w-9 h-9 rounded-lg bg-[#d7ccc8]  grid place-items-center shadow-sm">
               <BadgeVisual size={26} />
             </div>
-            <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+            <span className="text-sm font-semibold text-neutral-900 ">
               Menu
             </span>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="p-2 rounded-xl hover:bg-neutral-100 "
             aria-label="Close"
           >
-            <X size={20} className="text-neutral-800 dark:text-neutral-200" />
+            <X size={20} className="text-neutral-800 " />
           </button>
         </div>
 
         {/* Search + Clerk Auth */}
-        <div className="px-4 py-3 border-b border-black/5 dark:border-white/10 flex items-center gap-3">
+        <div className="px-4 py-3 border-b border-black/5  flex items-center gap-3">
           <Link
             href="/africansafariitineraries/"
             onClick={onClose}
-            className="flex-1 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 px-4 grid grid-cols-[20px_1fr] items-center gap-3 text-sm"
+            className="flex-1 h-11 rounded-2xl bg-neutral-100  px-4 grid grid-cols-[20px_1fr] items-center gap-3 text-sm"
           >
-            <Search
-              size={18}
-              className="text-neutral-600 dark:text-neutral-300"
-            />
-            <span className="text-neutral-600 dark:text-neutral-200">
-              Search journeys
-            </span>
+            <Search size={18} className="text-neutral-600 " />
+            <span className="text-neutral-600 ">Search journeys</span>
           </Link>
 
           {/* ✅ Render Clerk stuff only if consent accepted */}
@@ -188,10 +183,10 @@ export default function MobileMenuSheet({
                       <span
                         className={cx(
                           "block px-3 py-3 rounded-2xl text-[15px] transition",
-                          "text-neutral-900 dark:text-neutral-100",
+                          "text-neutral-900 ",
                           pathname === item.href
-                            ? "bg-neutral-200 dark:bg-neutral-800 font-semibold"
-                            : "bg-neutral-100 dark:bg-neutral-800/60 hover:bg-neutral-200 dark:hover:bg-neutral-700",
+                            ? "bg-neutral-200  font-semibold"
+                            : "bg-neutral-100  hover:bg-neutral-200 ",
                         )}
                       >
                         {item.title}
@@ -205,7 +200,7 @@ export default function MobileMenuSheet({
           {/* Featured */}
           {featureCards.length > 0 && (
             <div className="px-2 py-3">
-              <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-300 mb-2">
+              <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500  mb-2">
                 Featured
               </h3>
               <ul className="space-y-2">
@@ -214,7 +209,7 @@ export default function MobileMenuSheet({
                     <Link
                       href={card.link}
                       onClick={onClose}
-                      className="flex items-center gap-3 p-2 rounded-2xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                      className="flex items-center gap-3 p-2 rounded-2xl bg-neutral-100  hover:bg-neutral-200  transition"
                     >
                       <Image
                         src={card.image.asset.url}
@@ -224,10 +219,10 @@ export default function MobileMenuSheet({
                         className="w-16 h-16 object-cover rounded-xl"
                       />
                       <div className="min-w-0">
-                        <h4 className="text-[15px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                        <h4 className="text-[15px] font-semibold text-neutral-900  truncate">
                           {card.title}
                         </h4>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-300 line-clamp-2">
+                        <p className="text-xs text-neutral-600  line-clamp-2">
                           {card.description}
                         </p>
                       </div>
@@ -241,13 +236,13 @@ export default function MobileMenuSheet({
           {/* Promo */}
           {promoCard?.title && (
             <div className="px-2 py-3">
-              <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-300 mb-2">
+              <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500  mb-2">
                 Special Offer
               </h3>
               <Link
                 href={promoCard.link}
                 onClick={onClose}
-                className="block rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+                className="block rounded-2xl overflow-hidden bg-neutral-100 "
               >
                 <Image
                   src={promoCard?.image?.asset?.url || "/fallback.jpg"}
@@ -257,10 +252,10 @@ export default function MobileMenuSheet({
                   className="w-full h-40 object-cover"
                 />
                 <div className="p-4">
-                  <h4 className="text-[15px] font-semibold text-neutral-900 dark:text-neutral-100">
+                  <h4 className="text-[15px] font-semibold text-neutral-900 ">
                     {promoCard.title}
                   </h4>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1 line-clamp-2">
+                  <p className="text-xs text-neutral-600  mt-1 line-clamp-2">
                     {promoCard.description}
                   </p>
                 </div>

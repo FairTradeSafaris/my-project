@@ -15,10 +15,10 @@ export default function OfflinePage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-white text-black dark:bg-neutral-950 dark:text-white p-6">
-      <section className="w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
+    <main className="min-h-screen flex items-center justify-center bg-white text-black   p-6">
+      <section className="w-full max-w-md rounded-2xl border border-neutral-200  p-6 shadow-sm">
         {/* Inline icon to avoid network requests */}
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-neutral-300 dark:border-neutral-700">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-neutral-300 ">
           <svg
             width="26"
             height="26"
@@ -35,7 +35,7 @@ export default function OfflinePage() {
         </div>
 
         <h1 className="text-xl font-semibold mb-2">You’re offline</h1>
-        <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-6">
+        <p className="text-sm text-neutral-600  mb-6">
           No internet connection. You can still open pages you’ve already
           visited. When you’re back online, reload to continue exploring Fair
           Trade Safaris.
@@ -44,14 +44,14 @@ export default function OfflinePage() {
         <div className="flex gap-3">
           <button
             onClick={retry}
-            className="inline-flex items-center justify-center rounded-2xl px-4 py-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition"
+            className="inline-flex items-center justify-center rounded-2xl px-4 py-2 border border-neutral-300  hover:bg-neutral-50  transition"
             type="button"
           >
             Retry
           </button>
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-2xl px-4 py-2 bg-black text-white dark:bg-white dark:text-black hover:opacity-90 transition"
+            className="inline-flex items-center justify-center rounded-2xl px-4 py-2 bg-black text-white   hover:opacity-90 transition"
           >
             Go Home
           </Link>

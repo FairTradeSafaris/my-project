@@ -25,7 +25,13 @@ export type PortableTextBlock = {
   }[];
   style?: string;
 }[];
-
+export type SafariBuilderBlock = {
+  _type: "safariBuilderBlock";
+  headline?: string;
+  subtext?: string;
+  buttonText?: string;
+  mode?: "crm" | "email";
+};
 // Optional: Enum for stricter typing
 export type ImageSize = "sm" | "md" | "lg" | "full";
 
@@ -163,4 +169,5 @@ export type Block =
   | GalleryBlock
   | SmartCarouselBlock
   | TableBlock
-  | JourneyStepsBlock;
+  | JourneyStepsBlock
+  | SafariBuilderBlock;

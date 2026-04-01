@@ -36,7 +36,7 @@ export default function CustomUserMenu() {
       {/* Avatar Button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/20"
+        className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10 "
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Open account menu"
@@ -45,7 +45,7 @@ export default function CustomUserMenu() {
         <img
           src={user.imageUrl}
           alt="User avatar"
-          className="w-8 h-8 min-w-[32px] min-h-[32px] object-cover rounded-full border border-gray-300 dark:border-neutral-700"
+          className="w-8 h-8 min-w-[32px] min-h-[32px] object-cover rounded-full border border-gray-300 "
         />
       </button>
 
@@ -57,8 +57,8 @@ export default function CustomUserMenu() {
             absolute right-0
             bottom-full mb-2          /* mobile: pop up */
             md:bottom-auto md:top-full md:mt-2 md:mb-0  /* desktop: pop down */
-            w-72 bg-white dark:bg-neutral-900 shadow-xl rounded-2xl overflow-hidden
-            ring-1 ring-black/10 dark:ring-white/10
+            w-72 bg-white  shadow-xl rounded-2xl overflow-hidden
+            ring-1 ring-black/10 
             animate-in fade-in-0
             md:slide-in-from-top-2
             slide-in-from-bottom-2
@@ -68,43 +68,40 @@ export default function CustomUserMenu() {
           <div
             className="
               absolute right-4 w-3 h-3 rotate-45
-              bg-white dark:bg-neutral-900 ring-1 ring-black/10 dark:ring-white/10
+              bg-white  ring-1 ring-black/10 
               -bottom-2 md:-top-2 md:bottom-auto
             "
           />
 
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-100 dark:border-neutral-800">
-            <p className="font-semibold text-sm text-gray-800 dark:text-white">
+          <div className="px-4 py-3 border-b border-gray-100 ">
+            <p className="font-semibold text-sm text-gray-800 ">
               {user.fullName}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 ">
               {user.primaryEmailAddress?.emailAddress}
             </p>
           </div>
 
           {/* Links */}
-          <ul className="text-sm divide-y divide-gray-100 dark:divide-neutral-800">
+          <ul className="text-sm divide-y divide-gray-100 ">
             <li>
               <Link
                 href="/client-home/"
-                className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100  transition"
                 onClick={() => setOpen(false)}
               >
-                🏠{" "}
-                <span className="text-gray-800 dark:text-white">
-                  Client Home
-                </span>
+                🏠 <span className="text-gray-800 ">Client Home</span>
               </Link>
             </li>
             <li>
               <Link
                 href="/books/"
-                className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100  transition"
                 onClick={() => setOpen(false)}
               >
                 📚{" "}
-                <span className="text-gray-800 dark:text-white">
+                <span className="text-gray-800 ">
                   Ultimate Guides to Africa
                 </span>
               </Link>
@@ -112,13 +109,10 @@ export default function CustomUserMenu() {
             <li>
               <Link
                 href="/user-profile"
-                className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100  transition"
                 onClick={() => setOpen(false)}
               >
-                ⚙️{" "}
-                <span className="text-gray-800 dark:text-white">
-                  Manage Account
-                </span>
+                ⚙️ <span className="text-gray-800 ">Manage Account</span>
               </Link>
             </li>
 
@@ -128,7 +122,7 @@ export default function CustomUserMenu() {
                   signOut();
                   setOpen(false);
                 }}
-                className="flex items-center gap-2 w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-neutral-800 transition"
+                className="flex items-center gap-2 w-full text-left px-4 py-3 text-red-600 hover:bg-red-50  transition"
               >
                 🚪 <span>Sign Out</span>
               </button>
@@ -136,7 +130,7 @@ export default function CustomUserMenu() {
           </ul>
 
           {/* Footer */}
-          <div className="text-center py-2 text-xs text-gray-400 dark:text-gray-600 border-t border-gray-100 dark:border-neutral-800">
+          <div className="text-center py-2 text-xs text-gray-400  border-t border-gray-100 ">
             Secured by Clerk
           </div>
         </div>

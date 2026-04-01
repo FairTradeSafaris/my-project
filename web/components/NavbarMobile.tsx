@@ -41,7 +41,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="block dark:hidden object-contain"
+        className="block  object-contain"
         priority
       />
       <Image
@@ -49,7 +49,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="hidden dark:block object-contain"
+        className="hidden  object-contain"
         priority
       />
     </>
@@ -126,8 +126,8 @@ export default function NavbarMobile() {
       <header
         className={cx(
           "fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 xl:hidden",
-          "backdrop-blur bg-white/90 dark:bg-neutral-900/85",
-          "border-b border-black/5 dark:border-white/10",
+          "backdrop-blur bg-white/90 ",
+          "border-b border-black/5 ",
         )}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
@@ -140,7 +140,7 @@ export default function NavbarMobile() {
         >
           <div className="flex items-center gap-3 min-w-0">
             <Link href="/" aria-label="Fair Trade Safaris" className="shrink-0">
-              <div className="w-11 h-11 rounded-xl shadow-sm bg-[#d7ccc8] dark:bg-[#1f1410] grid place-items-center">
+              <div className="w-11 h-11 rounded-xl shadow-sm bg-[#d7ccc8]  grid place-items-center">
                 <BadgeVisual size={34} />
               </div>
             </Link>
@@ -153,7 +153,7 @@ export default function NavbarMobile() {
                 alt="Fair Trade Safaris"
                 width={150}
                 height={36}
-                className="block dark:hidden object-contain"
+                className="block  object-contain"
                 priority
               />
               <Image
@@ -161,7 +161,7 @@ export default function NavbarMobile() {
                 alt="Fair Trade Safaris"
                 width={150}
                 height={36}
-                className="hidden dark:block object-contain"
+                className="hidden  object-contain"
                 priority
               />
             </Link>
@@ -228,7 +228,7 @@ export default function NavbarMobile() {
             exit="exit"
             variants={sheetVariants}
             transition={{ duration: reduceMotion ? 0 : 0.15 }}
-            className="fixed inset-0 z-[9998] bg-white dark:bg-neutral-900 xl:hidden"
+            className="fixed inset-0 z-[9998] bg-white  xl:hidden"
           >
             <MobileMenuSheet
               onClose={() => setMenuOpen(false)}

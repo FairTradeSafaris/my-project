@@ -295,6 +295,39 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               </section>
             );
           }
+          case "safariBuilderBlock": {
+            return (
+              <section key={index} className="py-24 bg-[#f5f1ea] text-center">
+                <Container>
+                  {block.headline && (
+                    <h2 className="text-4xl md:text-5xl font-semibold mb-6 tracking-tight">
+                      {block.headline}
+                    </h2>
+                  )}
+
+                  {block.subtext && (
+                    <p className="text-lg text-gray-700 max-w-2xl mx-auto mb-10">
+                      {block.subtext}
+                    </p>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      const event = new CustomEvent("openSafariBuilder", {
+                        detail: {
+                          mode: block.mode || "crm",
+                        },
+                      });
+                      window.dispatchEvent(event);
+                    }}
+                    className="px-8 py-4 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-all"
+                  >
+                    {block.buttonText || "Start My Safari"}
+                  </button>
+                </Container>
+              </section>
+            );
+          }
           default:
             return null;
         }

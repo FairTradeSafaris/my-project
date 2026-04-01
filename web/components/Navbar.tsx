@@ -81,7 +81,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="block dark:hidden object-contain"
+        className="block  object-contain"
         priority
       />
       <Image
@@ -89,7 +89,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="hidden dark:block object-contain"
+        className="hidden  object-contain"
         priority
       />
     </>
@@ -102,7 +102,7 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
     <div
       className={cx(
         "hidden md:grid fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl",
-        "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl",
+        "bg-white/90  backdrop-blur-md shadow-xl",
         "border-4 border-red-500 rounded-3xl px-8 py-6",
         "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8",
         "items-start content-stretch",
@@ -184,9 +184,9 @@ export default function Navbar({
       <header
         className={cx(
           "md:hidden sticky top-0 z-50 w-full",
-          "backdrop-blur supports-[backdrop-filter]:bg-white/65 dark:supports-[backdrop-filter]:bg-neutral-900/60",
-          "bg-white/90 dark:bg-neutral-900/85",
-          "border-b border-black/5 dark:border-white/10",
+          "backdrop-blur supports-[backdrop-filter]:bg-white/65 ",
+          "bg-white/90 ",
+          "border-b border-black/5 ",
         )}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
@@ -198,7 +198,7 @@ export default function Navbar({
         >
           <div className="flex items-center gap-3">
             <Link href="/" aria-label="Fair Trade Safaris" className="shrink-0">
-              <div className="w-11 h-11 rounded-xl shadow-sm bg-[#d7ccc8] dark:bg-[#1f1410] grid place-items-center">
+              <div className="w-11 h-11 rounded-xl shadow-sm bg-[#d7ccc8]  grid place-items-center">
                 <BadgeVisual size={34} />
               </div>
             </Link>
@@ -208,7 +208,7 @@ export default function Navbar({
                 alt="Fair Trade Safaris"
                 width={150}
                 height={36}
-                className="block dark:hidden object-contain"
+                className="block  object-contain"
                 priority
               />
               <Image
@@ -216,7 +216,7 @@ export default function Navbar({
                 alt="Fair Trade Safaris"
                 width={150}
                 height={36}
-                className="hidden dark:block object-contain"
+                className="hidden  object-contain"
                 priority
               />
             </Link>
@@ -261,7 +261,7 @@ export default function Navbar({
           "items-center justify-between gap-6",
           "rounded-2xl shadow-md backdrop-blur transition-all duration-300",
           scrolled ? "py-1" : "py-3",
-          "bg-[#d7ccc8e6] dark:bg-[#1f1410e6] text-foreground dark:text-white",
+          "bg-[#d7ccc8e6]  text-foreground ",
         )}
       >
         <div className="flex items-center gap-3 pl-4 pt-2 md:pt-0">
@@ -276,7 +276,7 @@ export default function Navbar({
               width={scrolled ? 180 : 260}
               height={scrolled ? 40 : 60}
               className={cx(
-                "block dark:hidden object-contain transition-all duration-300 ease-in-out",
+                "block  object-contain transition-all duration-300 ease-in-out",
                 scrolled ? "scale-100" : "scale-105",
               )}
               priority
@@ -287,7 +287,7 @@ export default function Navbar({
               width={scrolled ? 180 : 260}
               height={scrolled ? 40 : 60}
               className={cx(
-                "hidden dark:block object-contain transition-all duration-300 ease-in-out",
+                "hidden  object-contain transition-all duration-300 ease-in-out",
                 scrolled ? "scale-100" : "scale-105",
               )}
               priority
@@ -362,48 +362,40 @@ export default function Navbar({
                   stiffness: 260,
                   damping: 28,
                 }}
-                className="absolute inset-0 pointer-events-auto bg-white dark:bg-neutral-900 flex flex-col"
+                className="absolute inset-0 pointer-events-auto bg-white  flex flex-col"
                 style={{
                   paddingTop: "env(safe-area-inset-top)",
                   paddingBottom: "env(safe-area-inset-bottom)",
                 }}
               >
                 {/* Sticky top inside sheet (NO 'Explore' label here) */}
-                <div className="sticky top-0 z-10 h-14 px-4 flex items-center justify-between border-b border-black/5 dark:border-white/10 bg-white/95 dark:bg-neutral-900/95 backdrop-blur">
+                <div className="sticky top-0 z-10 h-14 px-4 flex items-center justify-between border-b border-black/5  bg-white/95  backdrop-blur">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[#d7ccc8] dark:bg-[#1f1410] grid place-items-center shadow-sm">
+                    <div className="w-9 h-9 rounded-lg bg-[#d7ccc8]  grid place-items-center shadow-sm">
                       <BadgeVisual size={26} />
                     </div>
-                    <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    <span className="text-sm font-semibold text-neutral-900 ">
                       Menu
                     </span>
                   </div>
                   <button
                     onClick={() => setMenuOpen(false)}
-                    className="p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    className="p-2 rounded-xl hover:bg-neutral-100 "
                     aria-label="Close"
                   >
-                    <X
-                      size={20}
-                      className="text-neutral-800 dark:text-neutral-200"
-                    />
+                    <X size={20} className="text-neutral-800 " />
                   </button>
                 </div>
 
                 {/* Search / Sign in row */}
-                <div className="px-4 py-3 border-b border-black/5 dark:border-white/10 flex items-center gap-3">
+                <div className="px-4 py-3 border-b border-black/5  flex items-center gap-3">
                   <Link
                     href="/africansafariitineraries/"
-                    className="flex-1 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 px-4 grid grid-cols-[20px_1fr] items-center gap-3 text-sm"
+                    className="flex-1 h-11 rounded-2xl bg-neutral-100  px-4 grid grid-cols-[20px_1fr] items-center gap-3 text-sm"
                     onClick={() => setMenuOpen(false)}
                   >
-                    <Search
-                      size={18}
-                      className="text-neutral-600 dark:text-neutral-300"
-                    />
-                    <span className="text-neutral-600 dark:text-neutral-200">
-                      Search journeys
-                    </span>
+                    <Search size={18} className="text-neutral-600 " />
+                    <span className="text-neutral-600 ">Search journeys</span>
                   </Link>
                   <SignedIn>
                     <CustomUserMenu />
@@ -412,7 +404,7 @@ export default function Navbar({
                     <Link
                       href="/sign-in/"
                       onClick={() => setMenuOpen(false)}
-                      className="px-3 py-2 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm font-medium"
+                      className="px-3 py-2 rounded-xl bg-neutral-900 text-white   text-sm font-medium"
                     >
                       Sign in
                     </Link>
@@ -435,10 +427,10 @@ export default function Navbar({
                               <span
                                 className={cx(
                                   "block px-3 py-3 rounded-2xl text-[15px] transition",
-                                  "text-neutral-900 dark:text-neutral-100",
+                                  "text-neutral-900 ",
                                   pathname === item.href
-                                    ? "bg-neutral-200 dark:bg-neutral-800 font-semibold"
-                                    : "bg-neutral-100 dark:bg-neutral-800/60 hover:bg-neutral-200 dark:hover:bg-neutral-700",
+                                    ? "bg-neutral-200  font-semibold"
+                                    : "bg-neutral-100  hover:bg-neutral-200 ",
                                 )}
                               >
                                 {item.title}
@@ -452,7 +444,7 @@ export default function Navbar({
                   {/* Featured */}
                   {featureCards.length > 0 && (
                     <div className="px-2 py-3">
-                      <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-300 mb-2">
+                      <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500  mb-2">
                         Featured
                       </h3>
                       <ul className="space-y-2">
@@ -461,7 +453,7 @@ export default function Navbar({
                             <Link
                               href={card.link}
                               onClick={() => setMenuOpen(false)}
-                              className="flex items-center gap-3 p-2 rounded-2xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                              className="flex items-center gap-3 p-2 rounded-2xl bg-neutral-100  hover:bg-neutral-200  transition"
                             >
                               <Image
                                 src={card.image.asset.url}
@@ -471,10 +463,10 @@ export default function Navbar({
                                 className="w-16 h-16 object-cover rounded-xl"
                               />
                               <div className="min-w-0">
-                                <h4 className="text-[15px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                                <h4 className="text-[15px] font-semibold text-neutral-900  truncate">
                                   {card.title}
                                 </h4>
-                                <p className="text-xs text-neutral-600 dark:text-neutral-300 line-clamp-2">
+                                <p className="text-xs text-neutral-600  line-clamp-2">
                                   {card.description}
                                 </p>
                               </div>
@@ -488,7 +480,7 @@ export default function Navbar({
                   {/* Promo */}
                   {promoCard?.title && (
                     <div className="px-2 py-3">
-                      <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-300 mb-2">
+                      <h3 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500  mb-2">
                         Special Offer
                       </h3>
                       <Link
@@ -504,10 +496,10 @@ export default function Navbar({
                           className="w-full h-40 object-cover"
                         />
                         <div className="p-4">
-                          <h4 className="text-[15px] font-semibold text-neutral-900 dark:text-neutral-100">
+                          <h4 className="text-[15px] font-semibold text-neutral-900 ">
                             {promoCard.title}
                           </h4>
-                          <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1 line-clamp-2">
+                          <p className="text-xs text-neutral-600  mt-1 line-clamp-2">
                             {promoCard.description}
                           </p>
                         </div>
@@ -537,7 +529,7 @@ export default function Navbar({
             className={cx(
               "hidden md:flex flex-wrap justify-between items-stretch gap-5",
               "fixed top-20 inset-x-4 mx-auto z-40 w-[92vw] max-w-6xl",
-              "bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl",
+              "bg-white/90  backdrop-blur-md shadow-xl",
               "border-4 border-red-500 rounded-3xl px-6 py-4",
             )}
           >
@@ -564,8 +556,8 @@ export default function Navbar({
                           className={cx(
                             "text-sm px-3 py-2 rounded-md transition block",
                             pathname === item.href
-                              ? "bg-gray-200 dark:bg-neutral-700 font-semibold"
-                              : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700",
+                              ? "bg-gray-200  font-semibold"
+                              : "text-gray-800  hover:bg-gray-100 ",
                           )}
                         >
                           {item.title}
@@ -588,7 +580,7 @@ export default function Navbar({
                     key={`desk-feature-${card.title}-${idx}`}
                     href={card.link}
                     onClick={() => setMenuOpen(false)}
-                    className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/70 dark:hover:bg-neutral-800 transition"
+                    className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/70  transition"
                   >
                     <Image
                       src={card.image.asset.url}
@@ -598,10 +590,10 @@ export default function Navbar({
                       className="w-[60px] h-[60px] object-cover rounded-lg shadow-sm"
                     />
                     <div className="flex flex-col">
-                      <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
+                      <h4 className="text-sm font-semibold text-gray-800  group-hover:text-[#5a3e2b]">
                         {card.title}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-gray-600  mt-1 line-clamp-2">
                         {card.description}
                       </p>
                     </div>
@@ -628,11 +620,11 @@ export default function Navbar({
                     height={200}
                     className="w-full h-36 object-cover"
                   />
-                  <div className="p-4 bg-white dark:bg-neutral-900 h-full">
-                    <h4 className="text-sm font-semibold text-gray-800 dark:text-white group-hover:text-[#5a3e2b]">
+                  <div className="p-4 bg-white  h-full">
+                    <h4 className="text-sm font-semibold text-gray-800  group-hover:text-[#5a3e2b]">
                       {promoCard.title}
                     </h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                    <p className="text-xs text-gray-600  mt-1 line-clamp-2">
                       {promoCard.description}
                     </p>
                   </div>

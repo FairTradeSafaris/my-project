@@ -203,7 +203,7 @@ function BottomTabBarWithUser() {
       )}
 
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95 dark:bg-neutral-900/95 backdrop-blur border-t border-black/10 dark:border-white/10 grid grid-cols-5 items-center text-center"
+        className="md:hidden fixed bottom-0 inset-x-0 z-[60] bg-white/95  backdrop-blur border-t border-black/10  grid grid-cols-5 items-center text-center"
         style={{
           height: `calc(${TABBAR_BASE_HEIGHT}px + env(safe-area-inset-bottom))`,
           paddingBottom: "env(safe-area-inset-bottom)",

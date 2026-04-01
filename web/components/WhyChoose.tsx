@@ -25,7 +25,7 @@ export default function WhyChoose({ data }: WhyChooseProps) {
       {/* Dark mode overlay */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 hidden dark:block"
+        className="pointer-events-none absolute inset-0 z-0 hidden "
       />
 
       {/* Main Content */}

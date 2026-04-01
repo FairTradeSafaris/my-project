@@ -180,7 +180,7 @@ function HomeFilters() {
         luxury.forEach((l) => qs.append("luxury", l));
         router.push(`/africansafariitineraries?${qs.toString()}`);
       }}
-      className="relative z-[999] mt-5 mx-auto hidden md:flex bg-white/75 dark:bg-black/60 backdrop-blur-md text-black rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
+      className="relative z-[999] mt-5 mx-auto hidden md:flex bg-white/75  backdrop-blur-md text-black rounded-xl px-4 py-4 shadow-2xl flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10  transition-all duration-300"
       role="search"
       aria-label="Find your safari"
     >

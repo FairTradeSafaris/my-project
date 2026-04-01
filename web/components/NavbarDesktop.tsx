@@ -43,7 +43,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="block dark:hidden object-contain"
+        className="block  object-contain"
         priority
       />
       <Image
@@ -51,7 +51,7 @@ function BadgeVisual({ size }: { size: number }) {
         alt="Fair Trade Safaris badge"
         width={size}
         height={size}
-        className="hidden dark:block object-contain"
+        className="hidden  object-contain"
         priority
       />
     </>
@@ -74,9 +74,7 @@ function DesktopRoundBadge({ scrolled }: { scrolled: boolean }) {
     <div
       className={cx(
         "flex items-center justify-center",
-        scrolled
-          ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
-          : "bg-[#d7ccc850] dark:bg-[#1f141050]",
+        scrolled ? "bg-[#d7ccc8e6] " : "bg-[#d7ccc850] ",
         "rounded-b-2xl rounded-t-none transition-all duration-300 ease-in-out",
       )}
       style={{ width: `${size.box}px`, height: `${size.box}px` }}
@@ -164,9 +162,7 @@ export default function NavbarDesktop({
         <div
           className={cx(
             "fixed top-0 left-4 z-[60]",
-            scrolled
-              ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
-              : "bg-[#d7ccc850] dark:bg-[#1f141050]",
+            scrolled ? "bg-[#d7ccc8e6] " : "bg-[#d7ccc850] ",
           )}
           style={{ borderRadius: "0 0 1rem 1rem" }}
         >
@@ -184,11 +180,9 @@ export default function NavbarDesktop({
               "flex w-full flex-wrap items-center justify-between gap-4 min-w-0",
               "rounded-2xl shadow-md transition-all duration-300",
               layoutSizes.logo.padding,
-              "text-foreground dark:text-white",
+              "text-foreground ",
               "px-6",
-              scrolled
-                ? "bg-[#d7ccc8e6] dark:bg-[#1f1410e6]"
-                : "bg-[#d7ccc850] dark:bg-[#1f141050]",
+              scrolled ? "bg-[#d7ccc8e6] " : "bg-[#d7ccc850] ",
             )}
           >
             <div className="flex items-center gap-2 min-w-0 max-w-[60%] flex-shrink">
@@ -203,7 +197,7 @@ export default function NavbarDesktop({
                   width={layoutSizes.logo.width}
                   height={layoutSizes.logo.height}
                   className={cx(
-                    "block dark:hidden object-contain transition-all duration-300 ease-in-out",
+                    "block  object-contain transition-all duration-300 ease-in-out",
                     scrolled ? "scale-100" : "scale-105",
                   )}
                   priority
@@ -214,7 +208,7 @@ export default function NavbarDesktop({
                   width={layoutSizes.logo.width}
                   height={layoutSizes.logo.height}
                   className={cx(
-                    "hidden dark:block object-contain transition-all duration-300 ease-in-out",
+                    "hidden  object-contain transition-all duration-300 ease-in-out",
                     scrolled ? "scale-100" : "scale-105",
                   )}
                   priority
@@ -286,7 +280,7 @@ export default function NavbarDesktop({
               role="dialog"
               aria-modal="true"
             >
-              <div className="rounded-3xl shadow-2xl ring-1 ring-black/10  bg-white dark:bg-neutral-900/80 border border-white/40 dark:border-white/10">
+              <div className="rounded-3xl shadow-2xl ring-1 ring-black/10  bg-white  border border-white/40 ">
                 <div
                   className={[
                     "p-4 md:p-6 gap-4 grid",
@@ -298,7 +292,7 @@ export default function NavbarDesktop({
                   ].join(" ")}
                 >
                   <div className="w-max min-w-fit">
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500  mb-3">
                       Navigation
                     </h4>
                     <div className="max-h-[62vh] overflow-y-auto pr-2">
@@ -306,7 +300,7 @@ export default function NavbarDesktop({
                         {navSections.map((section, sIdx) => (
                           <div key={`sec-${sIdx}`} className="min-w-0">
                             {section.heading && (
-                              <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-0.5">
+                              <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500  mb-0.5">
                                 {section.heading}
                               </div>
                             )}
@@ -317,7 +311,7 @@ export default function NavbarDesktop({
                                     href={item.href}
                                     onClick={() => setOpen(false)}
                                   >
-                                    <span className="block text-sm px-1.5 py-0.5 rounded-lg transition text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70">
+                                    <span className="block text-sm px-1.5 py-0.5 rounded-lg transition text-neutral-900  hover:bg-neutral-100/80 ">
                                       {item.title}
                                     </span>
                                   </Link>
@@ -332,7 +326,7 @@ export default function NavbarDesktop({
 
                   {!!featureCards?.length && (
                     <div className="min-w-0">
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500  mb-3">
                         Featured
                       </h4>
                       <ul className="space-y-2">
@@ -341,7 +335,7 @@ export default function NavbarDesktop({
                             <Link
                               href={card.link}
                               onClick={() => setOpen(false)}
-                              className="group flex items-center gap-3 rounded-2xl p-2 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/70 transition"
+                              className="group flex items-center gap-3 rounded-2xl p-2 hover:bg-neutral-100/80  transition"
                             >
                               <Image
                                 src={`${card.image.asset.url}?w=112&h=112&fit=crop`}
@@ -354,7 +348,7 @@ export default function NavbarDesktop({
                                 <div className="text-sm font-semibold truncate group-hover:text-[#5a3e2b]">
                                   {card.title}
                                 </div>
-                                <div className="text-xs text-neutral-600 dark:text-neutral-300 line-clamp-2">
+                                <div className="text-xs text-neutral-600  line-clamp-2">
                                   {card.description}
                                 </div>
                               </div>
@@ -367,13 +361,13 @@ export default function NavbarDesktop({
 
                   {promoCard?.title && (
                     <div className="min-w-0">
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-300 mb-3">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500  mb-3">
                         Special Offer
                       </h4>
                       <Link
                         href={promoCard.link}
                         onClick={() => setOpen(false)}
-                        className="group block rounded-2xl overflow-hidden ring-1 ring-black/10 bg-white/70 dark:bg-neutral-800/70"
+                        className="group block rounded-2xl overflow-hidden ring-1 ring-black/10 bg-white/70 "
                       >
                         <Image
                           src={promoCard.image?.asset?.url || "/fallback.jpg"}
@@ -386,7 +380,7 @@ export default function NavbarDesktop({
                           <div className="text-sm font-semibold group-hover:text-[#5a3e2b]">
                             {promoCard.title}
                           </div>
-                          <div className="text-xs text-neutral-600 dark:text-neutral-300 mt-1 line-clamp-2">
+                          <div className="text-xs text-neutral-600  mt-1 line-clamp-2">
                             {promoCard.description}
                           </div>
                         </div>
@@ -398,7 +392,7 @@ export default function NavbarDesktop({
                 <div className="flex justify-end px-6 pb-3 -mt-2">
                   <button
                     onClick={() => setOpen(false)}
-                    className="text-sm px-3 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                    className="text-sm px-3 py-1.5 rounded-xl bg-neutral-900 text-white  "
                   >
                     Close
                   </button>

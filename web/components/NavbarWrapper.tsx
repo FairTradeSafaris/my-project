@@ -24,7 +24,7 @@ export default function NavbarDesktop({
   promoCard?: FeatureCard | null;
 }) {
   return (
-    <nav className="hidden md:block w-full bg-white/90 dark:bg-neutral-900/85 shadow-sm border-b border-black/5 dark:border-white/10">
+    <nav className="hidden md:block w-full bg-white/90  shadow-sm border-b border-black/5 ">
       <div className="max-w-7xl mx-auto px-8 py-6 grid grid-cols-12 gap-8">
         {/* Left column – all nav sections */}
         <div className="col-span-4 space-y-6">
@@ -40,7 +40,7 @@ export default function NavbarDesktop({
                   <li key={i}>
                     <Link
                       href={link.href}
-                      className="text-base text-neutral-800 dark:text-neutral-200 hover:text-primary-600 transition"
+                      className="text-base text-neutral-800  hover:text-primary-600 transition"
                     >
                       {link.title}
                     </Link>
@@ -57,7 +57,7 @@ export default function NavbarDesktop({
             <Link
               key={idx}
               href={card.link}
-              className="group block rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition"
+              className="group block rounded-xl overflow-hidden border border-neutral-200  hover:shadow-lg transition"
             >
               <div className="relative h-40 w-full">
                 <Image
@@ -68,12 +68,10 @@ export default function NavbarDesktop({
                 />
               </div>
               <div className="p-4">
-                <h4 className="font-semibold text-neutral-900 dark:text-white">
+                <h4 className="font-semibold text-neutral-900 ">
                   {card.title}
                 </h4>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {card.description}
-                </p>
+                <p className="text-sm text-neutral-600 ">{card.description}</p>
               </div>
             </Link>
           ))}
@@ -84,7 +82,7 @@ export default function NavbarDesktop({
           <div className="col-span-4">
             <Link
               href={promoCard.link}
-              className="group block rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 hover:shadow-lg transition"
+              className="group block rounded-xl overflow-hidden border border-neutral-200  hover:shadow-lg transition"
             >
               <div className="relative h-56 w-full">
                 <Image
@@ -95,10 +93,10 @@ export default function NavbarDesktop({
                 />
               </div>
               <div className="p-4">
-                <h4 className="font-semibold text-neutral-900 dark:text-white">
+                <h4 className="font-semibold text-neutral-900 ">
                   {promoCard.title}
                 </h4>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-neutral-600 ">
                   {promoCard.description}
                 </p>
               </div>

@@ -80,7 +80,7 @@ export default function TestimonialCarousel() {
     <section className="relative isolate bg-white pt-10 pb-6 px-4 font-sans overflow-visible">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 hidden dark:block bg-black/22"
+        className="pointer-events-none absolute inset-0 z-0 hidden  bg-black/22"
       />
 
       <div className="relative z-10">

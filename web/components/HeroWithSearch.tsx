@@ -48,7 +48,7 @@ function SelectBlock({
 }) {
   const id = useMemo(
     () => `sel-${label.toLowerCase().replace(/\s+/g, "-")}`,
-    [label]
+    [label],
   );
   return (
     <label
@@ -107,7 +107,7 @@ function SearchForm({
       className={
         isMobile
           ? "flex flex-col gap-3"
-          : "mt-5 bg-white/75 dark:bg-black/60 backdrop-blur-md text-black dark:text-white rounded-xl px-4 py-4 shadow-2xl flex flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10 dark:border-white/10 transition-all duration-300"
+          : "mt-5 bg-white/75  backdrop-blur-md text-black  rounded-xl px-4 py-4 shadow-2xl flex flex-col md:flex-row items-stretch gap-3 w-full max-w-3xl border border-black/10  transition-all duration-300"
       }
     >
       <SelectBlock
@@ -187,10 +187,10 @@ export default function HeroWithSearch({
       .fetch(`*[_type == "journey"]{ country->{title}, star }`)
       .then((rows: { country?: { title?: string }; star?: string }[]) => {
         const dests = Array.from(
-          new Set(rows.map((j) => j.country?.title).filter(Boolean))
+          new Set(rows.map((j) => j.country?.title).filter(Boolean)),
         ) as string[];
         const lux = Array.from(
-          new Set(rows.map((j) => j.star).filter((s): s is string => !!s))
+          new Set(rows.map((j) => j.star).filter((s): s is string => !!s)),
         );
         setDestinations(dests);
         setLuxuryLevels(lux);

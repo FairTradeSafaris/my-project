@@ -2,8 +2,8 @@
 
 /* 🌗 Theme Variables */
 :root {
-  --background: #e6d8c7;
-  --background-rgb: 230, 216, 199;
+  --background: transparent;
+
   --foreground: #2c2c2c;
   --accent: #5a3e2b;
   --surface: #f4eee7;
@@ -13,7 +13,7 @@
 /* Apply theme globally */
 html,
 body {
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
   height: 100%;
   margin: 0;

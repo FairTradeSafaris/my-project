@@ -159,18 +159,18 @@ export default async function Home() {
               Your Journey Starts Here
             </h2>
 
-            <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto mb-6">
+            <p className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto mb-12">
               Handpicked safari experiences designed for travelers who value
-              purpose, privacy, and unforgettable wildlife encounters.
+              purpose, privacy, and unforgettable wildlife encounters. Explore
+              our{" "}
+              <Link
+                href="/luxury-african-safaris/"
+                className="font-semibold underline hover:text-black"
+              >
+                luxury African safaris
+              </Link>{" "}
+              for premium, tailor-made journeys across East and Southern Africa.
             </p>
-
-            {/* 👉 ADD THIS */}
-            <Link
-              href="/luxury-african-safaris/"
-              className="font-semibold underline hover:text-black"
-            >
-              luxury African safaris
-            </Link>
           </div>
 
           {/* Cards Grid */}

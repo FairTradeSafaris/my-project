@@ -47,6 +47,7 @@ import teamPage from '../schemas/teamPage'
 import category from '../schemas/category'
 import safariBuilderBlock from '../schemas/blocks/safariBuilderBlock'
 import bestTimeSection from '../schemas/bestTimeSection'
+import bestTimeBlock from '../schemas/blocks/bestTimeBlock'
 
 export const schemaTypes = [
   blog,
@@ -93,6 +94,7 @@ export const schemaTypes = [
   tag,
   imageOrGallery,
   leadMagnetPopup,
+  bestTimeBlock,
   pillarPage,
   teamPage,
   category,

@@ -158,8 +158,23 @@ export type JourneyStepsBlock = {
 export type BestTimeBlock = {
   _type: "bestTimeBlock";
   section: {
-    _ref: string;
-    _type: "reference";
+    title?: string;
+    intro?: string;
+    note?: string;
+    regions?: {
+      region?: {
+        title?: string;
+      };
+      periods?: {
+        startMonth: number;
+        endMonth: number;
+        label?: string;
+        description?: string;
+        seasonType?: string;
+        priority?: number;
+        highlight?: boolean;
+      }[];
+    }[];
   };
 };
 

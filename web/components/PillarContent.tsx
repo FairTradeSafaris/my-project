@@ -329,8 +329,116 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             );
           }
           case "bestTimeBlock": {
-            console.log("Best Time Block:", block);
-            return null;
+            const section = block.section;
+            if (!section) return null;
+
+            const monthNames = [
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
+            ];
+
+            const formatRange = (start: number, end: number) => {
+              const startName = monthNames[start - 1];
+              const endName = monthNames[end - 1];
+              return `${startName} – ${endName}`;
+            };
+
+            return (
+              <section key={index} className="py-16 bg-[#fcfbf8]">
+                {/* HEADER */}
+                <Container>
+                  <div className="grid md:grid-cols-2 gap-10 items-start mb-12">
+                    <div>
+                      <h2 className="text-3xl md:text-[36px] font-medium tracking-tight leading-[1.2]">
+                        {section.title}
+                      </h2>
+                    </div>
+
+                    <div className="max-w-md">
+                      {section.intro && (
+                        <p className="text-base text-gray-600 leading-relaxed">
+                          {section.intro}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Container>
+
+                {/* FULL WIDTH IMAGE */}
+                <div className="my-8 w-full">
+                  <div className="w-full h-[220px] md:h-[260px] overflow-hidden">
+                    <img
+                      src="/images/best time.png"
+                      alt="Luxury African safari landscape"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+
+                {/* REGIONS */}
+                <Container>
+                  <div className="grid md:grid-cols-2 gap-10">
+                    {section.regions?.map((regionBlock, i) => (
+                      <div key={i} className="border-t border-neutral-200 pt-6">
+                        {/* REGION TITLE */}
+                        <h3 className="text-xl md:text-2xl font-semibold mb-4 tracking-tight">
+                          {regionBlock.region?.title}
+                        </h3>
+
+                        {/* PERIODS */}
+                        <div className="space-y-4">
+                          {regionBlock.periods
+                            ?.sort(
+                              (a, b) => (a.priority ?? 99) - (b.priority ?? 99),
+                            )
+                            .map((p, j) => (
+                              <div key={j} className="flex items-start gap-3">
+                                {/* MONTH */}
+                                <div className="min-w-[110px] text-xs font-semibold text-black">
+                                  {formatRange(p.startMonth, p.endMonth)}
+                                </div>
+
+                                {/* TEXT */}
+                                <div className="text-xs text-gray-600 leading-relaxed">
+                                  <span
+                                    className={`${p.highlight ? "text-black font-medium" : ""}`}
+                                  >
+                                    {p.label}
+                                  </span>
+                                  {p.description && (
+                                    <div className="text-gray-500 mt-0.5">
+                                      {p.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* NOTE */}
+                  {section.note && (
+                    <div className="mt-12 border-t border-neutral-200 pt-6 max-w-xl">
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {section.note}
+                      </p>
+                    </div>
+                  )}
+                </Container>
+              </section>
+            );
           }
           default:
             return null;

@@ -87,6 +87,30 @@ const query = groq`
         "width": asset->metadata.dimensions.width,
         "height": asset->metadata.dimensions.height
       }
+    },
+
+    // ✅ THIS IS THE IMPORTANT PART
+    _type == "bestTimeBlock" => {
+      ...,
+      section->{
+        title,
+        intro,
+        note,
+        regions[]{
+          region->{
+            title
+          },
+          periods[]{
+            startMonth,
+            endMonth,
+            label,
+            description,
+            seasonType,
+            priority,
+            highlight
+          }
+        }
+      }
     }
   }
 }

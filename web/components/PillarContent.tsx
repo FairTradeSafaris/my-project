@@ -77,9 +77,20 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                 />
 
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-center px-6">
-                  <h2 className="text-white text-4xl md:text-6xl font-semibold max-w-4xl">
-                    {block.text}
-                  </h2>
+                  <div className="flex flex-col items-center text-center gap-6">
+                    <h2 className="text-white text-4xl md:text-6xl font-semibold max-w-4xl">
+                      {block.text}
+                    </h2>
+
+                    {block.cta?.text && block.cta?.link && (
+                      <a
+                        href={block.cta.link}
+                        className="inline-block bg-white text-black px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
+                      >
+                        {block.cta.text}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </section>
             );
@@ -404,12 +415,12 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                             .map((p, j) => (
                               <div key={j} className="flex items-start gap-3">
                                 {/* MONTH */}
-                                <div className="min-w-[110px] text-xs font-semibold text-black">
+                                <div className="min-w-[110px] text-Xs font-semibold text-black">
                                   {formatRange(p.startMonth, p.endMonth)}
                                 </div>
 
                                 {/* TEXT */}
-                                <div className="text-xs text-gray-600 leading-relaxed">
+                                <div className="text-s text-gray-600 leading-relaxed">
                                   <span
                                     className={`${p.highlight ? "text-black font-medium" : ""}`}
                                   >

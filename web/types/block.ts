@@ -52,8 +52,12 @@ export type HeroBlock = {
   };
   text?: string;
   alignment?: string;
-};
 
+  cta?: {
+    text?: string;
+    link?: string;
+  };
+};
 // Optional older hero format
 export type HeroImageBlock = {
   _type: "heroImage";

@@ -69,6 +69,24 @@ export default defineType({
       group: 'content',
     }),
     defineField({
+      name: 'heroCTA',
+      title: 'Hero CTA Button',
+      type: 'object',
+      fields: [
+        {
+          name: 'text',
+          title: 'Button Text',
+          type: 'string',
+        },
+        {
+          name: 'link',
+          title: 'Button Link',
+          type: 'string',
+        },
+      ],
+      group: 'content',
+    }),
+    defineField({
       name: 'heroImage',
       title: 'Hero Banner',
       type: 'heroBlock',

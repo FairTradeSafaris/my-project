@@ -65,29 +65,29 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
 
           case "heroBlock": {
             const src = getUrl(block.image);
-            if (!src) return null;
 
             return (
               <section key={index} className="relative w-full h-[70vh]">
-                <Image
-                  src={src}
-                  alt={block.image?.alt ?? "Safari"}
-                  fill
-                  className="object-cover"
-                />
-
+                {src && (
+                  <Image
+                    src={src}
+                    alt={block.image?.alt ?? "Safari"}
+                    fill
+                    className="object-cover"
+                  />
+                )}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-center px-6">
                   <div className="flex flex-col items-center text-center gap-6">
                     <h2 className="text-white text-4xl md:text-6xl font-semibold max-w-4xl">
                       {block.text}
                     </h2>
 
-                    {block.cta?.text && block.cta?.link && (
+                    {block.heroCTA?.text && block.heroCTA?.link && (
                       <a
-                        href={block.cta.link}
+                        href={block.heroCTA.link}
                         className="inline-block bg-white text-black px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
                       >
-                        {block.cta.text}
+                        {block.heroCTA.text}
                       </a>
                     )}
                   </div>

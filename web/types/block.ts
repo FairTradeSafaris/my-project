@@ -53,7 +53,7 @@ export type HeroBlock = {
   text?: string;
   alignment?: string;
 
-  cta?: {
+  heroCTA?: {
     text?: string;
     link?: string;
   };

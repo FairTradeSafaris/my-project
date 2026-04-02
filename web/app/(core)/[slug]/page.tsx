@@ -45,7 +45,12 @@ const query = groq`
   },
 
   heroHeadline,
-  heroSubheadline,
+heroSubheadline,
+
+heroCTA {
+  text,
+  link
+},
 
   faq[]->{
     question,
@@ -268,6 +273,15 @@ export default async function CorePage({
                 <p className="mt-5 max-w-2xl text-white/90 text-base sm:text-lg leading-relaxed">
                   {subheadline}
                 </p>
+              )}
+
+              {data?.heroCTA?.text && data?.heroCTA?.link && (
+                <a
+                  href={data.heroCTA.link}
+                  className="inline-block mt-8 bg-white text-black px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
+                >
+                  {data.heroCTA.text}
+                </a>
               )}
             </div>
           </div>

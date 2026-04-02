@@ -1,9 +1,5 @@
 import {StructureBuilder} from 'sanity/desk'
-
-// ✅ Existing imports
 import filterLabels from './schemas/settings/filterLabels'
-
-// ✅ NEW import
 import leadMagnetPopup from './schemas/leadMagnetPopup'
 
 export const myStructure = (S: StructureBuilder) =>
@@ -171,7 +167,12 @@ export const myStructure = (S: StructureBuilder) =>
         .child(
           S.list()
             .title('Trips & Experiences')
-            .items([S.documentTypeListItem('trip').title('Trip Info')]),
+            .items([
+              S.documentTypeListItem('trip').title('Trip Info'),
+
+              // ✅ NEW: Best Time Section
+              S.documentTypeListItem('bestTimeSection').title('Best Time Section'),
+            ]),
         ),
 
       // ❓ FAQs

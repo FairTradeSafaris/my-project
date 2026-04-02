@@ -46,6 +46,7 @@ import pillarPage from '../schemas/pillarPage'
 import teamPage from '../schemas/teamPage'
 import category from '../schemas/category'
 import safariBuilderBlock from '../schemas/blocks/safariBuilderBlock'
+import bestTimeSection from '../schemas/bestTimeSection'
 
 export const schemaTypes = [
   blog,
@@ -96,4 +97,5 @@ export const schemaTypes = [
   teamPage,
   category,
   safariBuilderBlock,
+  bestTimeSection,
 ]

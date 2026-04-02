@@ -105,6 +105,7 @@ export default defineType({
         {type: 'zohoForm'},
         {type: 'smartCarousel'},
         {type: 'safariBuilderBlock'}, // 👈 ADD THIS LINE
+        {type: 'bestTimeBlock'},
       ],
       group: 'content',
     }),

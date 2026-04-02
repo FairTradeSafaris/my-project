@@ -60,6 +60,9 @@ import leadMagnetPopup from './schemas/leadMagnetPopup'
 import pillarPage from './schemas/pillarPage'
 import teamPage from './schemas/teamPage'
 import category from './schemas/category'
+import safariBuilderBlock from './schemas/blocks/safariBuilderBlock'
+import bestTimeSection from './schemas/bestTimeSection'
+
 const schemaTypes = [
   blog,
   comments,
@@ -120,6 +123,8 @@ const schemaTypes = [
   pillarPage,
   teamPage,
   category,
+  safariBuilderBlock,
+  bestTimeSection,
 ]
 
 export default schemaTypes

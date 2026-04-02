@@ -328,6 +328,10 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               </section>
             );
           }
+          case "bestTimeBlock": {
+            console.log("Best Time Block:", block);
+            return null;
+          }
           default:
             return null;
         }

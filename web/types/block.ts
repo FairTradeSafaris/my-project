@@ -155,6 +155,14 @@ export type JourneyStepsBlock = {
   }[];
 };
 
+export type BestTimeBlock = {
+  _type: "bestTimeBlock";
+  section: {
+    _ref: string;
+    _type: "reference";
+  };
+};
+
 // Unified block type
 export type Block =
   | HeroBlock
@@ -170,4 +178,5 @@ export type Block =
   | SmartCarouselBlock
   | TableBlock
   | JourneyStepsBlock
-  | SafariBuilderBlock;
+  | SafariBuilderBlock
+  | BestTimeBlock;

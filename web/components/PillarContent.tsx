@@ -389,7 +389,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                 <div className="my-8 w-full">
                   <div className="w-full h-[220px] md:h-[260px] overflow-hidden">
                     <img
-                      src="/images/best time.png"
+                      src="/images/best-time.png"
                       alt="Luxury African safari landscape"
                       className="w-full h-full object-cover"
                     />

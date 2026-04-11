@@ -15,6 +15,12 @@ type HeroData = {
   subheadline?: string;
   primaryCTA?: string;
   secondaryCTA?: string;
+
+  primaryLink?: {
+    href: string;
+    label: string;
+  };
+
   backgroundImages?: Array<{
     alt?: string;
     asset?: { _ref?: string; _type?: string; url?: string };
@@ -129,25 +135,42 @@ export default function ClientLayout({
       try {
         const data = await client.fetch(
           `{
-            "items": [
-              ...*[_type == "hero" && (scope == $k || (scope == "custom" && customScope == $k))]{
-                headline, subheadline, primaryCTA, secondaryCTA, action,
-backgroundImages[] {
-  alt,
-  desktopImage { asset-> },
-  mobileImage { asset-> }
-}
+    "items": [
+      ...*[_type == "hero" && (scope == $k || (scope == "custom" && customScope == $k))]{
+        headline,
+        subheadline,
+        primaryCTA,
+        secondaryCTA,
+        action,
+        primaryLink {
+          href,
+          label
+        },
+        backgroundImages[] {
+          alt,
+          desktopImage { asset-> },
+          mobileImage { asset-> }
+        }
+      }[0...1],
 
-              }[0...1],
-              ...*[_type == "hero" && scope == "default"]{
-                headline, subheadline, primaryCTA, secondaryCTA, action,
-backgroundImages[] {
-  alt,
-  desktopImage { asset-> },
-  mobileImage { asset-> }
-}}[0...1]
-            ]
-          }`,
+      ...*[_type == "hero" && scope == "default"]{
+        headline,
+        subheadline,
+        primaryCTA,
+        secondaryCTA,
+        action,
+        primaryLink {
+          href,
+          label
+        },
+        backgroundImages[] {
+          alt,
+          desktopImage { asset-> },
+          mobileImage { asset-> }
+        }
+      }[0...1]
+    ]
+  }`,
           { k: pageKey },
         );
         console.log(
@@ -183,6 +206,7 @@ backgroundImages[] {
           subheadline: h.subheadline ?? undefined,
           primaryCTA: h.primaryCTA ?? undefined,
           secondaryCTA: h.secondaryCTA ?? undefined,
+          primaryLink: h.primaryLink ?? undefined,
           backgroundImages: chosen,
           action: h.action ?? undefined,
         });

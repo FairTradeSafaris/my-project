@@ -73,8 +73,4 @@ module.exports = {
       { userAgent: "CCBot", allow: "/" },
     ],
   },
-
-  transformRobotsTxt: async (robotsTxt) => {
-    return `Host: https://www.fairtradesafaris.com\n\n${robotsTxt}`;
-  },
 };

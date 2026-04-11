@@ -2,6 +2,7 @@ import { client as sanity } from "@/lib/sanity";
 import type { Metadata } from "next";
 import JourneyPageWrapper from "../../components/JourneyPageWrapper";
 import Script from "next/script";
+import Link from "next/link";
 
 type JourneyItem = {
   title: string;
@@ -175,11 +176,17 @@ export default function JourneyPage() {
             Safari. Reimagined.
           </h1>
           <p className="text-lg sm:text-xl leading-relaxed mb-5 text-gray-700">
-            Let’s turn your dream safari into a reality — with tailor-made
-            Africa safari packages designed around your travel style, values,
-            and sense of adventure. Our ethical safaris blend once-in-a-lifetime
-            wildlife encounters, immersive local culture, and sustainable luxury
-            across East and Southern Africa.{" "}
+            Let’s turn your dream safari into a reality — with{" "}
+            <Link
+              href="/luxury-african-safaris/"
+              className="text-[#00473e] font-medium underline hover:text-[#00755e] transition-colors duration-200"
+            >
+              tailor-made African safari packages
+            </Link>{" "}
+            designed around your travel style, values, and sense of adventure.
+            Our ethical safaris blend once-in-a-lifetime wildlife encounters,
+            immersive local culture, and sustainable luxury across East and
+            Southern Africa.{" "}
             <a
               href="https://bookings.fairtradesafaris.com/"
               className="inline-block mt-1 text-[#00473e] font-medium underline hover:text-[#00755e] transition-colors duration-200"

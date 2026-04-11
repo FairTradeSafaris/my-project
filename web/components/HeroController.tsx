@@ -7,6 +7,7 @@ import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { client as sanityClient } from "@/lib/sanity";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import Link from "next/link";
 
 /* -------------------- MultiSelectDropdown -------------------- */
 function MultiSelectDropdown({
@@ -104,6 +105,10 @@ export type HeroData = {
         mobileImage?: SanityImageSource | { asset?: { url?: string } };
       }
   >;
+  primaryLink?: {
+    href: string;
+    label: string;
+  };
 };
 /* -------------------------------- */
 
@@ -130,6 +135,10 @@ type HeroDoc = {
   backgroundImages?: (HeroAssetLegacy | HeroAssetResponsive)[];
   primaryCTA?: string;
   secondaryCTA?: string;
+  primaryLink?: {
+    href: string;
+    label: string;
+  };
 };
 
 type ActionMode = NonNullable<HeroDoc["action"]>;
@@ -218,6 +227,7 @@ function HeroView({
   children,
   variant = "banner",
   alt,
+  primaryLink,
 }: {
   bgUrlDesktop?: string;
   bgUrlMobile?: string;
@@ -227,6 +237,10 @@ function HeroView({
   children?: React.ReactNode;
   variant?: "home" | "banner";
   alt?: string;
+  primaryLink?: {
+    href: string;
+    label: string;
+  };
 }) {
   const isHome = variant === "home";
   const desktopSrc = bgUrlDesktop || bgUrlMobile || "/sunset-safari.webp";
@@ -287,12 +301,29 @@ function HeroView({
         )}
 
         {sub && (
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-xl mb-2 md:mb-4 leading-snug drop-shadow">
-            {sub}
-          </p>
+          <>
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-xl mb-2 leading-snug drop-shadow">
+              {sub}
+            </p>
+          </>
         )}
 
-        {children && <div className="mt-3 w-full max-w-5xl">{children}</div>}
+        {children && (
+          <div className="mt-3 w-full max-w-5xl text-center">
+            {children}
+
+            {primaryLink && (
+              <div className="mt-6">
+                <Link
+                  href={primaryLink.href}
+                  className="inline-block px-5 py-2.5 bg-white/10 backdrop-blur-md border border-white/30 rounded-full text-white font-semibold hover:bg-white/20 transition"
+                >
+                  {primaryLink.label} →
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -406,6 +437,7 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
       )[],
       primaryCTA: heroData.primaryCTA,
       secondaryCTA: heroData.secondaryCTA,
+      primaryLink: heroData.primaryLink,
     };
 
     setHero(doc);
@@ -469,7 +501,8 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
       pageLabel={hero.pageLabel}
       headline={hero.headline}
       sub={hero.subheadline}
-      variant={isHome ? "home" : "banner"} // 👈 THIS LINE MATTERS
+      primaryLink={hero.primaryLink}
+      variant={isHome ? "home" : "banner"}
     >
       {showHomeFilters && (
         <>

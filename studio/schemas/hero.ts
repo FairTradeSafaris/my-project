@@ -118,6 +118,25 @@ export default defineType({
     defineField({name: 'primaryCTA', title: 'Primary Button Text', type: 'string'}),
     defineField({name: 'secondaryCTA', title: 'Secondary Button Text', type: 'string'}),
     defineField({
+      name: 'primaryLink',
+      title: 'Primary Link',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'label',
+          title: 'Link Text',
+          type: 'string',
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+          name: 'href',
+          title: 'URL',
+          type: 'string',
+          validation: (Rule) => Rule.required(),
+        }),
+      ],
+    }),
+    defineField({
       name: 'metaTitle',
       title: 'Meta Title',
       type: 'string',

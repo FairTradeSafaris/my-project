@@ -170,46 +170,57 @@ export default function JourneyPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <div className="bg-[#f9f7f4] py-12 sm:py-16 px-6 sm:px-10 lg:px-24 text-gray-800 font-poppins">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight mb-6">
+      <div className="bg-[#f9f7f4] py-10 sm:py-16 px-5 sm:px-10 lg:px-24 text-gray-800 font-poppins">
+        <div className="max-w-3xl lg:max-w-5xl mx-auto">
+          {/* Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-semibold tracking-tight mb-5 sm:mb-6 leading-tight">
             Safari. Reimagined.
           </h1>
-          <p className="text-lg sm:text-xl leading-relaxed mb-5 text-gray-700">
-            Let’s turn your dream safari into a reality — with{" "}
-            <Link
-              href="/luxury-african-safaris/"
-              className="text-[#00473e] font-medium underline hover:text-[#00755e] transition-colors duration-200"
-            >
-              tailor-made African safari packages
-            </Link>{" "}
-            designed around your travel style, values, and sense of adventure.
-            Our ethical safaris blend once-in-a-lifetime wildlife encounters,
-            immersive local culture, and sustainable luxury across East and
-            Southern Africa.{" "}
-            <a
-              href="https://bookings.fairtradesafaris.com/"
-              className="inline-block mt-1 text-[#00473e] font-medium underline hover:text-[#00755e] transition-colors duration-200"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Start planning now.
-            </a>
-          </p>
-          <p className="text-lg sm:text-xl leading-relaxed mb-3 text-gray-700">
-            These aren’t just trips — they’re{" "}
-            <span className="text-gray-900 font-medium">
-              handcrafted journeys
-            </span>{" "}
-            rooted in purpose, powered by people, and alive with the spirit of
-            Africa.
-          </p>
-          <p className="text-lg sm:text-xl leading-relaxed text-gray-700">
-            Whether you crave <span className="italic">untamed wilderness</span>
-            , <span className="italic">cultural depth</span>, or{" "}
-            <span className="italic">barefoot luxury</span>, we’ll design a
-            tailor-made experience that gives back at every step.
-          </p>
+
+          {/* Content */}
+          <div className="space-y-5 sm:space-y-6 text-gray-700">
+            {/* Lead */}
+            <p className="text-base sm:text-xl leading-relaxed">
+              Let’s turn your dream safari into a reality — with{" "}
+              <Link
+                href="/luxury-african-safaris/"
+                className="text-[#00473e] font-medium underline hover:text-[#00755e] transition-colors duration-200"
+              >
+                tailor-made African safari packages
+              </Link>{" "}
+              designed around your travel style, values, and sense of adventure.
+              Our ethical safaris blend once-in-a-lifetime wildlife encounters,
+              immersive local culture, and sustainable luxury across East and
+              Southern Africa.{" "}
+              <a
+                href="https://bookings.fairtradesafaris.com/"
+                className="inline-block mt-2 text-[#00473e] font-medium underline hover:text-[#00755e] transition-colors duration-200"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Start planning now.
+              </a>
+            </p>
+
+            {/* Supporting */}
+            <p className="text-[15px] sm:text-lg leading-relaxed text-gray-600">
+              These aren’t just trips — they’re{" "}
+              <span className="text-gray-900 font-medium">
+                handcrafted journeys
+              </span>{" "}
+              rooted in purpose, powered by people, and alive with the spirit of
+              Africa.
+            </p>
+
+            {/* Tertiary */}
+            <p className="text-[15px] sm:text-lg leading-relaxed text-gray-600">
+              Whether you crave{" "}
+              <span className="italic">untamed wilderness</span>,{" "}
+              <span className="italic">cultural depth</span>, or{" "}
+              <span className="italic">barefoot luxury</span>, we’ll design a
+              tailor-made experience that gives back at every step.
+            </p>
+          </div>
         </div>
       </div>
 

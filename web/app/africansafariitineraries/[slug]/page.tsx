@@ -9,6 +9,7 @@ import Link from "next/link";
 import JourneyCard from "@/components/JourneyCard";
 
 import type { PortableTextBlock } from "@portabletext/types";
+import { PortableText } from "@portabletext/react";
 
 /* ================= TYPES ================= */
 
@@ -31,6 +32,7 @@ type Journey = {
   title: string;
   slug: { current: string };
   summary?: string;
+  summaryRich?: PortableTextBlock[];
   duration?: string;
   price?: number;
   heroImage?: { asset?: { url: string } };
@@ -50,6 +52,7 @@ const JOURNEY_QUERY = groq`
     title,
     slug,
     summary,
+summaryRich,
     duration,
     price,
     heroImage{asset->{url}},
@@ -245,6 +248,7 @@ export default async function Page({
               >
                 Start My Safari
               </Link>
+
               {journey.wetuLink && (
                 <a
                   href={journey.wetuLink}
@@ -258,9 +262,54 @@ export default async function Page({
             </div>
           </div>
         </section>
+        {journey.summaryRich && (
+          <section className="bg-white py-8">
+            <div className="max-w-4xl mx-auto px-6">
+              <h2 className="text-2xl md:text-3xl font-semibold mb-1">
+                {journey.title} Safari Overview
+              </h2>
 
+              <div className="prose prose-lg max-w-none">
+                <PortableText
+                  value={journey.summaryRich}
+                  components={{
+                    block: {
+                      normal: ({ children }) => (
+                        <p className="mb-6 text-lg leading-relaxed text-gray-700">
+                          {children}
+                        </p>
+                      ),
+                      h2: ({ children }) => (
+                        <h2 className="text-2xl font-semibold mt-10 mb-4">
+                          {children}
+                        </h2>
+                      ),
+                      h3: ({ children }) => (
+                        <h3 className="text-xl font-semibold mt-8 mb-3">
+                          {children}
+                        </h3>
+                      ),
+                    },
+                    list: {
+                      bullet: ({ children }) => (
+                        <ul className="list-disc pl-6 space-y-2 mt-4">
+                          {children}
+                        </ul>
+                      ),
+                    },
+                    listItem: {
+                      bullet: ({ children }) => (
+                        <li className="text-gray-700 text-lg">{children}</li>
+                      ),
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </section>
+        )}
         {journey.wetuLink && (
-          <section className="bg-white py-16">
+          <section className="bg-white py-8">
             <div className="max-w-6xl mx-auto px-4">
               <h2 className="text-2xl md:text-3xl font-semibold text-center mb-6">
                 Full Safari Itinerary

@@ -300,6 +300,11 @@
     "source": "/tag/vacation"
   },
   {
+    "destination": "/videoTestimonial/",
+    "permanent": true,
+    "source": "/videoTestimonials/"
+  },
+  {
     "destination": "/blog",
     "permanent": true,
     "source": "/news/top-10-adventure-activities-and-destinations-in-southern-africa"

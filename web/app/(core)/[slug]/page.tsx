@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import PillarContent from "@/components/PillarContent";
 import SafariLoader from "@/components/SafariLoader";
 import Link from "next/link";
+import Script from "next/script";
 
 export const revalidate = 0;
 
@@ -204,8 +205,10 @@ export default async function CorePage({
       <main className="bg-white text-black min-h-screen relative">
         {/* AI Article Schema */}
         {data.aiSummary && (
-          <script
+          <Script
+            id="article-schema"
             type="application/ld+json"
+            strategy="beforeInteractive"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
                 "@context": "https://schema.org",
@@ -223,8 +226,10 @@ export default async function CorePage({
 
         {/* FAQ Schema */}
         {faqs.length > 0 && (
-          <script
+          <Script
+            id="faq-schema"
             type="application/ld+json"
+            strategy="beforeInteractive"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
                 "@context": "https://schema.org",

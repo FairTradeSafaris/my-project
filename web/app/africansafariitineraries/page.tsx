@@ -65,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "https://www.fairtradesafaris.com/default-journey.jpg",
     offers: {
       "@type": "Offer",
-      url: `${canonical}?q=${encodeURIComponent(journey.title)}`,
+      url: `${canonical}`,
       priceCurrency: "USD",
       price: journey.price?.toString() || "4000",
       availability: "https://schema.org/InStock",

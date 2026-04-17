@@ -67,7 +67,11 @@ module.exports = {
       "https://www.fairtradesafaris.com/journeys-sitemap.xml",
     ],
     policies: [
-      { userAgent: "*", allow: "/" },
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/*?q=", "/*&q=", "/*?open=", "/*&open="],
+      },
       { userAgent: "GPTBot", allow: "/" },
       { userAgent: "Google-Extended", allow: "/" },
       { userAgent: "CCBot", allow: "/" },

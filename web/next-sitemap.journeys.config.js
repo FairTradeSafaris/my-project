@@ -4,7 +4,7 @@ const getJourneyUrls = require("./scripts/get-journey-urls.js");
 
 module.exports = {
   siteUrl: "https://www.fairtradesafaris.com",
-  generateRobotsTxt: true,
+  generateRobotsTxt: false,
   sitemapBaseFileName: "journeys-sitemap",
   changefreq: "weekly",
   priority: 0.9,

@@ -1,9 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Host
-Host: https://www.fairtradesafaris.com
-
-# Sitemaps
-Sitemap: https://www.fairtradesafaris.com/journeys-sitemap.xml

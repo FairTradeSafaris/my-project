@@ -63,6 +63,9 @@ module.exports = {
   },
 
   robotsTxtOptions: {
+    transformRobotsTxt: async (config, robotsTxt) => {
+      return robotsTxt.replace(/Host: .*\n?/g, "");
+    },
     additionalSitemaps: [
       "https://www.fairtradesafaris.com/journeys-sitemap.xml",
     ],

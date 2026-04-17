@@ -1,0 +1,25 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /*?q=
+Disallow: /*&q=
+Disallow: /*?open=
+Disallow: /*&open=
+
+# GPTBot
+User-agent: GPTBot
+Allow: /
+
+# Google-Extended
+User-agent: Google-Extended
+Allow: /
+
+# CCBot
+User-agent: CCBot
+Allow: /
+
+# Host
+
+# Sitemaps
+Sitemap: https://www.fairtradesafaris.com/sitemap.xml
+Sitemap: https://www.fairtradesafaris.com/journeys-sitemap.xml

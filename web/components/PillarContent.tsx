@@ -62,7 +62,30 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
       {blocks?.map((block, index) => {
         switch (block._type) {
           /* HERO */
+          case "zohoForm": {
+            if (!block.iframeUrl) return null;
 
+            return (
+              <section
+                key={index}
+                className={`bg-white ${
+                  index === 0 ? "pt-16 pb-8" : "pt-8 pb-16"
+                }`}
+              >
+                <Container>
+                  <div className="w-full max-w-7xl mx-auto">
+                    <iframe
+                      src={block.iframeUrl}
+                      width="100%"
+                      height={block.height || 600}
+                      frameBorder="0"
+                      className="w-full"
+                    />
+                  </div>
+                </Container>
+              </section>
+            );
+          }
           case "heroBlock": {
             const src = getUrl(block.image);
 
@@ -97,7 +120,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
           }
           case "ctaCardGrid": {
             return (
-              <section key={index} className="py-16 bg-white">
+              <section key={index} className="bg-white py-6">
                 <Container>
                   {(block.title || block.intro) && (
                     <div className="max-w-2xl mb-10">
@@ -111,8 +134,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                       )}
                     </div>
                   )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                     {block.cards?.map((card, i) => {
                       console.log(card.image);
                       const src = getUrl(card.image);
@@ -122,7 +144,12 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                         : card.externalUrl || "#";
 
                       return (
-                        <div key={i} className="flex flex-col">
+                        <div
+                          key={i}
+                          className={`flex flex-col ${
+                            block.cards?.length === 1 ? "lg:col-span-2" : ""
+                          }`}
+                        >
                           {src && (
                             <div className="w-full mb-4">
                               <img
@@ -152,7 +179,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                           {card.ctaLabel && (
                             <a
                               href={href}
-                              className="mt-auto inline-block bg-teal-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-teal-700 transition"
+                              className="mt-auto inline-block bg-black text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
                             >
                               {card.ctaLabel}
                             </a>
@@ -176,9 +203,9 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               block.backgroundStyle === "neutral" ? "bg-[#f5f1ea]" : "bg-white";
 
             const paddingMap = {
-              default: "pt-20 pb-20",
-              top: "pt-20 pb-0",
-              bottom: "pt-0 pb-20",
+              default: "py-8",
+              top: "pt-8 pb-0",
+              bottom: "pt-0 pb-8",
               none: "",
             };
 
@@ -187,33 +214,34 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             return (
               <section key={index} className={`${padding} ${bg}`}>
                 <Container>
-                  <div className="grid md:grid-cols-2 gap-14 items-start">
+                  <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
+                    {/* IMAGE */}
                     {src && (
-                      <figure
-                        className={`max-w-[520px] ${isRight ? "order-2" : ""}`}
-                      >
-                        <Image
-                          src={src}
-                          alt={block.image?.alt ?? ""}
-                          width={900}
-                          height={600}
-                          className="rounded-xl w-full h-auto object-cover"
-                        />
+                      <div className={`${isRight ? "order-2" : ""}`}>
+                        <div className="relative w-full h-[420px] md:h-[480px] lg:h-[520px] overflow-hidden rounded-xl">
+                          <Image
+                            src={src}
+                            alt={block.image?.alt ?? ""}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
 
                         {(block.image?.caption || block.image?.credit) && (
-                          <figcaption className="text-sm text-gray-500 mt-2">
+                          <div className="text-sm text-gray-500 mt-3">
                             {block.image?.caption}
                             {block.image?.credit && (
                               <span className="block">
                                 {block.image.credit}
                               </span>
                             )}
-                          </figcaption>
+                          </div>
                         )}
-                      </figure>
+                      </div>
                     )}
 
-                    <div className={isRight ? "order-1" : ""}>
+                    {/* TEXT */}
+                    <div className={`max-w-xl ${isRight ? "order-1" : ""}`}>
                       <PortableText
                         value={block.text}
                         components={portableComponents}
@@ -255,7 +283,12 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
 
           case "galleryBlock": {
             return (
-              <section key={index} className="py-16 bg-white">
+              <section
+                key={index}
+                className={`bg-white ${
+                  index === 0 ? "pt-16 pb-8" : "pt-8 pb-16"
+                }`}
+              >
                 <Container>
                   <div className="grid md:grid-cols-3 gap-6">
                     {block.images?.map((img, i) => {
@@ -354,7 +387,12 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             if (!block.url) return null;
 
             return (
-              <section key={index} className="py-16 bg-white">
+              <section
+                key={index}
+                className={`bg-white ${
+                  index === 0 ? "pt-16 pb-8" : "pt-8 pb-16"
+                }`}
+              >
                 <Container>
                   <div className="w-full max-w-3xl mx-auto">
                     {block.caption && (

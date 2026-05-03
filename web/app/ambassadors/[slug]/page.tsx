@@ -276,7 +276,9 @@ export default async function AmbassadorProfilePage({
                     rel="noopener noreferrer"
                     className="relative group text-[#3c2a1e] hover:text-black transition"
                   >
-                    {s.platform.charAt(0).toUpperCase() + s.platform.slice(1)}
+                    {s.platform
+                      ? s.platform.charAt(0).toUpperCase() + s.platform.slice(1)
+                      : "Link"}
 
                     <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-[#5a3e2b] transition-all group-hover:w-full"></span>
                   </a>

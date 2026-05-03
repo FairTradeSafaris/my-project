@@ -8,19 +8,6 @@ export default function OurPromisePage() {
   return (
     <main className="min-h-screen bg-[#fdf8f3] text-black font-sans">
       <section className="px-5 sm:px-6 py-14 sm:py-16 md:py-20 max-w-5xl mx-auto space-y-12 sm:space-y-14 md:space-y-16">
-        {/* Breadcrumbs */}
-        <nav className="text-sm text-gray-600">
-          <ol className="flex flex-wrap items-center gap-2">
-            <li>
-              <Link href="/" className="hover:underline text-[#5c4033]">
-                Home
-              </Link>
-            </li>
-            <li>/</li>
-            <li className="text-gray-500">Founder’s Promise</li>
-          </ol>
-        </nav>
-
         {/* Header */}
         <div className="space-y-5 sm:space-y-6">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#5c4033]">

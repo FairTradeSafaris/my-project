@@ -1,19 +1,21 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import withPWA from "next-pwa";
 import type { NextConfig } from "next";
 import type { RemotePattern } from "next/dist/shared/lib/image-config";
+import redirectsData from "./public/redirects.json" with { type: "json" };
 
 import withBundleAnalyzerInit from "@next/bundle-analyzer";
-
+type RedirectItem = {
+  source: string;
+  destination: string;
+  permanent?: boolean;
+};
 const withBundleAnalyzer = withBundleAnalyzerInit({
-  enabled: false, // 🔕 Turned off
+  enabled: false,
 });
 
 const baseConfig: NextConfig = {
   reactStrictMode: true,
-  trailingSlash: true, // ✅ Enforce trailing slashes
+  trailingSlash: true,
 
   serverExternalPackages: ["@clerk/clerk-sdk-node"],
 
@@ -66,6 +68,31 @@ const baseConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "geolocation=(), microphone=()",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self';",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;",
+              "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https:;",
+              "style-src 'self' 'unsafe-inline' https:;",
+              "img-src 'self' data: blob: https:;",
+              "media-src 'self' https:;",
+              "connect-src 'self' https:;",
+              "font-src 'self' data: https:;",
+              "frame-src https:;",
+              "worker-src 'self' blob:;",
+            ].join(" "),
+          },
           {
             key: "Cache-Control",
             value: "public, max-age=0, must-revalidate",
@@ -76,20 +103,24 @@ const baseConfig: NextConfig = {
   },
 
   async redirects() {
+    const dynamicRedirects = (redirectsData as RedirectItem[]).map((r) => ({
+      source: r.source.endsWith("/") ? r.source : `${r.source}/`,
+      destination: r.destination.endsWith("/")
+        ? r.destination
+        : `${r.destination}/`,
+      permanent: r.permanent ?? true,
+    }));
+
     return [
-      // Redirect non-www to www
+      // 🌍 Force non-www → www
       {
         source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "fairtradesafaris.com",
-          },
-        ],
+        has: [{ type: "host", value: "fairtradesafaris.com" }],
         destination: "https://www.fairtradesafaris.com/:path*",
         permanent: true,
       },
-      // ✅ Optional: Redirect non-trailing slash to trailing slash (safety net)
+
+      // 🔁 Trailing slash safety
       {
         source: "/:path*",
         has: [
@@ -101,11 +132,31 @@ const baseConfig: NextConfig = {
         destination: "/:path*/",
         permanent: true,
       },
+
+      // ✅ CORE FIXES
+      {
+        source: "/destinations/:slug/",
+        destination: "/destination/:slug/",
+        permanent: true,
+      },
+      {
+        source: "/news/:path*/",
+        destination: "/blog/",
+        permanent: true,
+      },
+      {
+        source: "/adventure/:path*/",
+        destination: "/blog/",
+        permanent: true,
+      },
+
+      // 🚀 SANITY-DRIVEN REDIRECTS
+      ...dynamicRedirects,
     ];
   },
 };
 
-// Runtime caching config
+// PWA caching
 const runtimeCaching = [
   {
     urlPattern: ({ request }: { request: Request }) =>
@@ -148,7 +199,6 @@ const runtimeCaching = [
   },
 ];
 
-// Export wrapped config
 const finalConfig = withPWA({
   dest: "public",
   register: true,

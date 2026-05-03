@@ -63,6 +63,10 @@ import category from './schemas/category'
 import safariBuilderBlock from './schemas/blocks/safariBuilderBlock'
 import bestTimeSection from './schemas/bestTimeSection'
 import bestTimeBlock from './schemas/blocks/bestTimeBlock'
+import featuredJourneysSection from './schemas/featuredJourneysSection'
+import homePage from './schemas/homePage'
+import ctaCardGrid from './schemas/blocks/ctaCardGrid'
+import ctaCard from './schemas/objects/ctaCard'
 
 const schemaTypes = [
   blog,
@@ -127,6 +131,10 @@ const schemaTypes = [
   safariBuilderBlock,
   bestTimeSection,
   bestTimeBlock,
+  featuredJourneysSection,
+  homePage,
+  ctaCardGrid,
+  ctaCard,
 ]
 
 export default schemaTypes

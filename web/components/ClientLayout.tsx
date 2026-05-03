@@ -8,25 +8,6 @@ import { useBreakpoint } from "@/lib/useBreakpoint";
 import NavbarMobile from "@/components/NavbarMobile";
 import NavbarDesktop from "@/components/NavbarDesktop";
 import BottomTabBar from "@/components/BottomTabBar";
-import HeroController from "@/components/HeroController";
-
-type HeroData = {
-  headline?: string;
-  subheadline?: string;
-  primaryCTA?: string;
-  secondaryCTA?: string;
-
-  primaryLink?: {
-    href: string;
-    label: string;
-  };
-
-  backgroundImages?: Array<{
-    alt?: string;
-    asset?: { _ref?: string; _type?: string; url?: string };
-  }>;
-  action?: "none" | "homeFilters" | "typeSearch";
-};
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -57,30 +38,13 @@ export default function ClientLayout({
   const screenWidth = useBreakpoint();
 
   const hideUI = pathname?.toLowerCase() === "/project-portal";
-  const [pillarSlugs, setPillarSlugs] = useState<string[]>([]);
-  const showHero = useMemo(() => {
-    if (!pathname) return false;
-
-    const segments = pathname.split("/").filter(Boolean);
-
-    const isDetailPage = segments.length >= 2;
-
-    const firstSegment = segments[0];
-
-    if (segments.length === 1) {
-      // check dynamically from Sanity
-      if (pillarSlugs.includes(firstSegment)) return false;
-    }
-
-    return !isDetailPage;
-  }, [pathname, pillarSlugs]);
+  const [, setPillarSlugs] = useState<string[]>([]);
 
   const [hasMounted, setHasMounted] = useState(false);
   const [navSections, setNavSections] = useState<NavSection[]>([]);
   const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
   const [promoCard, setPromoCard] = useState<PromoCard | null>(null);
   const [ready, setReady] = useState(false);
-  const [heroData, setHeroData] = useState<HeroData | undefined>(undefined);
 
   const pageKey = useMemo(() => {
     if (!pathname) return "home";
@@ -126,106 +90,18 @@ export default function ClientLayout({
       }
     };
 
-    const fetchHeroData = async () => {
-      if (!showHero) {
-        setHeroData(undefined);
-        return;
-      }
-
-      try {
-        const data = await client.fetch(
-          `{
-    "items": [
-      ...*[_type == "hero" && (scope == $k || (scope == "custom" && customScope == $k))]{
-        headline,
-        subheadline,
-        primaryCTA,
-        secondaryCTA,
-        action,
-        primaryLink {
-          href,
-          label
-        },
-        backgroundImages[] {
-          alt,
-          desktopImage { asset-> },
-          mobileImage { asset-> }
-        }
-      }[0...1],
-
-      ...*[_type == "hero" && scope == "default"]{
-        headline,
-        subheadline,
-        primaryCTA,
-        secondaryCTA,
-        action,
-        primaryLink {
-          href,
-          label
-        },
-        backgroundImages[] {
-          alt,
-          desktopImage { asset-> },
-          mobileImage { asset-> }
-        }
-      }[0...1]
-    ]
-  }`,
-          { k: pageKey },
-        );
-        console.log(
-          "📥 Sanity hero data fetched:",
-          JSON.stringify(data, null, 2),
-        );
-
-        if (cancelled) return;
-
-        const h =
-          Array.isArray(data?.items) && data.items.length > 0
-            ? data.items[0]
-            : undefined;
-
-        if (!h) {
-          console.warn("⚠️ No hero data returned from Sanity!");
-          setHeroData(undefined);
-          return;
-        }
-
-        const imgs = Array.isArray(h.backgroundImages)
-          ? h.backgroundImages.filter(Boolean)
-          : [];
-        const chosen = imgs.length
-          ? [imgs[Math.floor(Math.random() * imgs.length)]]
-          : [];
-
-        console.log("📦 Setting heroData with hero object:", h);
-        console.log("🖼️ Hero images available:", imgs);
-
-        setHeroData({
-          headline: h.headline ?? undefined,
-          subheadline: h.subheadline ?? undefined,
-          primaryCTA: h.primaryCTA ?? undefined,
-          secondaryCTA: h.secondaryCTA ?? undefined,
-          primaryLink: h.primaryLink ?? undefined,
-          backgroundImages: chosen,
-          action: h.action ?? undefined,
-        });
-      } catch {
-        setHeroData(undefined);
-      }
-    };
     const fetchPillarSlugs = async () => {
       const slugs = await client.fetch(`*[_type == "pillarPage"].slug.current`);
       setPillarSlugs(slugs || []);
     };
     fetchMenuData();
-    fetchHeroData();
+
     fetchPillarSlugs();
 
     return () => {
       cancelled = true;
     };
-  }, [pageKey, showHero]);
+  }, [pageKey]);
 
   // 🔍 DEBUG LOGS
 
@@ -244,8 +120,6 @@ export default function ClientLayout({
           )}
         </>
       )}
-
-      {showHero && <HeroController heroData={heroData} />}
 
       <div>{children}</div>
 

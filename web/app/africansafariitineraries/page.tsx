@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import JourneyPageWrapper from "../../components/JourneyPageWrapper";
 import Script from "next/script";
 import Link from "next/link";
+import HeroController from "@/components/HeroController";
 
 type JourneyItem = {
   title: string;
@@ -17,6 +18,21 @@ type JourneyItem = {
     };
   };
 };
+const heroData = await sanity.fetch(`
+  *[_type == "hero" && customScope == "africansafariitineraries"][0]{
+    headline,
+    subheadline,
+    primaryCTA,
+    secondaryCTA,
+    action,
+    primaryLink { href, label },
+    backgroundImages[]{
+      alt,
+      desktopImage { asset-> },
+      mobileImage { asset-> }
+    }
+  }
+`);
 
 // 🔹 Rich SEO Metadata with AI-friendly Schema
 export async function generateMetadata(): Promise<Metadata> {
@@ -141,7 +157,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // 🔹 Main Component
-export default function JourneyPage() {
+export default async function JourneyPage() {
   // Breadcrumb structured data
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -170,7 +186,8 @@ export default function JourneyPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <div className="bg-[#f9f7f4] py-10 sm:py-16 px-5 sm:px-10 lg:px-24 text-gray-800 font-poppins">
+      <HeroController heroData={heroData} />
+      <div className="bg-[#f9f7f4] py-10 sm:py-8 px-5 sm:px-10 lg:px-24 text-gray-800 font-poppins">
         <div className="max-w-3xl lg:max-w-5xl mx-auto">
           {/* Headline */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-semibold tracking-tight mb-5 sm:mb-6 leading-tight">
@@ -184,7 +201,7 @@ export default function JourneyPage() {
               Let’s turn your dream safari into a reality — with{" "}
               <Link
                 href="/luxury-african-safaris/"
-                className="text-[#00473e] font-medium underline hover:text-[#00755e] transition-colors duration-200"
+                className="text-[#00473e] font-small underline hover:text-[#00755e] transition-colors duration-200"
               >
                 tailor-made African safari packages
               </Link>{" "}

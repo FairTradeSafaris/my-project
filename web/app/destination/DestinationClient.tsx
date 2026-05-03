@@ -233,35 +233,7 @@ export default function DestinationClient({
     <main className="relative bg-[var(--background)] text-[var(--foreground)]">
       {/* Mobile sticky chips */}
       {/* Elegant Intro Transition */}
-      {/* Breadcrumb */}
-      <div className="w-full bg-[#f2e7db] border-b border-black/5">
-        <div className="max-w-6xl mx-auto px-6 py-3 text-sm text-black/60">
-          <nav aria-label="Breadcrumb">
-            <ol className="flex items-center gap-2 flex-wrap">
-              <li>
-                <Link href="/" className="hover:text-black transition">
-                  Home
-                </Link>
-              </li>
-              <li>/</li>
-              <li>
-                <Link
-                  href="/destination/"
-                  className="hover:text-black transition"
-                >
-                  Destination
-                </Link>
-              </li>
-              {selected?.title && (
-                <>
-                  <li>/</li>
-                  <li className="text-black font-medium">{selected.title}</li>
-                </>
-              )}
-            </ol>
-          </nav>
-        </div>
-      </div>
+
       <section className="relative bg-gradient-to-b from-[#f8f5f0] to-[#f2e7db] py-8 md:py-12 border-b border-black/5">
         <div className="max-w-5xl mx-auto px-6 text-center">
           <h2 className="text-2xl md:text-3xl font-semibold text-[#2F3E46] tracking-wide">

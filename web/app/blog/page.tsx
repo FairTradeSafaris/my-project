@@ -3,7 +3,8 @@ import BlogGrid from "./BlogGrid";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import type { Metadata } from "next";
 import TagList from "@/components/TagList";
-import Link from "next/link";
+import HeroController from "@/components/HeroController";
+import { client as sanity } from "@/lib/sanity";
 // =============================
 // SEO + STRUCTURED DATA
 // =============================
@@ -75,6 +76,21 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+const heroData = await sanity.fetch(`
+  *[_type == "hero" && scope == "blog"][0]{
+    headline,
+    subheadline,
+    primaryCTA,
+    secondaryCTA,
+    action,
+    primaryLink { href, label },
+    backgroundImages[]{
+      alt,
+      desktopImage { asset-> },
+      mobileImage { asset-> }
+    }
+  }
+`);
 
 // =============================
 // PAGE
@@ -86,57 +102,34 @@ export default async function BlogPage() {
     getAllTags(),
   ]);
 
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Blog", href: "/blog" },
+  ];
+
   return (
-    <main className="min-h-screen bg-[#fdf8f3] text-black px-4 py-12">
-      <div className="max-w-6xl mx-auto">
-        {/* ============================= */}
-        {/* PHYSICAL BREADCRUMB */}
-        {/* ============================= */}
+    <>
+      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
 
-        <nav className="text-sm text-gray-600 mb-6">
-          <ol className="flex gap-2 flex-wrap">
-            <li>
-              <Link href="/" className="hover:underline">
-                Home
-              </Link>
-            </li>
-            <li>/</li>
-            <li className="text-gray-900 font-medium">Blog</li>
-          </ol>
-        </nav>
+      <main className="min-h-screen bg-[#fdf8f3] text-black px-4 py-12">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-extrabold mb-6 text-center">
+            Fair Trade Safaris Blog
+          </h1>
 
-        {/* ============================= */}
-        {/* H1 */}
-        {/* ============================= */}
+          <p className="text-center text-gray-700 max-w-3xl mx-auto mb-10">
+            Expert safari planning guides, African destination insights,
+            wildlife travel advice, ethical tourism knowledge, and in-depth
+            safari itineraries from the Fair Trade Safaris team.
+          </p>
 
-        <h1 className="text-4xl font-extrabold mb-6 text-center">
-          Fair Trade Safaris Blog
-        </h1>
+          <div className="mb-10">
+            <TagList tags={allTags} visibleCount={10} />
+          </div>
 
-        {/* ============================= */}
-        {/* AI-FRIENDLY INTRO */}
-        {/* ============================= */}
-
-        <p className="text-center text-gray-700 max-w-3xl mx-auto mb-10">
-          Expert safari planning guides, African destination insights, wildlife
-          travel advice, ethical tourism knowledge, and in-depth safari
-          itineraries from the Fair Trade Safaris team.
-        </p>
-
-        {/* ============================= */}
-        {/* TAG FILTER */}
-        {/* ============================= */}
-
-        <div className="mb-10">
-          <TagList tags={allTags} visibleCount={10} />
+          <BlogGrid posts={allPosts} enableSearch={true} />
         </div>
-
-        {/* ============================= */}
-        {/* BLOG GRID */}
-        {/* ============================= */}
-
-        <BlogGrid posts={allPosts} enableSearch={true} />
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

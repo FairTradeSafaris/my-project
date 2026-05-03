@@ -1,14 +1,17 @@
-// app/video-testimonials/page.tsx
-
 import { groq } from "next-sanity";
 import { freshClient as client } from "@/lib/sanityFresh";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import type { Metadata } from "next";
 import VideoTestimonials from "./VideoTestimonials";
-import Link from "next/link";
+
+import HeroController from "@/components/HeroController";
+import Script from "next/script";
+
 export const revalidate = 60;
 
-// ---------- GROQ QUERY ----------
+/* ===========================
+   QUERY
+=========================== */
 const TESTIMONIALS_QUERY = groq`
   *[_type == "videoTestimonial"] | order(_createdAt desc) {
     _id,
@@ -23,7 +26,9 @@ const TESTIMONIALS_QUERY = groq`
   }
 `;
 
-// ---------- Types ----------
+/* ===========================
+   TYPES
+=========================== */
 type Testimonial = {
   _id: string;
   name: string;
@@ -36,7 +41,9 @@ type Testimonial = {
   slug: string;
 };
 
-// ---------- SEO METADATA ----------
+/* ===========================
+   METADATA
+=========================== */
 export async function generateMetadata(): Promise<Metadata> {
   const { metadata } = await getSanityMetadata("videoTestimonial");
 
@@ -47,15 +54,39 @@ export async function generateMetadata(): Promise<Metadata> {
       metadata?.description ||
       "Hear directly from travelers who experienced ethical, luxury safari adventures with us.",
     alternates: {
-      canonical: "https://www.fairtradesafaris.com/videoTestimonial/",
+      canonical: "https://www.fairtradesafaris.com/video-testimonials/",
     },
   };
 }
 
-// ---------- Page Component ----------
-export default async function Page() {
-  const testimonials = await client.fetch<Testimonial[]>(TESTIMONIALS_QUERY);
+/* ===========================
+   HERO QUERY
+=========================== */
+const heroQuery = `
+  *[_type == "hero" && customScope == "videoTestimonial"][0]{
+    headline,
+    subheadline,
+    action,
+    backgroundImages[]{
+      alt,
+      desktopImage { asset-> },
+      mobileImage { asset-> }
+    }
+  }
+`;
 
+/* ===========================
+   PAGE
+=========================== */
+export default async function Page() {
+  const [heroData, testimonials] = await Promise.all([
+    client.fetch(heroQuery),
+    client.fetch<Testimonial[]>(TESTIMONIALS_QUERY),
+  ]);
+
+  /* ===========================
+     BREADCRUMB SCHEMA
+  =========================== */
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -70,35 +101,35 @@ export default async function Page() {
         "@type": "ListItem",
         position: 2,
         name: "Video Testimonials",
-        item: "https://www.fairtradesafaris.com/videoTestimonial/",
+        item: "https://www.fairtradesafaris.com/video-testimonials/",
       },
     ],
   };
 
   return (
-    <main className="px-6 py-16 max-w-6xl mx-auto">
-      {/* Structured Data */}
-      <script
+    <>
+      {/* STRUCTURED DATA */}
+      <Script
+        id="video-testimonials-breadcrumbs"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(breadcrumbSchema),
         }}
       />
 
-      {/* Visual Breadcrumb */}
-      <nav className="text-sm text-gray-500 mb-6">
-        <ol className="flex flex-wrap items-center space-x-2">
-          <li>
-            <Link href="/" className="hover:underline">
-              Home
-            </Link>
-          </li>
-          <li>/</li>
-          <li className="text-gray-700 font-medium">Video Testimonials</li>
-        </ol>
-      </nav>
+      {/* HERO */}
+      <HeroController
+        heroData={heroData ?? undefined}
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Video Testimonials", href: "/video-testimonials" },
+        ]}
+      />
 
-      <VideoTestimonials testimonials={testimonials} />
-    </main>
+      {/* CONTENT */}
+      <main className="px-6 py-16 max-w-6xl mx-auto">
+        <VideoTestimonials testimonials={testimonials} />
+      </main>
+    </>
   );
 }

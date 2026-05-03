@@ -228,6 +228,7 @@ function HeroView({
   variant = "banner",
   alt,
   primaryLink,
+  breadcrumbs,
 }: {
   bgUrlDesktop?: string;
   bgUrlMobile?: string;
@@ -241,6 +242,7 @@ function HeroView({
     href: string;
     label: string;
   };
+  breadcrumbs?: { label: string; href: string }[];
 }) {
   const isHome = variant === "home";
   const desktopSrc = bgUrlDesktop || bgUrlMobile || "/sunset-safari.webp";
@@ -279,11 +281,24 @@ function HeroView({
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
 
       <div className="relative z-20 flex flex-col items-center justify-center text-center px-4 h-full text-white">
+        {breadcrumbs && (
+          <div className="mb-3 text-sm text-white/80">
+            {breadcrumbs.map((item, i) => (
+              <span key={item.href}>
+                {i > 0 && " / "}
+                <Link href={item.href} className="hover:underline">
+                  {item.label}
+                </Link>
+              </span>
+            ))}
+          </div>
+        )}
         {pageLabel && (
           <span className="uppercase tracking-wide text-white/80 text-xs md:text-sm mb-1">
             {pageLabel}
           </span>
         )}
+
         {headline ? (
           <h1
             className={`font-extrabold leading-tight ${
@@ -397,12 +412,27 @@ function deriveBgUrls(items?: HeroData["backgroundImages"]): {
 
   // Legacy single image
   const legacy = first as HeroAssetLegacy;
-  const legacyUrl = toUrl(legacy.asset ?? null);
-  return { desktop: legacyUrl, mobile: legacyUrl, alt: legacy.alt };
+
+  const directUrl =
+    typeof legacy?.asset === "object" && legacy.asset && "url" in legacy.asset
+      ? legacy.asset.url
+      : undefined;
+
+  return {
+    desktop: directUrl,
+    mobile: directUrl,
+    alt: legacy.alt,
+  };
 }
 
 /* -------------------- Controller -------------------- */
-export default function HeroController({ heroData }: { heroData?: HeroData }) {
+export default function HeroController({
+  heroData,
+  breadcrumbs,
+}: {
+  heroData?: HeroData;
+  breadcrumbs?: { label: string; href: string }[];
+}) {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
@@ -490,11 +520,13 @@ export default function HeroController({ heroData }: { heroData?: HeroData }) {
   }
 
   const action: ActionMode = hero.action || "none";
+  console.log("🎯 HERO ACTION:", action);
   const showHomeFilters = action === "homeFilters";
   const showTypeSearch = action === "typeSearch";
 
   return (
     <HeroView
+      breadcrumbs={breadcrumbs}
       bgUrlDesktop={bgDesktop}
       bgUrlMobile={bgMobile}
       alt={heroData?.backgroundImages?.[0]?.alt}

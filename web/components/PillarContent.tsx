@@ -95,6 +95,76 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               </section>
             );
           }
+          case "ctaCardGrid": {
+            return (
+              <section key={index} className="py-16 bg-white">
+                <Container>
+                  {(block.title || block.intro) && (
+                    <div className="max-w-2xl mb-10">
+                      {block.title && (
+                        <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+                          {block.title}
+                        </h2>
+                      )}
+                      {block.intro && (
+                        <p className="text-gray-600 text-lg">{block.intro}</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {block.cards?.map((card, i) => {
+                      console.log(card.image);
+                      const src = getUrl(card.image);
+
+                      const href = card.internalLink?.slug?.current
+                        ? `/${card.internalLink.slug.current}`
+                        : card.externalUrl || "#";
+
+                      return (
+                        <div key={i} className="flex flex-col">
+                          {src && (
+                            <div className="w-full mb-4">
+                              <img
+                                src={src}
+                                alt={card.title}
+                                className="rounded-lg w-full h-[240px] object-cover"
+                              />
+                            </div>
+                          )}
+
+                          {card.eyebrow && (
+                            <span className="text-sm text-gray-500 mb-1">
+                              {card.eyebrow}
+                            </span>
+                          )}
+
+                          <h3 className="text-xl font-semibold mb-2">
+                            {card.title}
+                          </h3>
+
+                          {card.description && (
+                            <p className="text-gray-600 mb-4">
+                              {card.description}
+                            </p>
+                          )}
+
+                          {card.ctaLabel && (
+                            <a
+                              href={href}
+                              className="mt-auto inline-block bg-teal-600 text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-teal-700 transition"
+                            >
+                              {card.ctaLabel}
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Container>
+              </section>
+            );
+          }
 
           /* TEXT + IMAGE */
 

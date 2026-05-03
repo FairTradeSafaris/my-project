@@ -2,11 +2,12 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Script from "next/script";
-import Link from "next/link";
 import { client } from "@/lib/sanity";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import AmbassadorCard from "@/components/AmbassadorCard";
 import type { Ambassador } from "@/types/ambassador";
+import HeroController from "@/components/HeroController";
+import { client as sanity } from "@/lib/sanity";
 
 // -----------------------------------------
 // Metadata from CMS (SEO)
@@ -85,8 +86,28 @@ export default async function AmbassadorsPage() {
     sameAs: amb.socials?.map((s) => s.url).filter(Boolean),
   }));
 
+  const heroData = await sanity.fetch(`
+  *[_type == "hero" && customScope == "ambassadors"][0]{
+    headline,
+    subheadline,
+    primaryCTA,
+    secondaryCTA,
+    action,
+    primaryLink { href, label },
+    backgroundImages[]{
+      alt,
+      desktopImage { asset-> },
+      mobileImage { asset-> }
+    }
+  }
+`);
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Ambassadors", href: "/ambassadors" },
+  ];
   return (
     <main className="bg-[#fdf8f3] text-black min-h-screen">
+      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
       {/* Structured Data */}
       {structuredData && (
         <Script
@@ -132,22 +153,6 @@ export default async function AmbassadorsPage() {
           __html: JSON.stringify(personSchema),
         }}
       />
-
-      {/* Breadcrumb UI */}
-      <nav
-        className="max-w-7xl mx-auto px-6 pt-8 text-sm text-gray-600"
-        aria-label="Breadcrumb"
-      >
-        <ol className="flex">
-          <li>
-            <Link href="/" className="hover:underline text-[#5a3e2b]">
-              Home
-            </Link>
-          </li>
-          <li className="mx-2 text-gray-400">/</li>
-          <li className="text-gray-500">Ambassadors</li>
-        </ol>
-      </nav>
 
       {/* Intro Section */}
       <section className="max-w-3xl mx-auto px-6 pt-12 pb-6 text-center">

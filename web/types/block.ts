@@ -182,6 +182,26 @@ export type BestTimeBlock = {
   };
 };
 
+export type CtaCardGridBlock = {
+  _type: "ctaCardGrid";
+  title?: string;
+  intro?: string;
+  cards: {
+    image?: SanityImage;
+    eyebrow?: string;
+    title: string;
+    description?: string;
+    ctaLabel: string;
+    internalLink?: {
+      _type: string;
+      slug?: {
+        current?: string;
+      };
+    };
+    externalUrl?: string;
+  }[];
+};
+
 // Unified block type
 export type Block =
   | HeroBlock
@@ -198,4 +218,5 @@ export type Block =
   | TableBlock
   | JourneyStepsBlock
   | SafariBuilderBlock
-  | BestTimeBlock;
+  | BestTimeBlock
+  | CtaCardGridBlock;

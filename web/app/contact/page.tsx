@@ -7,6 +7,7 @@ import ContactPageClient from "./ContactPageClient";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import Script from "next/script";
 import Link from "next/link";
+import HeroController from "@/components/HeroController";
 
 export const revalidate = 60;
 
@@ -49,26 +50,35 @@ export default async function ContactPage() {
       },
     ],
   };
-
+  const heroData = await sanity.fetch(`
+*[_type == "hero" && customScope == "contact"][0]{
+  headline,
+  subheadline,
+  primaryCTA,
+  secondaryCTA,
+  action,
+  primaryLink { href, label },
+  backgroundImages[]{
+    alt,
+    desktopImage { asset-> },
+    mobileImage { asset-> }
+  }
+}
+`);
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Contact", href: "/contact" },
+  ];
   return (
     <>
+      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
+
       {/* Inject Breadcrumb structured data for SEO */}
       <Script
         id="contact-breadcrumbs"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-
-      {/* Visible breadcrumb for users */}
-      <div className="max-w-6xl mx-auto px-4 pt-2">
-        <nav className="text-sm text-gray-600 mb-2">
-          <Link href="/" className="hover:underline">
-            Home
-          </Link>
-          <span className="mx-1">›</span>
-          <span className="text-gray-800 font-medium">Contact</span>
-        </nav>
-      </div>
 
       {/* Contact Info / Form */}
       <ContactPageClient contactInfo={contactInfo} />

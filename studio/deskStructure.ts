@@ -7,21 +7,11 @@ export const myStructure = (S: StructureBuilder) =>
     .title('Content')
     .items([
       // 🏠 Home Page
+      // 🏠 Home Page
+      // 🏠 Home Page (SINGLETON)
       S.listItem()
         .title('🏠 Home Page')
-        .child(
-          S.list()
-            .title('Home Sections')
-            .items([
-              S.documentTypeListItem('hero').title('Hero Section'),
-              S.documentTypeListItem('whyChoose').title('Why Choose Section'),
-              S.documentTypeListItem('foundersPromise').title("Founder's Promise"),
-              S.documentTypeListItem('ctaBanner').title('CTA Banner'),
-              S.documentTypeListItem('journey').title('Featured Journeys'),
-              S.documentTypeListItem('testimonial').title('Testimonials'),
-              S.documentTypeListItem('sitePages').title('SEO / Meta Settings'),
-            ]),
-        ),
+        .child(S.editor().schemaType('homePage').documentId('homePage')),
 
       // 📝 Blog Setup
       S.listItem()
@@ -87,6 +77,7 @@ export const myStructure = (S: StructureBuilder) =>
             .title('Global Settings')
             .items([
               S.documentTypeListItem('globalSettings').title('Global Settings'),
+              S.documentTypeListItem('hero').title('HEro Setup'),
               S.documentTypeListItem('megaMenu').title('Mega Menu'),
               S.documentTypeListItem('privacyPolicy').title('Privacy Policy'),
               S.documentTypeListItem('footer').title('Footer'),
@@ -122,6 +113,9 @@ export const myStructure = (S: StructureBuilder) =>
               S.documentTypeListItem('featuredJourney').title('Featured Journeys'),
               S.documentTypeListItem('customJourneyCta').title('Custom Journey CTA'),
               S.documentTypeListItem('dest_slug').title('Destination Slugs'),
+              S.listItem()
+                .title('🧭 Journeys')
+                .child(S.documentTypeList('journey').title('Journeys')),
             ]),
         ),
 

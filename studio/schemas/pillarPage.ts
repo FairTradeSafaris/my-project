@@ -122,8 +122,9 @@ export default defineType({
         {type: 'table'},
         {type: 'zohoForm'},
         {type: 'smartCarousel'},
-        {type: 'safariBuilderBlock'}, // 👈 ADD THIS LINE
+        {type: 'safariBuilderBlock'},
         {type: 'bestTimeBlock'},
+        {type: 'ctaCardGrid'}, // ✅ ADD THIS
       ],
       group: 'content',
     }),

@@ -15,6 +15,7 @@ export const goneUrls = [
   "/tag/ethical-travel",
   "/2024/06",
   "/2024/12",
+  "/blog/?category=saurabh%27s+blog",
   "/tag/vacation",
   "/tag/safari-planning",
   "/2021/10",

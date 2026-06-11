@@ -15,14 +15,14 @@ function isJunkUrl(url) {
 
   return (
     u.includes("/tag/") ||
-    u.match(/^\/\d{4}\//) || // date archives
+    u.match(/^\/\d{4}\//) ||
     u.includes("/page/") ||
     u.includes("&sa=") ||
     u.includes("/feed") ||
     u.includes("/null") ||
     u.includes("/category/") ||
     u.includes("/author/") ||
-    u.includes("?p=") // WordPress query URLs
+    u.includes("?")
   );
 }
 

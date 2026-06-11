@@ -164,7 +164,8 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: data.canonicalUrl || `https://fairtradesafaris.com/${params.slug}`,
+      url:
+        data.canonicalUrl || `https://www.fairtradesafaris.com/${params.slug}`,
       images: image ? [{ url: image }] : [],
       type: "article",
     },
@@ -178,7 +179,7 @@ export async function generateMetadata({
 
     alternates: {
       canonical:
-        data.canonicalUrl || `https://fairtradesafaris.com/${params.slug}`,
+        data.canonicalUrl || `https://www.fairtradesafaris.com/${params.slug}`,
     },
   };
 }

@@ -73,7 +73,10 @@ module.exports = {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/*?q=", "/*&q=", "/*?open=", "/*&open="],
+        disallow: [
+          "/africansafariitineraries/?q=",
+          "/africansafariitineraries/?open=",
+        ],
       },
       { userAgent: "GPTBot", allow: "/" },
       { userAgent: "Google-Extended", allow: "/" },

@@ -221,25 +221,47 @@ export default function SafariFactFooter() {
           )}
         </motion.nav>
 
-        {/* Right: Illustration */}
+        {/* Right: Illustration + Kayak */}
         <motion.div
           initial={fadeInitial}
           whileInView={fadeAnimate}
           transition={fadeTransition}
-          className="flex justify-end pr-2"
+          className="flex flex-col items-center"
         >
           {loading ? (
             <div className="h-20 w-64 rounded-xl bg-black/5 animate-pulse" />
           ) : (
-            imageUrl && (
-              <Image
-                src={imageUrl}
-                alt="Rhino illustration"
-                width={360}
-                height={110}
-                className="opacity-75"
-              />
-            )
+            <>
+              {imageUrl && (
+                <Image
+                  src={imageUrl}
+                  alt="Rhino illustration"
+                  width={360}
+                  height={110}
+                  className="opacity-75"
+                />
+              )}
+
+              <div className="mt-4 flex flex-col items-center text-center">
+                <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-[#8a735a]">
+                  Johannesburg Travel Guide
+                </p>
+
+                <a
+                  href="https://www.kayak.co.uk/Johannesburg.26961.guide"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Kayak Johannesburg Travel Guide"
+                  className="transition hover:opacity-90"
+                >
+                  <img
+                    src="https://content.r9cdn.net/res/images/horizon/ui/seo/marketing/poibadges/POI_BADGES_GUIDES_DARK.png?v=3141cb0739e493843a37b32eccb35318b9d646ff&cluster=5"
+                    alt="Kayak Johannesburg Travel Guide"
+                    className="w-[120px] h-auto rounded-md"
+                  />
+                </a>
+              </div>
+            </>
           )}
         </motion.div>
       </div>

@@ -14,13 +14,23 @@ type SocialLink = {
   url: string;
 };
 
-type FooterLink = { label: string; href: string };
+type FooterLink = {
+  label: string;
+  href: string;
+};
+
 type ConnectLink = FooterLink;
 
 const easeOutBezier: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
 const fadeInitial = { opacity: 0, y: 8 };
 const fadeAnimate = { opacity: 1, y: 0 };
-const fadeTransition = { duration: 0.35, ease: easeOutBezier } as const;
+const fadeTransition = {
+  duration: 0.35,
+  ease: easeOutBezier,
+} as const;
+
+const awardBadge = "/badges/Fair Trade Safaris - Winner Badge tp.png";
 
 export default function SafariFactFooter() {
   const [fact, setFact] = useState<string>("");
@@ -31,27 +41,34 @@ export default function SafariFactFooter() {
   const [connectLinks, setConnectLinks] = useState<ConnectLink[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const [logoUrlMobile, setLogoUrlMobile] = useState<string>("");
+  const [logoUrlDesktop, setLogoUrlDesktop] = useState<string>("");
+
   const featuredLogos = [
     { src: "/logos/nbc.svg", alt: "NBC" },
     { src: "/logos/usa-today.svg", alt: "USA Today" },
     { src: "/logos/fox.svg", alt: "FOX" },
     { src: "/logos/CBS_logo.svg", alt: "CBS" },
   ];
-  const [logoUrlMobile, setLogoUrlMobile] = useState<string>("");
-  const [logoUrlDesktop, setLogoUrlDesktop] = useState<string>("");
+
   useEffect(() => {
     const fetchFooter = async () => {
       try {
         const result = await client.fetch(
           `*[_type == "footer"][0]{
-    facts,
-    lineArt{asset},
-    logo{asset},
-    logoSmall{asset},
-    exploreLinks,
-    socialLinks[]{platform,icon{asset},alt,url},
-    connectLinks
-  }`,
+            facts,
+            lineArt{asset},
+            logo{asset},
+            logoSmall{asset},
+            exploreLinks,
+            socialLinks[]{
+              platform,
+              icon{asset},
+              alt,
+              url
+            },
+            connectLinks
+          }`,
         );
 
         if (result) {
@@ -60,14 +77,19 @@ export default function SafariFactFooter() {
               result.facts[Math.floor(Math.random() * result.facts.length)],
             );
           }
+
           setImageUrl(
             result.lineArt?.asset ? urlFor(result.lineArt.asset).url() : "",
           );
+
           setLogoUrlMobile(
             result.logoSmall?.asset
               ? urlFor(result.logoSmall.asset).url()
-              : urlFor(result.logo.asset).url(),
+              : result.logo?.asset
+                ? urlFor(result.logo.asset).url()
+                : "",
           );
+
           setLogoUrlDesktop(
             result.logo?.asset ? urlFor(result.logo.asset).url() : "",
           );
@@ -76,63 +98,60 @@ export default function SafariFactFooter() {
           setConnectLinks(result.connectLinks || []);
           setSocialLinks(result.socialLinks || []);
         }
-      } catch (e) {
-        console.error("Footer fetch failed", e);
+      } catch (error) {
+        console.error("Footer fetch failed", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchFooter();
   }, []);
 
-  // Balance Explore + Connect into two even columns
   const allLinks: FooterLink[] = [...exploreLinks, ...connectLinks];
+
   const mid = Math.ceil(allLinks.length / 2);
   const col1 = allLinks.slice(0, mid);
   const col2 = allLinks.slice(mid);
 
   return (
-    <footer className="relative isolate text-[#3f2e1f] text-sm bg-[#f7f3ec]">
-      {/* "As Seen On" Section */}
-      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 md:px-8 pt-10">
-        <div className="py-5 sm:py-6 border-b border-black/10">
-          <p className="text-center text-xs tracking-[0.3em] uppercase opacity-70 mb-4">
+    <footer className="relative isolate overflow-hidden bg-[#f7f3ec] text-sm text-[#3f2e1f]">
+      {/* As Seen On */}
+      <div className="relative z-10 mx-auto max-w-[1500px] px-6 pt-10 sm:px-8 lg:px-12 xl:px-16">
+        <div className="border-b border-black/10 pb-7">
+          <p className="mb-5 text-center text-xs uppercase tracking-[0.3em] opacity-70">
             As Seen On
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-x-10 sm:gap-x-16 gap-y-6 opacity-80">
+
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 opacity-80 sm:gap-x-16 lg:gap-x-24 xl:gap-x-28">
             {featuredLogos.map((logo) => (
               <Image
                 key={logo.alt}
                 src={logo.src}
                 alt={logo.alt}
-                width={80}
-                height={24}
-                className="h-6 sm:h-7 md:h-8 w-auto grayscale opacity-80"
+                width={100}
+                height={32}
+                className="h-6 w-auto grayscale opacity-80 sm:h-7 md:h-8"
               />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Dark overlay ONLY when site is in dark mode */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 hidden  bg-black/22"
-      />
-
-      {/* Main grid — three columns: logo | links | illustration */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-4 pt-8 md:pt-10 grid md:grid-cols-[auto_1fr_auto] gap-8 items-start">
-        {/* Left: Brand */}
+      {/* Main footer */}
+      <div className="relative z-10 mx-auto grid max-w-[1500px] gap-10 px-6 pb-8 pt-10 sm:px-8 md:grid-cols-2 lg:grid-cols-[0.9fr_1.45fr_1fr] lg:gap-16 lg:px-12 xl:gap-24 xl:px-16">
+        {/* Brand + Award */}
         <motion.div
           initial={fadeInitial}
           whileInView={fadeAnimate}
           transition={fadeTransition}
+          viewport={{ once: true }}
+          className="flex flex-col items-start"
         >
           {loading ? (
-            <div className="h-[56px] w-[220px] rounded-xl bg-black/5 animate-pulse" />
+            <div className="h-[56px] w-[220px] animate-pulse rounded-xl bg-black/5" />
           ) : (
             <>
-              {/* Mobile logo */}
               {logoUrlMobile && (
                 <Image
                   src={logoUrlMobile}
@@ -140,11 +159,10 @@ export default function SafariFactFooter() {
                   width={220}
                   height={56}
                   priority
-                  className="block md:hidden w-[180px] sm:w-[200px] h-auto"
+                  className="block h-auto w-[180px] sm:w-[200px] md:hidden"
                 />
               )}
 
-              {/* Desktop logo */}
               {logoUrlDesktop && (
                 <Image
                   src={logoUrlDesktop}
@@ -152,98 +170,113 @@ export default function SafariFactFooter() {
                   width={360}
                   height={92}
                   priority
-                  className="hidden md:block w-[220px] h-auto"
+                  className="hidden h-auto w-[220px] md:block"
                 />
               )}
             </>
           )}
 
-          <p className="mt-3 max-w-xs text-[#5a4836]">
+          <p className="mt-5 max-w-[340px] leading-6 text-[#5a4836]">
             Travel with purpose. Curated safaris that support conservation and
             communities across Africa.
           </p>
+
+          {/* Award — intentionally not linked until public announcement */}
+          <div className="mt-5 w-full max-w-[270px] border-t border-[#d8cbb8] pt-5">
+            <Image
+              src={awardBadge}
+              alt="Fair Trade Safaris — 2026 International Travel Awards winner for Best Sustainable Travel Company in South Africa"
+              width={210}
+              height={145}
+              className="h-auto w-[155px] sm:w-[165px] lg:w-[175px]"
+            />
+          </div>
         </motion.div>
 
-        {/* Center: Quick Links (balanced two columns) */}
+        {/* Quick Links */}
         <motion.nav
           aria-label="Footer quick links"
           initial={fadeInitial}
           whileInView={fadeAnimate}
           transition={fadeTransition}
+          viewport={{ once: true }}
           className="self-start"
         >
           {allLinks.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-2 tracking-wide">
+            <>
+              <h3 className="mb-5 text-sm font-semibold uppercase tracking-[0.14em]">
                 Quick Links
               </h3>
-              <div className="grid grid-cols-2 gap-x-8">
-                <ul className="space-y-1.5">
+
+              <div className="grid grid-cols-2 gap-x-10 sm:gap-x-14 lg:gap-x-16 xl:gap-x-20">
+                <ul className="space-y-2">
                   {loading
-                    ? Array.from({ length: 5 }).map((_, i) => (
+                    ? Array.from({ length: 5 }).map((_, index) => (
                         <li
-                          key={`s-col1-${i}`}
-                          className="h-3 rounded bg-black/5 animate-pulse"
+                          key={`s-col1-${index}`}
+                          className="h-3 animate-pulse rounded bg-black/5"
                         />
                       ))
-                    : col1.map((l, i) => (
-                        <li key={`col1-${i}`}>
+                    : col1.map((link, index) => (
+                        <li key={`col1-${index}`}>
                           <Link
-                            href={`${l.href.replace(/\/?$/, "/")}`}
-                            className="hover:underline hover:text-black/80"
+                            href={`${link.href.replace(/\/?$/, "/")}`}
+                            className="transition-colors hover:text-black hover:underline"
                           >
-                            {l.label}
+                            {link.label}
                           </Link>
                         </li>
                       ))}
                 </ul>
-                <ul className="space-y-1.5">
+
+                <ul className="space-y-2 border-l border-[#d8cbb8] pl-10 sm:pl-12 lg:pl-14">
                   {loading
-                    ? Array.from({ length: 5 }).map((_, i) => (
+                    ? Array.from({ length: 5 }).map((_, index) => (
                         <li
-                          key={`s-col2-${i}`}
-                          className="h-3 rounded bg-black/5 animate-pulse"
+                          key={`s-col2-${index}`}
+                          className="h-3 animate-pulse rounded bg-black/5"
                         />
                       ))
-                    : col2.map((l, i) => (
-                        <li key={`col2-${i}`}>
+                    : col2.map((link, index) => (
+                        <li key={`col2-${index}`}>
                           <Link
-                            href={`${l.href.replace(/\/?$/, "/")}`}
-                            className="hover:underline hover:text-black/80"
+                            href={`${link.href.replace(/\/?$/, "/")}`}
+                            className="transition-colors hover:text-black hover:underline"
                           >
-                            {l.label}
+                            {link.label}
                           </Link>
                         </li>
                       ))}
                 </ul>
               </div>
-            </div>
+            </>
           )}
         </motion.nav>
 
-        {/* Right: Illustration + Kayak */}
+        {/* Rhino + Johannesburg Guide */}
         <motion.div
           initial={fadeInitial}
           whileInView={fadeAnimate}
           transition={fadeTransition}
-          className="flex flex-col items-center"
+          viewport={{ once: true }}
+          className="flex flex-col items-center md:col-span-2 lg:col-span-1"
         >
           {loading ? (
-            <div className="h-20 w-64 rounded-xl bg-black/5 animate-pulse" />
+            <div className="h-20 w-64 animate-pulse rounded-xl bg-black/5" />
           ) : (
             <>
               {imageUrl && (
                 <Image
                   src={imageUrl}
                   alt="Rhino illustration"
-                  width={360}
-                  height={110}
-                  className="opacity-75"
+                  width={420}
+                  height={130}
+                  className="h-auto w-full max-w-[390px] opacity-75"
                 />
               )}
 
               <div className="mt-4 flex flex-col items-center text-center">
-                <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-[#8a735a]">
+                <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-[#8a735a]">
                   Johannesburg Travel Guide
                 </p>
 
@@ -252,12 +285,12 @@ export default function SafariFactFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Kayak Johannesburg Travel Guide"
-                  className="transition hover:opacity-90"
+                  className="transition-opacity hover:opacity-90"
                 >
                   <img
                     src="https://content.r9cdn.net/res/images/horizon/ui/seo/marketing/poibadges/POI_BADGES_GUIDES_DARK.png?v=3141cb0739e493843a37b32eccb35318b9d646ff&cluster=5"
                     alt="Kayak Johannesburg Travel Guide"
-                    className="w-[120px] h-auto rounded-md"
+                    className="h-auto w-[120px] rounded-md"
                   />
                 </a>
               </div>
@@ -266,15 +299,16 @@ export default function SafariFactFooter() {
         </motion.div>
       </div>
 
-      {/* Fact pill */}
+      {/* Fact */}
       {fact && (
         <motion.div
           initial={fadeInitial}
           whileInView={fadeAnimate}
           transition={fadeTransition}
-          className="relative z-10 mt-1 mb-4 flex justify-center px-6"
+          viewport={{ once: true }}
+          className="relative z-10 flex justify-center px-6"
         >
-          <div className="bg-[#e8dcc9] text-[#6b4a27] px-3.5 py-1.5 rounded-full italic max-w-2xl text-center text-[13px] border border-black/5">
+          <div className="max-w-2xl rounded-full border border-black/5 bg-[#e8dcc9] px-4 py-1.5 text-center text-[13px] italic text-[#6b4a27]">
             <span className="opacity-80">Did you know?</span>{" "}
             <span className="font-medium not-italic">{fact}</span>
           </div>
@@ -283,20 +317,20 @@ export default function SafariFactFooter() {
 
       {/* Socials */}
       {socialLinks.length > 0 && (
-        <div className="relative z-10 mb-3 flex justify-center flex-wrap gap-3 px-6">
-          {socialLinks.map((s, i) => (
+        <div className="relative z-10 mb-6 mt-4 flex flex-wrap justify-center gap-3 px-6">
+          {socialLinks.map((social, index) => (
             <a
-              key={`${s.platform}-${i}`}
-              href={s.url}
+              key={`${social.platform}-${index}`}
+              href={social.url}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={s.platform}
-              className="inline-flex items-center justify-center h-11 w-11 rounded-full overflow-hidden transition transform hover:-translate-y-0.5 hover:shadow-sm"
+              aria-label={social.platform}
+              className="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full transition hover:-translate-y-0.5 hover:shadow-sm"
             >
-              {s.icon?.asset && (
+              {social.icon?.asset && (
                 <Image
-                  src={urlFor(s.icon.asset).width(44).height(44).url()}
-                  alt={s.alt || s.platform}
+                  src={urlFor(social.icon.asset).width(44).height(44).url()}
+                  alt={social.alt || social.platform}
                   width={44}
                   height={44}
                 />
@@ -307,11 +341,15 @@ export default function SafariFactFooter() {
       )}
 
       {/* Bottom bar */}
-      <div className="relative z-10 text-xs py-2.5 mt-2 border-t border-[#d2c2a3] bg-[#eadfca]/60 backdrop-blur-sm px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-          <Link href="/privacy/" className="underline hover:text-black">
+      <div className="relative z-10 border-t border-[#d2c2a3] bg-[#eadfca]/60 px-6 py-3 text-xs backdrop-blur-sm">
+        <div className="mx-auto flex max-w-[1500px] flex-col items-center justify-between gap-2 sm:px-2 md:flex-row lg:px-6">
+          <Link
+            href="/privacy/"
+            className="underline transition-colors hover:text-black"
+          >
             Privacy Policy
           </Link>
+
           <p className="opacity-80">
             © {new Date().getFullYear()} Fair Trade Safaris. All rights
             reserved.

@@ -5,6 +5,8 @@ import PillarContent from "@/components/PillarContent";
 import SafariLoader from "@/components/SafariLoader";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
+import { preload } from "react-dom";
+import { DEFAULT_OG_IMAGE } from "@/lib/seoDefaults";
 
 export const revalidate = 0;
 
@@ -168,7 +170,8 @@ export async function generateMetadata({
       title,
       description,
       url: canonical,
-      images: image ? [{ url: image }] : [],
+      // og:image falls back to the site default when Sanity has no ogImage
+      images: [{ url: image || DEFAULT_OG_IMAGE }],
       type: "article",
     },
 
@@ -176,7 +179,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: image ? [image] : [],
+      images: [image || DEFAULT_OG_IMAGE],
     },
 
     alternates: {
@@ -197,6 +200,18 @@ export default async function CorePage({
   if (!data) return notFound();
 
   const videoUrl = data?.heroVideo?.asset?.url;
+  // Batch 3a: poster for the hero video (heroPoster, else the page's ogImage),
+  // resized by Sanity's CDN. It is preloaded with high priority so it paints
+  // first and becomes the LCP element instead of the multi-MB MP4.
+  const posterRaw: string | undefined =
+    data?.heroPoster?.asset?.url || data?.ogImage?.asset?.url;
+  const posterUrl =
+    posterRaw && posterRaw.includes("cdn.sanity.io") && !posterRaw.includes("?")
+      ? `${posterRaw}?w=1920&q=70&auto=format&fit=max`
+      : posterRaw;
+  if (videoUrl && posterUrl) {
+    preload(posterUrl, { as: "image", fetchPriority: "high" });
+  }
   const headline = data?.heroHeadline || data?.title;
   const subheadline = data?.heroSubheadline;
 
@@ -233,7 +248,8 @@ export default async function CorePage({
               muted
               loop
               playsInline
-              preload="auto"
+              preload="metadata"
+              poster={posterUrl}
             >
               <source src={videoUrl} type="video/mp4" />
             </video>

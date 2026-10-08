@@ -79,10 +79,19 @@ export default async function BlogPreview() {
               <li key={post._id}>
                 <Link href={`/blog/${post.slug}`} className="group block">
                   {post.coverImage?.asset?.url && (
+                    // Below the fold: lazy-load (was eager + preloaded in <head>)
+                    // and ask Sanity's CDN for a 600px version of the 1254px original.
                     <img
-                      src={post.coverImage.asset.url}
+                      src={
+                        post.coverImage.asset.url.includes("cdn.sanity.io") &&
+                        !post.coverImage.asset.url.includes("?")
+                          ? `${post.coverImage.asset.url}?w=600&q=70&auto=format&fit=max`
+                          : post.coverImage.asset.url
+                      }
                       alt={post.coverImage.alt || post.title}
                       className="mb-2 rounded-md aspect-[4/3] object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                   )}
 

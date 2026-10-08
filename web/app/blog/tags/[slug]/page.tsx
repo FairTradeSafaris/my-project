@@ -2,6 +2,8 @@ import { getPostsByTagSlug, getTagBySlug, getAllTags } from "@/sanity/queries";
 import BlogGrid from "../../BlogGrid";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { DEFAULT_OG_IMAGE, ogImageUrl } from "@/lib/seoDefaults";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -16,21 +18,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const tag = await getTagBySlug(slug);
 
-  if (!tag) {
-    return {
-      title: "Blog | Fair Trade Safaris",
-      description: "Explore ethical safari stories and travel insights.",
-    };
-  }
+  // Unknown tag -> real 404 (was HTTP 200 + "Tag not found").
+  if (!tag) notFound();
 
+  const title = `${tag.title} Articles | Fair Trade Safaris`;
+  const description =
+    tag.description ||
+    `Explore articles about ${tag.title} and ethical African travel.`;
+  const url = `https://www.fairtradesafaris.com/blog/tags/${slug}/`;
+  // og:image = tag hero image, else the site default
+  const image: string = tag.heroImage
+    ? ogImageUrl(tag.heroImage)
+    : DEFAULT_OG_IMAGE;
   return {
-    title: `${tag.title} Articles | Fair Trade Safaris`,
-    description:
-      tag.description ||
-      `Explore articles about ${tag.title} and ethical African travel.`,
+    title,
+    description,
     alternates: {
-      canonical: `https://www.fairtradesafaris.com/blog/tags/${slug}/`,
+      canonical: url,
     },
+    openGraph: { title, description, url, images: [{ url: image }] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -41,9 +48,7 @@ export default async function TagPage({ params }: Props) {
   const tag = await getTagBySlug(slug);
   const allTags = await getAllTags();
 
-  if (!tag) {
-    return <div className="p-10">Tag not found</div>;
-  }
+  if (!tag) notFound();
 
   const filteredTags = (allTags as Tag[]).filter((t) => t.slug !== slug);
 

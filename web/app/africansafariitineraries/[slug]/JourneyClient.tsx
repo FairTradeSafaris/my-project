@@ -54,6 +54,11 @@ type Props = {
 
 const components: PortableTextComponents = {
   block: {
+    // Rich-text H1s (e.g. "Travel to Mozambique" in destination travel info)
+    // render as <h2>: the itinerary title is the only <h1> on the page.
+    h1: ({ children }) => (
+      <h2 className="text-2xl font-bold mt-6 mb-3">{children}</h2>
+    ),
     h2: ({ children }) => (
       <h2 className="text-2xl font-bold mt-6 mb-3">{children}</h2>
     ),

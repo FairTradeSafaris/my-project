@@ -19,6 +19,7 @@ import LeadMagnetGate from "@/components/LeadMagnetGate";
 import CookieConsent from "@/components/CookieConsent";
 
 import { headers } from "next/headers";
+import { DEFAULT_OG_IMAGE } from "@/lib/seoDefaults";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -38,6 +39,17 @@ export const metadata: Metadata = {
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
+  },
+  // Site-wide default social image for pages that set no openGraph/twitter
+  // metadata of their own (a page's own openGraph replaces this entirely).
+  openGraph: {
+    siteName: "Fair Trade Safaris",
+    type: "website",
+    images: [{ url: DEFAULT_OG_IMAGE, alt: "Fair Trade Safaris" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 
@@ -75,7 +87,8 @@ async function getOrganizationSchema() {
     logo: org.logo?.asset?.url,
     image: org.image?.asset?.url,
     description: org.description,
-    telephone: org.telephone,
+    // No hardcoded fallback: omit telephone when Sanity has none.
+    telephone: org.telephone?.trim() || undefined,
     priceRange:
       typeof org.priceRange === "string"
         ? org.priceRange

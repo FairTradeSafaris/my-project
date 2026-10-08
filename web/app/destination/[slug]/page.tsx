@@ -364,6 +364,13 @@ const components: PortableTextComponents = {
     )) as PortableTextBlockComponent,
     // Headings inside rich text had no styles (Tailwind resets them), so
     // e.g. "Travel to Uganda" / "When to visit" looked like plain text.
+    // Rich-text H1s (e.g. "Travel to Mozambique") render as <h2>: the page
+    // title is the only <h1>.
+    h1: (({ children }) => (
+      <h2 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+        {children}
+      </h2>
+    )) as PortableTextBlockComponent,
     h2: (({ children }) => (
       <h2 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
         {children}

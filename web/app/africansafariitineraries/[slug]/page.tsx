@@ -347,6 +347,12 @@ export default async function Page({
                           {children}
                         </p>
                       ),
+                      // rich-text H1 -> <h2> (journey title is the only <h1>)
+                      h1: ({ children }) => (
+                        <h2 className="text-2xl font-semibold mt-10 mb-4">
+                          {children}
+                        </h2>
+                      ),
                       h2: ({ children }) => (
                         <h2 className="text-2xl font-semibold mt-10 mb-4">
                           {children}

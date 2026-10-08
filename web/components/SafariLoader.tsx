@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+// Batch 3a: the first-visit splash is capped at SPLASH_MAX_MS (was ~9 s) and
+// skipped for crawlers/automation, so it no longer delays the page for bots
+// or holds back LCP. To revert, restore the previous timing block below.
+const SPLASH_MAX_MS = 1000;
+const BOT_UA =
+  /bot|crawl|spider|slurp|mediapartners|google-inspectiontool|bingpreview|facebookexternalhit|embedly|preview/i;
+
 const messages = [
   "Tracking Wildlife…",
   "Preparing Your Guide…",
@@ -20,6 +27,11 @@ export default function SafariLoader({
   useEffect(() => {
     setMounted(true);
 
+    if (BOT_UA.test(navigator.userAgent) || navigator.webdriver) {
+      setLoading(false);
+      return;
+    }
+
     const shown = sessionStorage.getItem("safariLoaderShown");
 
     if (shown) {
@@ -29,21 +41,19 @@ export default function SafariLoader({
 
     sessionStorage.setItem("safariLoaderShown", "true");
 
-    let step = 0;
-
+    // Cycle the messages within the cap, then hide the overlay.
     const interval = setInterval(() => {
-      step += 1;
-      setIndex(step);
+      setIndex((i) => Math.min(i + 1, messages.length - 1));
+    }, Math.floor(SPLASH_MAX_MS / messages.length));
+    const done = setTimeout(() => {
+      clearInterval(interval);
+      setLoading(false);
+    }, SPLASH_MAX_MS);
 
-      if (step === messages.length - 1) {
-        setTimeout(() => {
-          setLoading(false);
-        }, 3000);
-        clearInterval(interval);
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(done);
+    };
   }, []);
 
   // SEO: children are ALWAYS rendered (also on the server) so the page's H1 and

@@ -28,7 +28,9 @@ export default function ContactPageClient({
 }) {
   const [bookingOpen, setBookingOpen] = useState(false);
 
-  const phone = contactInfo?.phone || "+1 234-9876-5400";
+  // No hardcoded placeholder number: if Sanity has no phone, the "Call Us"
+  // row is simply not rendered.
+  const phone = contactInfo?.phone?.trim() || "";
   const email = contactInfo?.email || "info@fairtradesafaris.com";
 
   // Brand / palette
@@ -87,12 +89,16 @@ export default function ContactPageClient({
                 onClick: () => setBookingOpen(true),
                 isButton: true,
               },
-              {
-                title: "Call Us",
-                subtitle: phone,
-                icon: <RiPhoneLine size={24} color={accent} />,
-                href: `tel:${phone.replace(/\s/g, "")}`,
-              },
+              ...(phone
+                ? [
+                    {
+                      title: "Call Us",
+                      subtitle: phone,
+                      icon: <RiPhoneLine size={24} color={accent} />,
+                      href: `tel:${phone.replace(/\s/g, "")}`,
+                    },
+                  ]
+                : []),
               {
                 title: "Let’s Chat",
                 subtitle: "WhatsApp us",

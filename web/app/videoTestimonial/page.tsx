@@ -105,7 +105,7 @@ export default async function Page() {
         "@type": "ListItem",
         position: 2,
         name: "Video Testimonials",
-        item: "https://www.fairtradesafaris.com/video-testimonials/",
+        item: "https://www.fairtradesafaris.com/videoTestimonial/",
       },
     ],
   };
@@ -126,7 +126,7 @@ export default async function Page() {
         heroData={heroData ?? undefined}
         breadcrumbs={[
           { label: "Home", href: "/" },
-          { label: "Video Testimonials", href: "/video-testimonials" },
+          { label: "Video Testimonials", href: "/videoTestimonial/" },
         ]}
       />
 

@@ -126,6 +126,7 @@ export default async function FAQPage() {
       <HeroController
         heroData={heroData ?? undefined}
         breadcrumbs={breadcrumbs}
+        headlineAs="p"
       />
 
       <main className="min-h-screen px-4 py-5 bg-[#f9f6f2]">

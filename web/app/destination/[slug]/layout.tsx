@@ -18,35 +18,12 @@ type MetadataDestination = {
       };
     };
     alt?: string;
+    galleryImage?: {
+      image?: { asset?: { url?: string } };
+      alt?: string;
+    };
   };
-  faqs?: {
-    question: string;
-    answer: {
-      children?: { text?: string }[];
-    }[];
-  }[];
 };
-function portableTextToPlainText(
-  blocks?: {
-    children?: { text?: string }[];
-  }[],
-): string {
-  if (!Array.isArray(blocks)) return "";
-
-  return blocks
-    .map((block) =>
-      Array.isArray(block.children)
-        ? block.children
-            .map((child) => child.text?.trim() || "")
-            .filter(Boolean)
-            .join(" ")
-        : "",
-    )
-    .filter(Boolean)
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 export async function generateMetadata({
   params,
 }: {
@@ -64,13 +41,8 @@ export async function generateMetadata({
     canonicalUrl,
     region,
     mapLocation,
-    heroImage{ image{asset->{url}}, alt },
-
-    "faqs": *[_type == "faqQuestion" && references(^._id)]
-      | order(order asc){
-        question,
-        answer
-      }
+    // + galleryImage so OG images also resolve when the hero is a gallery reference
+    heroImage{ image{asset->{url}}, alt, galleryImage->{ image{asset->{url}}, alt } },
   }`,
     { slug },
   )) as MetadataDestination | null;
@@ -86,100 +58,6 @@ export async function generateMetadata({
     data.canonicalUrl ||
     `https://www.fairtradesafaris.com/destination/${data.slug}/`;
 
-  const webPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "@id": `${canonicalUrl}#webpage`,
-    url: canonicalUrl,
-    name: title,
-    description,
-    inLanguage: "en",
-    publisher: {
-      "@id": "https://www.fairtradesafaris.com#organization",
-    },
-    primaryImageOfPage: image?.url
-      ? {
-          "@type": "ImageObject",
-          url: image.url,
-        }
-      : undefined,
-  };
-
-  const placeSchema = {
-    "@context": "https://schema.org",
-    "@type": "TouristDestination",
-    "@id": `${canonicalUrl}#destination`,
-    name: data.title,
-    description,
-    url: canonicalUrl,
-    image: image?.url,
-    touristType: "Luxury Ethical Safari Travelers",
-    publicAccess: true,
-    containedInPlace: data.region
-      ? {
-          "@type": "AdministrativeArea",
-          name: data.region,
-        }
-      : undefined,
-    geo: data.mapLocation
-      ? {
-          "@type": "GeoCoordinates",
-          name: data.title,
-        }
-      : undefined,
-  };
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://www.fairtradesafaris.com/",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Destinations",
-        item: "https://www.fairtradesafaris.com/destination/",
-      },
-      ...(data.region
-        ? [
-            {
-              "@type": "ListItem",
-              position: 3,
-              name: data.region,
-              item: `https://www.fairtradesafaris.com/destination/region/${data.region
-                .toLowerCase()
-                .replace(/\s+/g, "-")}/`,
-            },
-          ]
-        : []),
-      {
-        "@type": "ListItem",
-        position: data.region ? 4 : 3,
-        name: data.title,
-        item: canonicalUrl,
-      },
-    ],
-  };
-  const faqSchema =
-    data.faqs && data.faqs.length > 0
-      ? {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: data.faqs.map((faq) => ({
-            "@type": "Question",
-            name: faq.question,
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: portableTextToPlainText(faq.answer),
-            },
-          })),
-        }
-      : null;
-  const schemas = [webPageSchema, placeSchema];
   return {
     title,
     description,
@@ -200,15 +78,8 @@ export async function generateMetadata({
       description,
       images: image?.url ? [image.url] : undefined,
     },
-    other: {
-      "script:ld+json": JSON.stringify(schemas),
-      ...(breadcrumbSchema && {
-        "script:ld+json:breadcrumb": JSON.stringify(breadcrumbSchema),
-      }),
-      ...(faqSchema && {
-        "script:ld+json:faq": JSON.stringify(faqSchema),
-      }),
-    },
+    // JSON-LD (TouristDestination, BreadcrumbList, FAQPage) is now rendered as
+    // a real <script> in page.tsx; metadata.other only produced ignored <meta> tags.
   };
 }
 

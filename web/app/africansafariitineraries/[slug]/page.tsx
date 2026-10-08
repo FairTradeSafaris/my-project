@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { groq } from "next-sanity";
 import { sanityClient as client } from "@/lib/client";
 import { notFound } from "next/navigation";
-import Script from "next/script";
+import JsonLd from "@/components/JsonLd";
 import JourneyClient from "./JourneyClient";
 import Link from "next/link";
 import JourneyCard from "@/components/JourneyCard";
@@ -151,9 +151,12 @@ export default async function Page({
     : [];
   return (
     <>
-      {/* ================= SEO SCHEMA ================= */}
-      <Script id="journey-schema" type="application/ld+json">
-        {JSON.stringify([
+      {/* ================= SEO SCHEMA =================
+          Server-rendered (next/script injected it client-side only, so it was
+          missing from the HTML). Adds TouristTrip + BreadcrumbList. */}
+      <JsonLd
+        id="journey-schema"
+        data={[
           {
             "@context": "https://schema.org",
             "@type": "WebPage",
@@ -161,6 +164,69 @@ export default async function Page({
             url: pageUrl,
             name: journey.title,
             description: journey.summary,
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "TouristTrip",
+            "@id": `${pageUrl}#trip`,
+            name: journey.title,
+            description: journey.summary,
+            url: pageUrl,
+            image: journey.heroImage?.asset?.url,
+            touristType: "Luxury ethical safari travelers",
+            ...(journey.destinations?.length
+              ? {
+                  itinerary: {
+                    "@type": "ItemList",
+                    itemListElement: journey.destinations.map((d, i) => ({
+                      "@type": "ListItem",
+                      position: i + 1,
+                      item: {
+                        "@type": "TouristDestination",
+                        name: d.title,
+                        url: `https://www.fairtradesafaris.com/destination/${d.slug.current}/`,
+                      },
+                    })),
+                  },
+                }
+              : {}),
+            provider: { "@id": "https://www.fairtradesafaris.com#organization" },
+            ...(typeof journey.price === "number"
+              ? {
+                  offers: {
+                    "@type": "Offer",
+                    priceCurrency: "USD",
+                    price: journey.price,
+                    availability: "https://schema.org/InStock",
+                    url: pageUrl,
+                    priceValidUntil: getNextJune30(),
+                  },
+                }
+              : {}),
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://www.fairtradesafaris.com/",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "African Safari Itineraries",
+                item: "https://www.fairtradesafaris.com/africansafariitineraries/",
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: journey.title,
+                item: pageUrl,
+              },
+            ],
           },
           {
             "@context": "https://schema.org",
@@ -177,8 +243,8 @@ export default async function Page({
               priceValidUntil: getNextJune30(),
             },
           },
-        ])}
-      </Script>
+        ]}
+      />
 
       {/* ================= HERO ================= */}
       <main className="bg-[#FAF4EC] text-black">
@@ -187,6 +253,7 @@ export default async function Page({
             <img
               src={journey.heroImage.asset.url}
               alt={journey.alt || journey.title}
+              fetchPriority="high"
               className="absolute inset-0 w-full h-full object-cover object-center"
             />
           )}

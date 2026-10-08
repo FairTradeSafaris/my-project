@@ -52,6 +52,7 @@ export default async function Page() {
       <HeroController
         heroData={heroData ?? undefined}
         breadcrumbs={breadcrumbs}
+        headlineAs="p"
       />
       <OurPromisePage />
     </>

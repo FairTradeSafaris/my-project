@@ -39,20 +39,6 @@ export async function generateMetadata({
     data.canonicalUrl || `https://www.fairtradesafaris.com/blog/${data.slug}/`;
   const published = data.publishedAt || new Date().toISOString();
 
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: title,
-    datePublished: published,
-    author: {
-      "@type": "Person",
-      name: data.author?.name || "Fair Trade Safaris",
-    },
-    image: imageUrl,
-    url: canonicalUrl,
-    description,
-  };
-
   return {
     title,
     description,
@@ -75,9 +61,8 @@ export async function generateMetadata({
       description,
       images: imageUrl ? [imageUrl] : undefined,
     },
-    other: {
-      "script:ld+json": JSON.stringify(articleSchema),
-    },
+    // (removed `other: {"script:ld+json"}` — it rendered as a <meta> tag that
+    // search engines ignore; page.tsx already outputs the real BlogPosting JSON-LD)
   };
 }
 

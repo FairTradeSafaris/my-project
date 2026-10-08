@@ -186,7 +186,7 @@ export default async function JourneyPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <HeroController heroData={heroData} />
+      <HeroController heroData={heroData} headlineAs="p" />
       <div className="bg-[#f9f7f4] py-10 sm:py-8 px-5 sm:px-10 lg:px-24 text-gray-800 font-poppins">
         <div className="max-w-3xl lg:max-w-5xl mx-auto">
           {/* Headline */}

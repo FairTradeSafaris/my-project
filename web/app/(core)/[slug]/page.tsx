@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import PillarContent from "@/components/PillarContent";
 import SafariLoader from "@/components/SafariLoader";
 import Link from "next/link";
-import Script from "next/script";
+import JsonLd from "@/components/JsonLd";
 
 export const revalidate = 0;
 
@@ -205,50 +205,21 @@ export default async function CorePage({
   return (
     <SafariLoader>
       <main className="bg-white text-black min-h-screen relative">
-        {/* AI Article Schema */}
+        {/* AI Article Schema (server-rendered; next/script beforeInteractive
+            only injected it client-side). FAQPage is already emitted as a real
+            <script> by (core)/[slug]/layout.tsx, so the duplicate here was removed. */}
         {data.aiSummary && (
-          <Script
+          <JsonLd
             id="article-schema"
-            type="application/ld+json"
-            strategy="beforeInteractive"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Article",
-                headline: headline,
-                description: data.aiSummary,
-                publisher: {
-                  "@type": "Organization",
-                  name: "Fair Trade Safaris",
-                },
-              }),
-            }}
-          />
-        )}
-
-        {/* FAQ Schema */}
-        {faqs.length > 0 && (
-          <Script
-            id="faq-schema"
-            type="application/ld+json"
-            strategy="beforeInteractive"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "FAQPage",
-                mainEntity: faqs.map((item) => ({
-                  "@type": "Question",
-                  name: item.question,
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: item.answer
-                      ?.map((block) =>
-                        block.children?.map((child) => child.text).join(""),
-                      )
-                      .join(" "),
-                  },
-                })),
-              }),
+            data={{
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: headline,
+              description: data.aiSummary,
+              publisher: {
+                "@type": "Organization",
+                name: "Fair Trade Safaris",
+              },
             }}
           />
         )}

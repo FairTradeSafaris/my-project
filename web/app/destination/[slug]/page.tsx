@@ -19,9 +19,15 @@ import {
   Mountain,
   MapPin,
   Binoculars,
+  Globe,
+  Camera,
 } from "lucide-react";
+import JsonLd from "@/components/JsonLd";
+
 export const dynamic = "force-static";
-export const revalidate = 0;
+// was `revalidate = 0`, which contradicts force-static. Re-generate each
+// destination page at most once an hour so Sanity edits show up.
+export const revalidate = 3600;
 export async function generateStaticParams() {
   const slugs: string[] = await client.fetch(
     `*[_type == "destination" && defined(slug.current)].slug.current`,
@@ -78,6 +84,10 @@ type DestinationDoc = {
   metaDescription?: string;
   aiSummary?: string;
   canonicalUrl?: string;
+  /** flag URL for both shapes: plain `image` (current schema) or legacy imageOrGallery */
+  flagUrl?: string;
+  geoLat?: number;
+  geoLng?: number;
   relatedJourneys?: {
     _id: string;
     title: string;
@@ -174,6 +184,9 @@ const iconMap = {
   mountain: Mountain,
   "map-pin": MapPin,
   binoculars: Binoculars,
+  // offered in the Studio dropdown but missing here (icon silently dropped)
+  globe: Globe,
+  camera: Camera,
 };
 
 const query = groq`
@@ -231,6 +244,16 @@ const query = groq`
   metaDescription,
   aiSummary,
   canonicalUrl,
+  geoLat,
+  geoLng,
+
+  // flagImage is a plain image in the schema now, but the projection above
+  // expects the old imageOrGallery shape. Additive field that works for both.
+  "flagUrl": coalesce(
+    flagImage.asset->url,
+    flagImage.image.asset->url,
+    flagImage.galleryImage->image.asset->url
+  ),
 
   // Related journeys
   "relatedJourneys": *[
@@ -339,6 +362,21 @@ const components: PortableTextComponents = {
     normal: (({ children }) => (
       <p className="mb-4 leading-relaxed text-gray-800">{children}</p>
     )) as PortableTextBlockComponent,
+    // Headings inside rich text had no styles (Tailwind resets them), so
+    // e.g. "Travel to Uganda" / "When to visit" looked like plain text.
+    h2: (({ children }) => (
+      <h2 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+        {children}
+      </h2>
+    )) as PortableTextBlockComponent,
+    h3: (({ children }) => (
+      <h3 className="text-lg font-semibold text-gray-900 mt-5 mb-2">
+        {children}
+      </h3>
+    )) as PortableTextBlockComponent,
+    h4: (({ children }) => (
+      <h4 className="font-semibold text-gray-900 mt-4 mb-1">{children}</h4>
+    )) as PortableTextBlockComponent,
   },
   list: {
     bullet: (({ children }) => (
@@ -391,11 +429,106 @@ export default async function DestinationPage({
   if (!data) notFound();
 
   const hero = resolveImage(data.heroImage);
-  const flag = resolveImage(data.flagImage);
+  const flagSrc = data.flagUrl || resolveImage(data.flagImage).url;
   const didYouKnow = resolveImage(data.didYouKnowImage);
+  const planHref = data.ctaLink || "/contact/";
+
+  // New (Jun 2026) schema fields — render only when filled in, so existing
+  // destination documents without them look exactly as before.
+  const wildlife = (data.wildlifeHighlights || []).filter(Boolean);
+  const parks = (data.featuredParks || []).filter(
+    (p) => p && (p.name || p.description),
+  );
+  const bt = data.bestTimeToVisit;
+  const bestTime =
+    bt &&
+    (bt.summary || bt.peakSeason || bt.greenSeason || bt.bestWildlifeMonths)
+      ? bt
+      : null;
+  const cs = data.conservationSection;
+  const conservation =
+    cs && (cs.title || cs.content?.length || cs.image?.asset?.url) ? cs : null;
+  const tips = (data.travelTips || []).filter(
+    (t) => t && (t.title || t.content),
+  );
+
+  /* ---------- JSON-LD (server-rendered; layout used ignored <meta> tags) ---------- */
+  const pageUrl =
+    data.canonicalUrl ||
+    `https://www.fairtradesafaris.com/destination/${data.slug}/`;
+  const hasGeo =
+    typeof data.geoLat === "number" && typeof data.geoLng === "number";
+  const schema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "TouristDestination",
+      "@id": `${pageUrl}#destination`,
+      name: data.title,
+      description: data.metaDescription || data.aiSummary || data.heroIntro,
+      url: pageUrl,
+      image: hero.url,
+      touristType: "Luxury ethical safari travelers",
+      ...(data.region
+        ? { containedInPlace: { "@type": "Place", name: data.region } }
+        : {}),
+      ...(hasGeo
+        ? {
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: data.geoLat,
+              longitude: data.geoLng,
+            },
+          }
+        : {}),
+      ...(data.featuredParks?.some((p) => p.name)
+        ? {
+            includesAttraction: data.featuredParks
+              .filter((p) => p.name)
+              .map((p) => ({
+                "@type": "TouristAttraction",
+                name: p.name,
+                description: p.description,
+              })),
+          }
+        : {}),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.fairtradesafaris.com/" },
+        { "@type": "ListItem", position: 2, name: "Destinations", item: "https://www.fairtradesafaris.com/destination/" },
+        { "@type": "ListItem", position: 3, name: data.title, item: pageUrl },
+      ],
+    },
+    ...(data.faqs?.length
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: data.faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: (faq.answer || [])
+                  .map((b) =>
+                    ((b as { children?: { text?: string }[] }).children || [])
+                      .map((c) => c.text || "")
+                      .join(""),
+                  )
+                  .join(" ")
+                  .trim(),
+              },
+            })),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <>
+      <JsonLd id="destination-schema" data={schema} />
       {/* Mobile floating "Explore Packages" button */}
       <div className="fixed bottom-20 right-4 z-50 lg:hidden">
         <a
@@ -408,16 +541,21 @@ export default async function DestinationPage({
 
       <main className="bg-white text-gray-900">
         <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
-          {hero.url && (
-            <div className="relative min-h-[900px]">
+          {/* Hero always renders (it holds the H1, intro and stats); only the
+              background image is optional. It used to disappear completely —
+              including the H1 — when a destination had no hero image. */}
+          <div className="relative min-h-[900px] bg-[#2F3E46]">
               {/* Background */}
-              <Image
-                src={hero.url}
-                alt={hero.alt || data.title}
-                fill
-                priority
-                className="object-cover"
-              />
+              {hero.url && (
+                <Image
+                  src={hero.url}
+                  alt={hero.alt || data.title}
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="object-cover"
+                />
+              )}
 
               {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/20" />
@@ -435,37 +573,34 @@ export default async function DestinationPage({
                       <span className="text-white">{data.title}</span>
                     </nav>
 
-                    {/* Title */}
-                    <h1 className="text-6xl lg:text-8xl font-serif text-white leading-none mb-5">
-                      {data.title}
-                    </h1>
-
-                    {/* Subtitle */}
-                    <div className="flex items-center gap-3 mb-8">
-                      {flag?.url && (
+                    {/* Title + flag (flag sits beside the H1 instead of
+                        floating next to the intro paragraph) */}
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 mb-6">
+                      <h1 className="text-6xl lg:text-8xl font-serif text-white leading-none">
+                        {data.title}
+                      </h1>
+                      {flagSrc && (
                         <Image
-                          src={flag.url}
+                          src={flagSrc}
                           alt=""
-                          width={34}
-                          height={24}
-                          className="rounded-sm"
+                          width={48}
+                          height={32}
+                          className="rounded-sm shadow-md lg:mt-3"
                         />
                       )}
+                    </div>
 
-                      <span className="text-3xl text-white font-light">
+                    {/* Intro (was text-3xl font-light inside the flag row) */}
+                    {data.heroIntro && (
+                      <p className="max-w-2xl text-lg md:text-xl leading-relaxed text-white/90">
                         {data.heroIntro}
-                      </span>
-                    </div>
+                      </p>
+                    )}
 
-                    {/* Description */}
-                    <div className="max-w-2xl text-xl leading-relaxed text-white/90">
-                      <PortableText
-                        value={
-                          data.travelInfo ? data.travelInfo.slice(0, 1) : []
-                        }
-                        components={components}
-                      />
-                    </div>
+                    {/* The old "Description" here rendered travelInfo[0] - in the
+                        current content that is just the heading "Travel to
+                        {country}" (an unstyled h2), duplicated again in the
+                        Travel Information section below - so it was removed. */}
 
                     {/* CTA */}
                     <div className="flex flex-wrap gap-5 mt-10">
@@ -486,7 +621,7 @@ export default async function DestinationPage({
                       </Link>
 
                       <a
-                        href={data.ctaLink}
+                        href={planHref}
                         className="
                   border
                   border-white/40
@@ -543,7 +678,7 @@ export default async function DestinationPage({
                         </div>
 
                         <a
-                          href={data.ctaLink}
+                          href={planHref}
                           className="
                     mt-8
                     w-full
@@ -604,56 +739,42 @@ export default async function DestinationPage({
                 )}
               </div>
             </div>
-          )}
         </section>
         {/* ================= HEADER BLOCK ================= */}
 
         <div className="max-w-7xl mx-auto px-6 mt-6">
-          {/* Breadcrumb */}
-          <nav className="text-sm text-gray-400 mb-1">
-            <ol className="flex flex-wrap items-center gap-2">
-              <li>
-                <Link href="/" className="hover:text-gray-700 transition">
-                  Home
-                </Link>
-              </li>
-              <li>/</li>
-              <li>
-                <Link
-                  href="/destination/"
-                  className="hover:text-gray-700 transition"
-                >
-                  Destinations
-                </Link>
-              </li>
-              {data.region && (
-                <>
-                  <li>/</li>
-                  <li>{data.region}</li>
-                </>
-              )}
-              <li>/</li>
-              <li className="text-gray-700 font-medium">{data.title}</li>
-            </ol>
-          </nav>
+          {/* (Second breadcrumb removed: the hero already renders one.) */}
 
-          {/* Section Navigation */}
+          {/* Section Navigation (only links to sections that exist) */}
           <nav className="flex flex-wrap gap-8 text-sm border-b border-gray-200 pb-4">
-            <a
-              href="#travel-info"
-              className="font-medium hover:text-black transition"
-            >
-              Travel Information
-            </a>
-            <a href="#highlights" className="hover:text-black transition">
-              Highlights
-            </a>
-            <a href="#practical-info" className="hover:text-black transition">
-              Practical Info
-            </a>
-            <a href="#faq" className="hover:text-black transition">
-              FAQs
-            </a>
+            {data.travelInfo && (
+              <a
+                href="#travel-info"
+                className="font-medium hover:text-black transition"
+              >
+                Travel Information
+              </a>
+            )}
+            {data.highlights && (
+              <a href="#highlights" className="hover:text-black transition">
+                Highlights
+              </a>
+            )}
+            {bestTime && (
+              <a href="#best-time" className="hover:text-black transition">
+                Best Time to Visit
+              </a>
+            )}
+            {(data.practicalStuff?.length ?? 0) > 0 && (
+              <a href="#practical-info" className="hover:text-black transition">
+                Practical Info
+              </a>
+            )}
+            {(data.faqs?.length ?? 0) > 0 && (
+              <a href="#faq" className="hover:text-black transition">
+                FAQs
+              </a>
+            )}
             {data.mapLocation && (
               <a href="#map" className="hover:text-black transition">
                 Map
@@ -667,7 +788,7 @@ export default async function DestinationPage({
           <div className="lg:col-span-3">
             {/* TRAVEL INFO */}
             {data.travelInfo && (
-              <section id="travel-info" className="py-5px-6">
+              <section id="travel-info" className="py-5 px-6">
                 <h2 className="text-2xl font-semibold mb-4">
                   Travel Information
                 </h2>
@@ -717,6 +838,104 @@ export default async function DestinationPage({
               </section>
             )}
 
+            {/* WILDLIFE HIGHLIGHTS (new schema field, previously not rendered) */}
+            {wildlife.length > 0 && (
+              <section id="wildlife" className="py-10 px-6">
+                <h2 className="text-2xl font-semibold mb-4">
+                  Wildlife &amp; Experiences in {data.title}
+                </h2>
+                <ul className="flex flex-wrap gap-3">
+                  {wildlife.map((w, i) => (
+                    <li
+                      key={i}
+                      className="rounded-full bg-[#F7F3EA] border border-black/5 px-4 py-2 text-sm"
+                    >
+                      {w}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/* FEATURED PARKS (new schema field, previously not rendered) */}
+            {parks.length > 0 && (
+              <section id="parks" className="py-10 px-6">
+                <h2 className="text-2xl font-semibold mb-6">
+                  Featured Parks &amp; Regions
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {parks.map((park, i) => (
+                    <article
+                      key={i}
+                      className="border rounded-lg overflow-hidden bg-white"
+                    >
+                      {park.image?.asset?.url && (
+                        <div className="relative w-full h-48">
+                          <Image
+                            src={park.image.asset.url}
+                            alt={park.image.alt || park.name || data.title}
+                            fill
+                            sizes="(min-width: 768px) 40vw, 100vw"
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="p-5">
+                        {park.name && (
+                          <h3 className="text-lg font-semibold mb-2">
+                            {park.name}
+                          </h3>
+                        )}
+                        {park.description && (
+                          <p className="text-gray-700">{park.description}</p>
+                        )}
+                        {park.bestFor && park.bestFor.length > 0 && (
+                          <p className="text-sm text-gray-600 mt-3">
+                            <strong>Best for:</strong>{" "}
+                            {park.bestFor.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* BEST TIME TO VISIT (new schema field, previously not rendered) */}
+            {bestTime && (
+              <section id="best-time" className="py-10 px-6">
+                <h2 className="text-2xl font-semibold mb-4">
+                  Best Time to Visit {data.title}
+                </h2>
+                {bestTime.summary && (
+                  <p className="mb-4 text-gray-700">{bestTime.summary}</p>
+                )}
+                <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {bestTime.peakSeason && (
+                    <div className="rounded-lg bg-[#F7F3EA] p-4">
+                      <dt className="font-semibold">Peak season</dt>
+                      <dd className="text-gray-700">{bestTime.peakSeason}</dd>
+                    </div>
+                  )}
+                  {bestTime.greenSeason && (
+                    <div className="rounded-lg bg-[#F7F3EA] p-4">
+                      <dt className="font-semibold">Green season</dt>
+                      <dd className="text-gray-700">{bestTime.greenSeason}</dd>
+                    </div>
+                  )}
+                  {bestTime.bestWildlifeMonths && (
+                    <div className="rounded-lg bg-[#F7F3EA] p-4">
+                      <dt className="font-semibold">Best wildlife months</dt>
+                      <dd className="text-gray-700">
+                        {bestTime.bestWildlifeMonths}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </section>
+            )}
+
             {/* GALLERY */}
             {data.gallery && (
               <Gallery
@@ -734,7 +953,7 @@ export default async function DestinationPage({
             )}
 
             {/* PRACTICAL INFO */}
-            {data.practicalStuff?.length && (
+            {(data.practicalStuff?.length ?? 0) > 0 && data.practicalStuff && (
               <section
                 id="practical-info"
                 className="py-16 px-6 max-w-4xl mx-auto"
@@ -761,10 +980,63 @@ export default async function DestinationPage({
                         )}
                       </div>
 
-                      {Array.isArray(data.practicalStuff) &&
-                        data.practicalStuff.length > 0 && (
-                          <hr className="mt-12 border-gray-200" />
-                        )}
+                      {/* divider between items, not after the last one */}
+                      {idx < data.practicalStuff!.length - 1 && (
+                        <hr className="mt-12 border-gray-200" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* CONSERVATION & IMPACT (new schema field, previously not rendered) */}
+            {conservation && (
+              <section id="conservation" className="py-10 px-6">
+                <h2 className="text-2xl font-semibold mb-4">
+                  {conservation.title || "Conservation & Community Impact"}
+                </h2>
+                <div className="flex flex-col md:flex-row gap-6 md:items-start">
+                  {conservation.image?.asset?.url && (
+                    <Image
+                      src={conservation.image.asset.url}
+                      alt={conservation.image.alt || data.title}
+                      width={400}
+                      height={267}
+                      sizes="(min-width: 768px) 400px, 100vw"
+                      className="rounded-lg object-cover"
+                      style={{ height: "auto" }}
+                    />
+                  )}
+                  {conservation.content && (
+                    <div className="prose prose-gray max-w-none">
+                      <PortableText
+                        value={conservation.content}
+                        components={components}
+                      />
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* TRAVEL TIPS (new schema field, previously not rendered) */}
+            {tips.length > 0 && (
+              <section id="travel-tips" className="py-10 px-6">
+                <h2 className="text-2xl font-semibold mb-6">
+                  {data.title} Travel Tips
+                </h2>
+                <div className="space-y-5">
+                  {tips.map((tip, i) => (
+                    <div key={i}>
+                      {tip.title && (
+                        <h3 className="font-semibold text-lg mb-1">
+                          {tip.title}
+                        </h3>
+                      )}
+                      {tip.content && (
+                        <p className="text-gray-700">{tip.content}</p>
+                      )}
                     </div>
                   ))}
                 </div>

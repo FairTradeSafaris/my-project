@@ -6,7 +6,7 @@ import type { Ambassador } from "@/types/ambassador";
 import imageUrlBuilder from "@sanity/image-url";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
-import Script from "next/script";
+import JsonLd from "@/components/JsonLd";
 import Link from "next/link"; // ✅ Make sure this is imported at the top
 
 // Sanity image builder
@@ -50,42 +50,6 @@ export async function generateMetadata({
 
   const imageUrl = data.image?.url;
 
-  const personSchema = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: data.name,
-    jobTitle: data.role,
-    image: imageUrl,
-    description: descriptionText,
-    url: `https://www.fairtradesafaris.com/ambassadors/${params.slug}`,
-    sameAs: data.socials?.map((s) => s.url).filter(Boolean),
-  };
-
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://www.fairtradesafaris.com",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Ambassadors",
-        item: "https://www.fairtradesafaris.com/ambassadors",
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: data.name,
-        item: `https://www.fairtradesafaris.com/ambassadors/${params.slug}`,
-      },
-    ],
-  };
-
   return {
     title: `${data.name} | Fair Trade Safaris Ambassador`,
     description:
@@ -111,10 +75,6 @@ export async function generateMetadata({
     },
     alternates: {
       canonical: `https://www.fairtradesafaris.com/ambassadors/${params.slug}/`,
-    },
-    // Also keep in metadata for crawlers that support it
-    other: {
-      "script:ld+json": JSON.stringify([personSchema, breadcrumbSchema]),
     },
   };
 }
@@ -188,17 +148,9 @@ export default async function AmbassadorProfilePage({
 
   return (
     <>
-      {/* ✅ Add structured data via <Script> to ensure Google sees it */}
-      <Script
-        id="ambassador-person-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
-      />
-      <Script
-        id="ambassador-breadcrumb-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+      {/* Server-rendered JSON-LD (next/script injected it client-side only) */}
+      <JsonLd id="ambassador-person-schema" data={personSchema} />
+      <JsonLd id="ambassador-breadcrumb-schema" data={breadcrumbSchema} />
 
       <main className="bg-white text-black min-h-screen">
         {/* ================= HERO SECTION ================= */}

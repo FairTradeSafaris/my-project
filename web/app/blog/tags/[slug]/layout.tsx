@@ -1,6 +1,20 @@
 // blog/tags/[tag]/layout.tsx
 
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+
+function tagSchema(slug: string) {
+  const tag = decodeURIComponent(slug);
+  const canonicalUrl = `https://www.fairtradesafaris.com/blog/tags/${encodeURIComponent(tag)}/`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${canonicalUrl}#collection`,
+    url: canonicalUrl,
+    name: `${tag} Articles | Fair Trade Safaris Blog`,
+    inLanguage: "en",
+  };
+}
 
 export async function generateMetadata({
   params,
@@ -13,16 +27,6 @@ export async function generateMetadata({
   const title = `${tag} Articles | Fair Trade Safaris Blog`;
   const description = `Explore blog posts tagged with "${tag}" — expert insights, stories, and tips for ethical travel.`;
   const canonicalUrl = `https://www.fairtradesafaris.com/blog/tags/${encodeURIComponent(tag)}/`;
-
-  const webPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "@id": `${canonicalUrl}#collection`,
-    url: canonicalUrl,
-    name: title,
-    description,
-    inLanguage: "en",
-  };
 
   return {
     title,
@@ -40,13 +44,22 @@ export async function generateMetadata({
       title,
       description,
     },
-    other: {
-      "script:ld+json": JSON.stringify(webPageSchema),
-    },
+    // JSON-LD is rendered by the Layout below (metadata.other => ignored <meta>)
   };
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  console.log("[tag]/layout.tsx is used ✅");
-  return <>{children}</>;
+export default async function Layout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  return (
+    <>
+      <JsonLd data={tagSchema(slug)} />
+      {children}
+    </>
+  );
 }

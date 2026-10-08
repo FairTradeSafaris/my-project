@@ -46,11 +46,13 @@ export default function SafariLoader({
     return () => clearInterval(interval);
   }, []);
 
-  if (!mounted) return null;
-
+  // SEO: children are ALWAYS rendered (also on the server) so the page's H1 and
+  // copy are in the raw HTML. Previously this returned null until mount and
+  // hid children while loading, so crawlers that don't run JS saw an empty page.
+  // The splash is now only an overlay on top of the already-rendered content.
   return (
     <>
-      {loading && (
+      {mounted && loading && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black text-white">
           <div className="text-center px-6">
             <div className="text-lg tracking-[0.35em] uppercase text-white/60 mb-8">
@@ -64,7 +66,7 @@ export default function SafariLoader({
         </div>
       )}
 
-      {!loading && children}
+      {children}
     </>
   );
 }

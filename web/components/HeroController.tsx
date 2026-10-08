@@ -261,7 +261,9 @@ function HeroView({
   alt,
   primaryLink,
   breadcrumbs,
+  headlineAs = "h1",
 }: {
+  headlineAs?: "h1" | "p";
   bgUrlDesktop?: string;
   bgUrlMobile?: string;
   pageLabel?: string;
@@ -316,7 +318,18 @@ function HeroView({
           </span>
         )}
 
-        {headline ? (
+        {headline && headlineAs === "p" ? (
+          // page renders its own <h1>; keep the hero headline as styled text
+          <p
+            className={`font-extrabold leading-tight ${
+              isHome
+                ? "text-4xl sm:text-5xl md:text-6xl"
+                : "text-3xl sm:text-4xl md:text-5xl"
+            } mb-2 drop-shadow-md`}
+          >
+            {headline}
+          </p>
+        ) : headlineAs === "p" ? null : headline ? (
           <h1
             className={`font-extrabold leading-tight ${
               isHome
@@ -442,13 +455,34 @@ function deriveBgUrls(items?: HeroData["backgroundImages"]): {
   };
 }
 
+function toHeroDoc(heroData: HeroData): HeroDoc {
+  return {
+    scope: "default",
+    pageLabel: undefined,
+    customScope: undefined,
+    headline: heroData.headline,
+    subheadline: heroData.subheadline,
+    action: heroData.action || "none",
+    backgroundImages: heroData.backgroundImages as (
+      | HeroAssetLegacy
+      | HeroAssetResponsive
+    )[],
+    primaryCTA: heroData.primaryCTA,
+    secondaryCTA: heroData.secondaryCTA,
+    primaryLink: heroData.primaryLink,
+  };
+}
+
 /* -------------------- Controller -------------------- */
 export default function HeroController({
   heroData,
   breadcrumbs,
+  headlineAs = "h1",
 }: {
   heroData?: HeroData;
   breadcrumbs?: { label: string; href: string }[];
+  /** use "p" on pages that already render their own <h1> */
+  headlineAs?: "h1" | "p";
 }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -457,9 +491,19 @@ export default function HeroController({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [hero, setHero] = useState<HeroDoc | null>(null);
-  const [bgDesktop, setBgDesktop] = useState<string | undefined>(undefined);
-  const [bgMobile, setBgMobile] = useState<string | undefined>(undefined);
+  // SEO: hero state is derived synchronously from props so the hero <h1>,
+  // subheadline and LCP image are part of the server-rendered HTML. It used to
+  // be set in useEffect (client only), so the raw HTML had only an empty
+  // placeholder <div> and no H1 on the homepage and every page using this hero.
+  const [hero, setHero] = useState<HeroDoc | null>(() =>
+    heroData ? toHeroDoc(heroData) : null,
+  );
+  const [bgDesktop, setBgDesktop] = useState<string | undefined>(
+    () => deriveBgUrls(heroData?.backgroundImages).desktop,
+  );
+  const [bgMobile, setBgMobile] = useState<string | undefined>(
+    () => deriveBgUrls(heroData?.backgroundImages).mobile,
+  );
 
   const HIDE_ON: RegExp[] = [
     /^\/(sign-in|sign-up)/,
@@ -471,35 +515,9 @@ export default function HeroController({
   useEffect(() => {
     if (!heroData) return;
 
-    const doc: HeroDoc = {
-      scope: "default",
-      pageLabel: undefined,
-      customScope: undefined,
-      headline: heroData.headline,
-      subheadline: heroData.subheadline,
-      action: heroData.action || "none",
-      backgroundImages: heroData.backgroundImages as (
-        | HeroAssetLegacy
-        | HeroAssetResponsive
-      )[],
-      primaryCTA: heroData.primaryCTA,
-      secondaryCTA: heroData.secondaryCTA,
-      primaryLink: heroData.primaryLink,
-    };
-
-    setHero(doc);
-
-    console.log("🔍 heroData.backgroundImages:", heroData.backgroundImages);
-
-    const allImagesHaveUrl = (heroData.backgroundImages ?? []).every(
-      (img) => "url" in img && typeof img.url === "string",
-    );
-
-    console.log("🔎 Do all hero images have a `url` field?:", allImagesHaveUrl);
+    setHero(toHeroDoc(heroData));
 
     const { desktop, mobile } = deriveBgUrls(heroData.backgroundImages);
-    console.log("✅ derived background URLs:", { desktop, mobile });
-
     setBgDesktop(desktop);
     setBgMobile(mobile);
   }, [heroData]);
@@ -552,6 +570,7 @@ export default function HeroController({
       sub={hero.subheadline}
       primaryLink={hero.primaryLink}
       variant={isHome ? "home" : "banner"}
+      headlineAs={headlineAs}
     >
       {showHomeFilters && (
         <>

@@ -5,15 +5,14 @@ import type { Metadata } from "next";
 import TagList from "@/components/TagList";
 import HeroController from "@/components/HeroController";
 import { client as sanity } from "@/lib/sanity";
+import JsonLd from "@/components/JsonLd";
 // =============================
 // SEO + STRUCTURED DATA
 // =============================
 
-export async function generateMetadata(): Promise<Metadata> {
-  const { metadata } = await getSanityMetadata("blog");
+const canonicalUrl = "https://www.fairtradesafaris.com/blog/";
 
-  const canonicalUrl = "https://www.fairtradesafaris.com/blog/";
-
+function buildBlogSchemas(metadata: Metadata) {
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -57,7 +56,11 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
   };
 
-  const schemas = [webPageSchema, blogSchema, breadcrumbSchema];
+  return [webPageSchema, blogSchema, breadcrumbSchema];
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { metadata } = await getSanityMetadata("blog");
 
   return {
     ...metadata,
@@ -71,9 +74,8 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       ...metadata.twitter,
     },
-    other: {
-      "script:ld+json": JSON.stringify(schemas),
-    },
+    // JSON-LD is rendered as a real <script> in the page (see BlogPage);
+    // metadata.other produced an ignored <meta name="script:ld+json"> tag.
   };
 }
 const heroData = await sanity.fetch(`
@@ -97,9 +99,10 @@ const heroData = await sanity.fetch(`
 // =============================
 
 export default async function BlogPage() {
-  const [allPosts, allTags] = await Promise.all([
+  const [allPosts, allTags, { metadata: seo }] = await Promise.all([
     getAllBlogPosts(),
     getAllTags(),
+    getSanityMetadata("blog"),
   ]);
 
   const breadcrumbs = [
@@ -109,7 +112,12 @@ export default async function BlogPage() {
 
   return (
     <>
-      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
+      <JsonLd data={buildBlogSchemas(seo)} />
+      <HeroController
+        heroData={heroData}
+        breadcrumbs={breadcrumbs}
+        headlineAs="p"
+      />
 
       <main className="min-h-screen bg-[#fdf8f3] text-black px-4 py-12">
         <div className="max-w-6xl mx-auto">

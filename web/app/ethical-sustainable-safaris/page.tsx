@@ -53,7 +53,11 @@ export default async function Page() {
 
   return (
     <>
-      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
+      <HeroController
+        heroData={heroData}
+        breadcrumbs={breadcrumbs}
+        headlineAs="p"
+      />
       <EthicalSustainableSafarisPage />
     </>
   );

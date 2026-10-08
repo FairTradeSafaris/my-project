@@ -36,41 +36,6 @@ export async function generateMetadata({
     data.canonicalUrl ||
     `https://www.fairtradesafaris.com/africansafariitineraries/${data.slug}/`;
 
-  const webPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "@id": `${canonicalUrl}#webpage`,
-    url: canonicalUrl,
-    name: title,
-    description,
-    inLanguage: "en",
-    primaryImageOfPage: imageUrl
-      ? {
-          "@type": "ImageObject",
-          url: imageUrl,
-        }
-      : undefined,
-  };
-
-  const productSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "@id": `${canonicalUrl}#product`,
-    name: data.title,
-    description,
-    image: imageUrl,
-    brand: {
-      "@type": "Brand",
-      name: "Fair Trade Safaris",
-    },
-    offers: {
-      "@type": "Offer",
-      url: canonicalUrl,
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-    },
-  };
-
   return {
     title,
     description,
@@ -91,9 +56,8 @@ export async function generateMetadata({
       description,
       images: imageUrl ? [imageUrl] : undefined,
     },
-    other: {
-      "script:ld+json": JSON.stringify([webPageSchema, productSchema]),
-    },
+    // JSON-LD (WebPage, TouristTrip, Product, BreadcrumbList) is rendered as a
+    // real <script> in page.tsx; metadata.other only produced an ignored <meta>.
   };
 }
 

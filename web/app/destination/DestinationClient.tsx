@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 
 import { PortableText } from "@portabletext/react";

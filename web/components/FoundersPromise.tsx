@@ -1,19 +1,67 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { PortableText } from "@portabletext/react";
-import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState, type ComponentType, type CSSProperties } from "react";
 import type { FoundersPromiseBlock } from "@/types/types";
 
 /* ------------------------------
-   Motion (desktop only)
+   Motion
+   Batch 4: framer-motion is still loaded lazily, but the cards are now in the
+   server HTML. Until framer-motion has loaded, a plain <div> with the same
+   classes and the animation's starting state (invisible, offset) holds the
+   content; framer-motion then takes over and runs the same animation. Before,
+   `ssr: false, loading: () => null` meant the "Our Promise" and "Travel with
+   Purpose" text was missing from the HTML entirely.
 -------------------------------- */
-const MotionDiv = dynamic(
-  () => import("framer-motion").then((m) => m.motion.div),
-  { ssr: false, loading: () => null },
-);
+type MotionStart = { opacity?: number; y?: number };
+type MotionDivProps = {
+  className?: string;
+  style?: CSSProperties;
+  initial?: MotionStart;
+  animate?: MotionStart;
+  whileInView?: MotionStart;
+  viewport?: { once?: boolean; amount?: number };
+  transition?: Record<string, unknown>;
+  children?: React.ReactNode;
+};
+
+let loadedMotionDiv: ComponentType<MotionDivProps> | null = null;
+
+function MotionDiv(props: MotionDivProps) {
+  const [Motion, setMotion] = useState<ComponentType<MotionDivProps> | null>(
+    () => loadedMotionDiv,
+  );
+
+  useEffect(() => {
+    if (Motion) return;
+    let cancelled = false;
+    import("framer-motion").then((m) => {
+      loadedMotionDiv = m.motion.div as unknown as ComponentType<MotionDivProps>;
+      if (!cancelled) setMotion(() => loadedMotionDiv);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [Motion]);
+
+  if (Motion) return <Motion {...props} />;
+
+  const { className, style, initial, children } = props;
+  return (
+    <div
+      className={className}
+      style={{
+        ...style,
+        opacity: initial?.opacity,
+        transform: initial?.y ? `translateY(${initial.y}px)` : undefined,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 type Props = { data: FoundersPromiseBlock };
 

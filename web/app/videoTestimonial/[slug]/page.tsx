@@ -2,6 +2,7 @@ import { groq } from "next-sanity";
 import { freshClient as client } from "@/lib/sanityFresh";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { sanitySized } from "@/lib/sanityImageLoader";
 import Link from "next/link";
 
 export const revalidate = 60;
@@ -250,8 +251,10 @@ export default async function Page({
               >
                 <div className="relative aspect-video">
                   <img
-                    src={item.thumbnailUrl || "/fallback.jpg"}
+                    src={sanitySized(item.thumbnailUrl, 640) || "/fallback.jpg"}
                     alt={item.name}
+                    loading="lazy"
+                    decoding="async"
                     className="object-cover w-full h-full group-hover:scale-105 transition duration-300"
                   />
                 </div>

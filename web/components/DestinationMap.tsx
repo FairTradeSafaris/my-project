@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Africa from "@react-map/africa";
 import { motion, AnimatePresence } from "framer-motion";
 import { client as sanityClient } from "../lib/sanity";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 
 interface DestinationData {
   title: string;

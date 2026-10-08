@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { client, urlFor } from "@/lib/sanity";
 import type { SanityImageAssetDocument } from "@sanity/client";

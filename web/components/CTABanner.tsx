@@ -1,4 +1,9 @@
 import Link from "next/link";
+import {
+  sanityDimensions,
+  sanitySized,
+  sanitySrcSet,
+} from "@/lib/sanityImageLoader";
 
 type CTABannerProps = {
   headline?: string;
@@ -19,23 +24,29 @@ export default function CTABanner({
   sideImage,
   backgroundImage,
 }: CTABannerProps) {
-  // Performance: the CMS background was loaded at full size (4500x3000,
-  // ~1.8 MB on the homepage). Ask Sanity's image CDN for a resized WebP/AVIF.
+  // Performance: the CMS background used to be a CSS background-image, which
+  // the browser fetches immediately (110 KB competing with the hero on the
+  // homepage, even though this banner is far below the fold). It is now a
+  // lazy <img> with the same cover/center positioning, sized per screen
+  // width by Sanity's image CDN.
   const bgUrl = backgroundImage?.asset?.url;
-  const bgSized =
-    bgUrl && bgUrl.includes("cdn.sanity.io/images/") && !bgUrl.endsWith(".svg")
-      ? `${bgUrl}?w=1920&q=70&auto=format&fit=max`
-      : bgUrl;
+  const sideUrl = sideImage?.asset?.url;
+  const sideDims = sanityDimensions(sideUrl);
 
   return (
-    <section
-      className="py-16 md:py-20 relative overflow-hidden"
-      style={{
-        backgroundImage: bgSized ? `url(${bgSized})` : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
+    <section className="py-16 md:py-20 relative overflow-hidden isolate">
+      {bgUrl && (
+        <img
+          src={sanitySized(bgUrl, 1920)}
+          srcSet={sanitySrcSet(bgUrl, [640, 960, 1280, 1920])}
+          sizes="100vw"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 -z-10 h-full w-full object-cover object-center"
+        />
+      )}
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
         {/* TEXT */}
         <div className={textOnLeft ? "" : "md:order-2"}>
@@ -57,8 +68,10 @@ export default function CTABanner({
         {sideImage?.asset?.url && (
           <div className={textOnLeft ? "md:order-2" : ""}>
             <img
-              src={sideImage.asset.url}
+              src={sanitySized(sideUrl, 896)}
               alt={headline || "CTA image"}
+              width={sideDims?.width}
+              height={sideDims?.height}
               className="w-full max-w-md mx-auto"
               loading="lazy"
               decoding="async"

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { VideoTestimonial } from "./VideoTestimonials";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 
 export default function VideoTestimonialCard({

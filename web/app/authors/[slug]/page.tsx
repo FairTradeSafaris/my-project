@@ -3,7 +3,7 @@
 import { groq } from "next-sanity";
 import { client, urlFor } from "@/lib/sanity";
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import type { Metadata } from "next";
 import AuthorBlogList from "@/components/AuthorBlogList";
 import { type ReactElement } from "react";

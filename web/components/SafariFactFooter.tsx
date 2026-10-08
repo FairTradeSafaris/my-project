@@ -1,11 +1,12 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { client, urlFor } from "@/lib/sanity";
 import type { SanityImageAssetDocument } from "@sanity/client";
+import { FOOTER_QUERY } from "@/lib/footerQuery";
 
 type SocialLink = {
   platform: string;
@@ -21,6 +22,24 @@ type FooterLink = {
 
 type ConnectLink = FooterLink;
 
+// Raw result of FOOTER_QUERY (passed in from the server since Batch 4)
+export type FooterData = {
+  facts?: string[];
+  lineArt?: { asset?: SanityImageAssetDocument };
+  logo?: { asset?: SanityImageAssetDocument };
+  logoSmall?: { asset?: SanityImageAssetDocument };
+  exploreLinks?: FooterLink[];
+  socialLinks?: SocialLink[];
+  connectLinks?: ConnectLink[];
+} | null;
+
+const logoMobileUrl = (r: NonNullable<FooterData>) =>
+  r.logoSmall?.asset
+    ? urlFor(r.logoSmall.asset).url()
+    : r.logo?.asset
+      ? urlFor(r.logo.asset).url()
+      : "";
+
 const easeOutBezier: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const fadeInitial = { opacity: 0, y: 8 };
@@ -32,17 +51,36 @@ const fadeTransition = {
 
 const awardBadge = "/badges/Fair Trade Safaris - Winner Badge tp.png";
 
-export default function SafariFactFooter() {
+export default function SafariFactFooter({
+  initialData,
+}: {
+  /** Footer document fetched on the server (Batch 4): links are in the HTML
+   *  and no client-side Sanity request is needed. */
+  initialData?: FooterData;
+} = {}) {
+  const init = initialData ?? null;
   const [fact, setFact] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>(() =>
+    init?.lineArt?.asset ? urlFor(init.lineArt.asset).url() : "",
+  );
 
-  const [exploreLinks, setExploreLinks] = useState<FooterLink[]>([]);
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-  const [connectLinks, setConnectLinks] = useState<ConnectLink[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [exploreLinks, setExploreLinks] = useState<FooterLink[]>(
+    () => init?.exploreLinks || [],
+  );
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(
+    () => init?.socialLinks || [],
+  );
+  const [connectLinks, setConnectLinks] = useState<ConnectLink[]>(
+    () => init?.connectLinks || [],
+  );
+  const [loading, setLoading] = useState<boolean>(!init);
 
-  const [logoUrlMobile, setLogoUrlMobile] = useState<string>("");
-  const [logoUrlDesktop, setLogoUrlDesktop] = useState<string>("");
+  const [logoUrlMobile, setLogoUrlMobile] = useState<string>(() =>
+    init ? logoMobileUrl(init) : "",
+  );
+  const [logoUrlDesktop, setLogoUrlDesktop] = useState<string>(() =>
+    init?.logo?.asset ? urlFor(init.logo.asset).url() : "",
+  );
 
   const featuredLogos = [
     { src: "/logos/nbc.svg", alt: "NBC" },
@@ -52,24 +90,18 @@ export default function SafariFactFooter() {
   ];
 
   useEffect(() => {
+    // The random "Did you know?" fact is still picked in the browser (picking
+    // it on the server would cause a hydration mismatch).
+    if (init) {
+      if (init.facts?.length) {
+        setFact(init.facts[Math.floor(Math.random() * init.facts.length)]);
+      }
+      return;
+    }
+
     const fetchFooter = async () => {
       try {
-        const result = await client.fetch(
-          `*[_type == "footer"][0]{
-            facts,
-            lineArt{asset},
-            logo{asset},
-            logoSmall{asset},
-            exploreLinks,
-            socialLinks[]{
-              platform,
-              icon{asset},
-              alt,
-              url
-            },
-            connectLinks
-          }`,
-        );
+        const result = await client.fetch(FOOTER_QUERY);
 
         if (result) {
           if (result.facts?.length) {
@@ -82,13 +114,7 @@ export default function SafariFactFooter() {
             result.lineArt?.asset ? urlFor(result.lineArt.asset).url() : "",
           );
 
-          setLogoUrlMobile(
-            result.logoSmall?.asset
-              ? urlFor(result.logoSmall.asset).url()
-              : result.logo?.asset
-                ? urlFor(result.logo.asset).url()
-                : "",
-          );
+          setLogoUrlMobile(logoMobileUrl(result));
 
           setLogoUrlDesktop(
             result.logo?.asset ? urlFor(result.logo.asset).url() : "",
@@ -106,6 +132,7 @@ export default function SafariFactFooter() {
     };
 
     fetchFooter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const allLinks: FooterLink[] = [...exploreLinks, ...connectLinks];
@@ -158,7 +185,6 @@ export default function SafariFactFooter() {
                   alt="Fair Trade Safaris"
                   width={220}
                   height={56}
-                  priority
                   className="block h-auto w-[180px] sm:w-[200px] md:hidden"
                 />
               )}
@@ -169,7 +195,6 @@ export default function SafariFactFooter() {
                   alt="Fair Trade Safaris"
                   width={360}
                   height={92}
-                  priority
                   className="hidden h-auto w-[220px] md:block"
                 />
               )}
@@ -290,6 +315,10 @@ export default function SafariFactFooter() {
                   <img
                     src="https://content.r9cdn.net/res/images/horizon/ui/seo/marketing/poibadges/POI_BADGES_GUIDES_DARK.png?v=3141cb0739e493843a37b32eccb35318b9d646ff&cluster=5"
                     alt="Kayak Johannesburg Travel Guide"
+                    width={916}
+                    height={728}
+                    loading="lazy"
+                    decoding="async"
                     className="h-auto w-[120px] rounded-md"
                   />
                 </a>

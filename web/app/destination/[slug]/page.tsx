@@ -1,6 +1,6 @@
 import { groq } from "next-sanity";
 import { client } from "@/lib/sanity";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 
@@ -364,6 +364,13 @@ const components: PortableTextComponents = {
     )) as PortableTextBlockComponent,
     // Headings inside rich text had no styles (Tailwind resets them), so
     // e.g. "Travel to Uganda" / "When to visit" looked like plain text.
+    // Rich-text H1s (e.g. "Travel to Mozambique") render as <h2>: the page
+    // title is the only <h1>.
+    h1: (({ children }) => (
+      <h2 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+        {children}
+      </h2>
+    )) as PortableTextBlockComponent,
     h2: (({ children }) => (
       <h2 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
         {children}
@@ -1130,14 +1137,19 @@ export default async function DestinationPage({
             className="col-span-1 block lg:block mt-12"
             id="related-journeys"
           >
+            {/* Batch 4: journeys without a slug (e.g. a draft-like record on
+                Uganda) rendered as a broken /africansafariitineraries/null/
+                link; only those are skipped. */}
             {Array.isArray(data.relatedJourneys) &&
-              data.relatedJourneys.length > 0 && (
+              data.relatedJourneys.some((j) => j.slug) && (
                 <div className="bg-white border rounded-lg shadow p-4">
                   <h3 className="text-lg font-semibold mb-5 text-gray-900">
                     🌍 Explore These Packages for {data.title}
                   </h3>
                   <ul className="space-y-5">
-                    {data.relatedJourneys.map((journey) => (
+                    {data.relatedJourneys
+                      .filter((journey) => journey.slug)
+                      .map((journey) => (
                       <li key={journey._id}>
                         <Link
                           href={`/africansafariitineraries/${journey.slug}/`}

@@ -6,7 +6,7 @@ import { SocialIcon } from "react-social-icons";
 import { PortableText } from "@portabletext/react";
 import type { Ambassador } from "@/types/ambassador";
 import { urlFor } from "../lib/sanity";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 
 interface Props {
   amb: Ambassador;

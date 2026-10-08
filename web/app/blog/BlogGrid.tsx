@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import BlogSearchBar from "@/components/BlogSearchBar";
 import type { BlogPostPreview } from "@/types/blog";

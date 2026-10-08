@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import type { Destination } from "./types";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 
 type Props = {
   destination: Destination;

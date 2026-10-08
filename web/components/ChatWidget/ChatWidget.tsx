@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 const avatars = [
   "/avatars/giraffe.svg",
   "/avatars/elephant.svg",

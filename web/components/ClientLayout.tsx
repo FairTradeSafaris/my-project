@@ -8,6 +8,7 @@ import { useBreakpoint } from "@/lib/useBreakpoint";
 import NavbarMobile from "@/components/NavbarMobile";
 import NavbarDesktop from "@/components/NavbarDesktop";
 import BottomTabBar from "@/components/BottomTabBar";
+import type { FooterData } from "@/components/SafariFactFooter";
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -20,10 +21,9 @@ type FeatureCard = {
 };
 type PromoCard = FeatureCard;
 
-const SafariFactFooter = dynamic(
-  () => import("@/components/SafariFactFooter"),
-  { ssr: false },
-);
+// Batch 4: the footer is server-rendered when the layout passes footerData
+// (links crawlable in the HTML). Still code-split.
+const SafariFactFooter = dynamic(() => import("@/components/SafariFactFooter"));
 const TestimonialCarousel = dynamic(
   () => import("@/components/TestimonialCarousel"),
   { ssr: false },
@@ -31,8 +31,10 @@ const TestimonialCarousel = dynamic(
 
 export default function ClientLayout({
   children,
+  footerData,
 }: {
   children: React.ReactNode;
+  footerData?: FooterData;
 }) {
   const pathname = usePathname();
   const screenWidth = useBreakpoint();
@@ -127,7 +129,9 @@ export default function ClientLayout({
         <BottomTabBar />
       )}
       {!hideUI && ready && <TestimonialCarousel />}
-      {!hideUI && ready && <SafariFactFooter />}
+      {!hideUI && (ready || footerData) && (
+        <SafariFactFooter initialData={footerData} />
+      )}
     </>
   );
 }

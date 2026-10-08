@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextReactComponents } from "@portabletext/react";
 import type { ReactNode } from "react";
 import { urlFor } from "@/lib/sanityImage";
+import { sanitySized, sanitySrcSet } from "@/lib/sanityImageLoader";
 import Container from "@/components/layout/Container";
 import type { Block } from "@/types/block";
 
@@ -48,7 +49,9 @@ const portableComponents: Partial<PortableTextReactComponents> = {
         href={value?.href ?? "#"}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-amber-700 underline hover:text-amber-900"
+        // #b94c00 = amber-700 darkened 1% so it passes WCAG AA (4.5:1) on the
+        // #f5f1ea section background (amber-700 measured 4.46:1)
+        className="text-[#b94c00] underline hover:text-amber-900"
       >
         {children}
       </a>
@@ -153,8 +156,12 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                           {src && (
                             <div className="w-full mb-4">
                               <img
-                                src={src}
+                                src={sanitySized(src, 1200)}
+                                srcSet={sanitySrcSet(src, [480, 768, 1080, 1440])}
+                                sizes="(min-width: 1024px) 50vw, 100vw"
                                 alt={card.title}
+                                loading="lazy"
+                                decoding="async"
                                 className="rounded-lg w-full h-[240px] object-cover"
                               />
                             </div>
@@ -495,11 +502,15 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
 
                 {/* FULL WIDTH IMAGE */}
                 <div className="my-8 w-full">
-                  <div className="w-full h-[220px] md:h-[260px] overflow-hidden">
-                    <img
+                  {/* Batch 4: was a plain 2.4 MB PNG, preloaded in <head>.
+                      Now lazy and resized by next/image (local file). */}
+                  <div className="relative w-full h-[220px] md:h-[260px] overflow-hidden">
+                    <Image
                       src="/images/best-time.png"
                       alt="Luxury African safari landscape"
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="100vw"
+                      className="object-cover"
                     />
                   </div>
                 </div>

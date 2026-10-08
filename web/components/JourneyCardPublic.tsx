@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import type { JourneyCardProps } from "@/types/journey";
 

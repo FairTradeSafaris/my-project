@@ -7,6 +7,7 @@ import imageUrlBuilder from "@sanity/image-url";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import JsonLd from "@/components/JsonLd";
+import { sanitySized, sanitySrcSet } from "@/lib/sanityImageLoader";
 import Link from "next/link"; // ✅ Make sure this is imported at the top
 
 // Sanity image builder
@@ -161,7 +162,9 @@ export default async function AmbassadorProfilePage({
             {data.image && (
               <div className="relative w-full h-[440px] md:h-[520px] overflow-hidden rounded-2xl shadow-md">
                 <img
-                  src={urlFor(data.image)}
+                  src={sanitySized(urlFor(data.image), 1200)}
+                  srcSet={sanitySrcSet(urlFor(data.image), [480, 768, 1080, 1440])}
+                  sizes="(min-width: 768px) 50vw, 100vw"
                   alt={data.name}
                   className="w-full h-full object-cover"
                 />

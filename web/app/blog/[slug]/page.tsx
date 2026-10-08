@@ -1,7 +1,7 @@
 // app/blog/[slug]/page.tsx
 
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import groq from "groq";
 import { client } from "@/lib/sanity";
 import CommentFormWrapper from "@/components/CommentFormWrapper";
@@ -10,6 +10,7 @@ import BlogContent from "@/components/BlogContent";
 import ShareButtons from "@/components/ShareButtons";
 import Link from "next/link";
 import { generateArticleSchema } from "@/lib/generateArticleSchema";
+import { DEFAULT_OG_IMAGE, ogImageUrl } from "@/lib/seoDefaults";
 import type { Metadata } from "next";
 import type { Block } from "@/types/block";
 export const revalidate = 0;
@@ -244,8 +245,11 @@ export async function generateMetadata({
   const canonical =
     seo?.canonicalUrl ?? `https://www.fairtradesafaris.com/blog/${slug}/`;
 
-  const ogImage =
-    seo?.ogImageUrl ?? "https://www.fairtradesafaris.com/images/default-og.jpg";
+  // Batch 4: the fallback /images/default-og.jpg doesn't exist (404); use the
+  // site default. Sanity images are requested as the 1200x630 declared below.
+  const ogImage = seo?.ogImageUrl
+    ? ogImageUrl(seo.ogImageUrl)
+    : DEFAULT_OG_IMAGE;
 
   return {
     title: cleanTitle,

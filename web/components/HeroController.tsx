@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getImageProps } from "next/image";
+import { isSanityImage, sanityLoader } from "@/lib/sanityImageLoader";
 import { useCallback, useEffect, useRef, useState } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
@@ -233,12 +234,21 @@ function HeroPicture({
     sizes: "100vw",
     quality: 70,
   } as const;
+  // Batch 4: Sanity hero images are requested from Sanity's image CDN
+  // (sized per srcset width) instead of Vercel's /_next/image optimizer.
+  const loaderFor = (src: string) =>
+    isSanityImage(src) ? { loader: sanityLoader } : {};
   const {
     props: { srcSet: desktopSrcSet },
-  } = getImageProps({ ...common, src: desktopSrc });
+  } = getImageProps({ ...common, src: desktopSrc, ...loaderFor(desktopSrc) });
   const {
     props: { srcSet: mobileSrcSet, ...rest },
-  } = getImageProps({ ...common, src: mobileSrc, priority: true });
+  } = getImageProps({
+    ...common,
+    src: mobileSrc,
+    priority: true,
+    ...loaderFor(mobileSrc),
+  });
 
   return (
     <picture>
@@ -555,7 +565,6 @@ export default function HeroController({
   }
 
   const action: ActionMode = hero.action || "none";
-  console.log("🎯 HERO ACTION:", action);
   const showHomeFilters = action === "homeFilters";
   const showTypeSearch = action === "typeSearch";
 

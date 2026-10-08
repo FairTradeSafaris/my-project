@@ -2,7 +2,7 @@
 
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import useSWR, { useSWRConfig } from "swr";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 
 type Book = {
   _id: string;

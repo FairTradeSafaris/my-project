@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/nextjs";

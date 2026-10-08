@@ -1,3 +1,5 @@
+import { ogImageUrl } from "@/lib/seoDefaults";
+
 export interface ArticleSchemaInput {
   slug?: { current?: string };
   title: string;
@@ -47,13 +49,20 @@ export function generateArticleSchema({
   const url = `https://www.fairtradesafaris.com/blog/${slug?.current || ""}`;
   const canonical = canonicalUrl || url;
 
-  const imageObject = coverImage?.asset?.url
+  // Batch 4: width/height were hardcoded 1200x800 while covers are e.g.
+  // 1254x1254. Sanity covers now point at a 1200x630 crop from Sanity's CDN,
+  // so the declared size is the real size; other URLs get no dimensions.
+  const coverUrl = coverImage?.asset?.url;
+  const isSanityCover =
+    !!coverUrl &&
+    coverUrl.includes("cdn.sanity.io/images/") &&
+    !coverUrl.includes("?");
+  const imageObject = coverUrl
     ? {
         "@type": "ImageObject",
-        url: coverImage.asset.url,
-        width: 1200,
-        height: 800,
-        alternateName: coverImage.alt || title,
+        url: isSanityCover ? ogImageUrl(coverUrl) : coverUrl,
+        ...(isSanityCover ? { width: 1200, height: 630 } : {}),
+        alternateName: coverImage?.alt || title,
       }
     : undefined;
 
@@ -88,7 +97,8 @@ export function generateArticleSchema({
           url: "https://www.fairtradesafaris.com",
           logo: {
             "@type": "ImageObject",
-            url: "https://www.fairtradesafaris.com/images/logo.png",
+            // was /images/logo.png, which returns 404
+            url: "https://www.fairtradesafaris.com/logos/logo-dark.png",
           },
         },
       },
@@ -99,13 +109,13 @@ export function generateArticleSchema({
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: "https://www.fairtradesafaris.com",
+            item: "https://www.fairtradesafaris.com/",
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Blog",
-            item: "https://www.fairtradesafaris.com/blog",
+            item: "https://www.fairtradesafaris.com/blog/",
           },
           {
             "@type": "ListItem",

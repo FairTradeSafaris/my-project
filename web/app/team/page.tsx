@@ -4,7 +4,7 @@ export const revalidate = 60;
 import { client } from "@/lib/sanity";
 import type { TeamMember } from "@/types/teamMember";
 import { Mail, Linkedin } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import type { Metadata } from "next";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 

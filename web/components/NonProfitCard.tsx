@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { PortableText } from "@portabletext/react";
 import type { NonProfit } from "@/types/nonProfit";
 

@@ -1,7 +1,7 @@
 "use client";
 import { TypedObject } from "sanity";
 import { PortableText } from "@portabletext/react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { useEffect, useState } from "react";
 import { client } from "@/lib/sanity";
 import Link from "next/link";

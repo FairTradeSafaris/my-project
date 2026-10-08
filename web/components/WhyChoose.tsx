@@ -2,7 +2,7 @@
 
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 
 type WhyChooseBlock = {

@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { ShieldCheck, Wallet, RefreshCcw, Star, Quote } from "lucide-react";
 

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { useEffect, useState } from "react";
 import { Menu, Search, User, X } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";

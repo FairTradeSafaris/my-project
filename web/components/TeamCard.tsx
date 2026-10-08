@@ -1,7 +1,7 @@
 // components/TeamGrid.tsx
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import type { TeamMember } from "@/types/teamMember";
 
 export default function TeamGrid({ team }: { team: TeamMember[] }) {

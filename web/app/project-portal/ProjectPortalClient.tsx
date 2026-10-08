@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { client } from "@/lib/sanity";
 import type { PortableTextBlock } from "@portabletext/types";
 import PortableTextRenderer from "@/components/PortableTextRenderer";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 
 // 📄 Section type
 type Section = {

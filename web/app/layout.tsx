@@ -19,6 +19,10 @@ import LeadMagnetGate from "@/components/LeadMagnetGate";
 import CookieConsent from "@/components/CookieConsent";
 
 import { headers } from "next/headers";
+import { DEFAULT_OG_IMAGE } from "@/lib/seoDefaults";
+import { preconnect } from "react-dom";
+import { FOOTER_QUERY } from "@/lib/footerQuery";
+import type { FooterData } from "@/components/SafariFactFooter";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -39,9 +43,30 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
+  // Site-wide default social image for pages that set no openGraph/twitter
+  // metadata of their own (a page's own openGraph replaces this entirely).
+  openGraph: {
+    siteName: "Fair Trade Safaris",
+    type: "website",
+    images: [{ url: DEFAULT_OG_IMAGE, alt: "Fair Trade Safaris" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export const viewport: Viewport = { themeColor: "#2F3E46" };
+
+// Batch 4: footer fetched on the server (cached 5 min) so its links are in
+// the HTML; the browser no longer queries Sanity for it on every page view.
+async function getFooterData(): Promise<FooterData> {
+  try {
+    return await sanity.fetch(FOOTER_QUERY, {}, { next: { revalidate: 300 } });
+  } catch {
+    return null; // footer falls back to its own client-side fetch
+  }
+}
 
 async function getOrganizationSchema() {
   const org = await sanity.fetch(
@@ -75,7 +100,8 @@ async function getOrganizationSchema() {
     logo: org.logo?.asset?.url,
     image: org.image?.asset?.url,
     description: org.description,
-    telephone: org.telephone,
+    // No hardcoded fallback: omit telephone when Sanity has none.
+    telephone: org.telephone?.trim() || undefined,
     priceRange:
       typeof org.priceRange === "string"
         ? org.priceRange
@@ -103,7 +129,13 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const organizationSchema = await getOrganizationSchema();
+  const [organizationSchema, footerData] = await Promise.all([
+    getOrganizationSchema(),
+    getFooterData(),
+  ]);
+  // Batch 4: Sanity images are now loaded from cdn.sanity.io directly (hero
+  // included), so open that connection early.
+  preconnect("https://cdn.sanity.io");
   const headersList = await headers();
   const pathname = headersList.get("x-invoke-path") || "";
   const isSlugPage =
@@ -139,7 +171,7 @@ export default async function RootLayout({
               {isSlugPage ? (
                 children
               ) : (
-                <ClientLayout>{children}</ClientLayout>
+                <ClientLayout footerData={footerData}>{children}</ClientLayout>
               )}
               <Suspense fallback={null}>
                 <SafariBuilderProvider />

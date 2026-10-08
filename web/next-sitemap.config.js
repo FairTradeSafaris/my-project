@@ -8,10 +8,26 @@ const getAmbassadorUrls = require("./scripts/get-ambassador-urls.js");
 const getVideoTestimonialUrls = require("./scripts/get-video-testimonial-urls.js");
 const getPillarUrls = require("./scripts/get-pillar-urls.js");
 
+// Batch 3a: search/filter URL variants of the itinerary index (q= / open= as
+// the first or a later query parameter). Named user-agent groups do NOT
+// inherit the `*` rules, so every group below carries the same list.
+const ITINERARY_FILTER_DISALLOW = [
+  "/africansafariitineraries/?q=",
+  "/africansafariitineraries/?open=",
+  "/africansafariitineraries/?*&q=",
+  "/africansafariitineraries/?*&open=",
+];
+
 module.exports = {
   siteUrl: "https://www.fairtradesafaris.com",
 
-  additionalSitemaps: ["https://www.fairtradesafaris.com/journeys-sitemap.xml"],
+  // Batch 4: list the journeys URL file directly. journeys-sitemap.xml is
+  // itself a sitemap index, and an index inside an index isn't supported by
+  // the sitemap protocol (Google ignores nested indexes). journeys-sitemap.xml
+  // is still generated, so a copy submitted in Search Console keeps working.
+  // (next-sitemap builds the index from robotsTxtOptions.additionalSitemaps
+  // below; this top-level key is kept in step with it.)
+  additionalSitemaps: ["https://www.fairtradesafaris.com/journeys-sitemap-0.xml"],
 
   generateRobotsTxt: true,
 
@@ -33,6 +49,11 @@ module.exports = {
     "/books",
     "/project-portal",
     "/robots.txt",
+    // Batch 3a: destination pages are listed by additionalPaths
+    // (scripts/get-destination-urls.js, with trailing slash + lastmod). The
+    // auto-discovered copies have no trailing slash, so every country was in
+    // the sitemap twice.
+    "/destination/*",
   ],
 
   changefreq: "weekly",
@@ -78,21 +99,24 @@ module.exports = {
     transformRobotsTxt: async (config, robotsTxt) => {
       return robotsTxt.replace(/Host: .*\n?/g, "");
     },
+    // Used for BOTH sitemap.xml (index entries) and the robots.txt Sitemap:
+    // lines (sitemap.xml is added automatically).
     additionalSitemaps: [
-      "https://www.fairtradesafaris.com/journeys-sitemap.xml",
+      "https://www.fairtradesafaris.com/journeys-sitemap-0.xml",
     ],
     policies: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: [
-          "/africansafariitineraries/?q=",
-          "/africansafariitineraries/?open=",
-        ],
+        disallow: ITINERARY_FILTER_DISALLOW,
       },
-      { userAgent: "GPTBot", allow: "/" },
-      { userAgent: "Google-Extended", allow: "/" },
-      { userAgent: "CCBot", allow: "/" },
+      { userAgent: "GPTBot", allow: "/", disallow: ITINERARY_FILTER_DISALLOW },
+      {
+        userAgent: "Google-Extended",
+        allow: "/",
+        disallow: ITINERARY_FILTER_DISALLOW,
+      },
+      { userAgent: "CCBot", allow: "/", disallow: ITINERARY_FILTER_DISALLOW },
     ],
   },
 };

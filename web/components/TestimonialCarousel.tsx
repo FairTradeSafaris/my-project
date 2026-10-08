@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTestimonials, Testimonial } from "@/hooks/useTestimonials";
 import Link from "next/link";
@@ -87,7 +87,9 @@ export default function TestimonialCarousel() {
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-16">
             {settings?.heading || "Client Feedback"}{" "}
-            <span className="text-[#b49a7f]">& Testimonials</span>
+            {/* #a88f76: the brand tan darkened ~6% so this 30px heading passes
+                WCAG AA large-text contrast (3:1) on white (#b49a7f was 2.66:1) */}
+            <span className="text-[#a88f76]">& Testimonials</span>
           </h2>
 
           {/* Desktop Layout */}
@@ -152,7 +154,7 @@ export default function TestimonialCarousel() {
         {/* Video Testimonials Link */}
         <div className="mt-8 flex justify-center">
           <Link
-            href="/videoTestimonials"
+            href="/videoTestimonial/"
             className="text-[#b49a7f] text-base font-semibold underline hover:text-[#a5835e] transition"
           >
             Look at our video testimonials

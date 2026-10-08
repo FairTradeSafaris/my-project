@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { Images } from "lucide-react";
 import { createPortal } from "react-dom";
 

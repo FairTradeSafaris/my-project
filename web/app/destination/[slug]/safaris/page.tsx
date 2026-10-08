@@ -1,10 +1,11 @@
 import { groq } from "next-sanity";
 import { client } from "@/lib/sanity";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import JourneyCard from "@/components/JourneyCard";
+import { DEFAULT_OG_IMAGE, ogImageUrl } from "@/lib/seoDefaults";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -18,8 +19,13 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const d: { title?: string } | null = await client.fetch(
-    groq`*[_type == "destination" && slug.current == $slug][0]{ title }`,
+  // heroUrl (metadata-only field) = destination hero image or its gallery
+  // image, used for og:image; falls back to the site default.
+  const d: { title?: string; heroUrl?: string } | null = await client.fetch(
+    groq`*[_type == "destination" && slug.current == $slug][0]{
+      title,
+      "heroUrl": coalesce(heroImage.image.asset->url, heroImage.galleryImage->image.asset->url)
+    }`,
     { slug },
   );
   if (!d?.title) notFound();
@@ -27,12 +33,13 @@ export async function generateMetadata({
   const url = `https://www.fairtradesafaris.com/destination/${slug}/safaris/`;
   const title = `${d.title} Safari Itineraries & Packages | Fair Trade Safaris`;
   const description = `Browse handcrafted ${d.title} safari itineraries from Fair Trade Safaris: private, conservation-focused journeys with local guides and hand-picked lodges.`;
+  const image = d.heroUrl ? ogImageUrl(d.heroUrl) : DEFAULT_OG_IMAGE;
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title, description, url, images: [{ url: image }] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 type Journey = {

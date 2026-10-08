@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { client } from "@/lib/sanity";
+import { sanitySized } from "@/lib/sanityImageLoader";
 
 type PopupData = {
   enabled: boolean;
@@ -153,7 +154,7 @@ export default function LeadMagnetWrapper() {
         {popup.image?.asset?.url && (
           <div className="w-full">
             <img
-              src={popup.image.asset.url}
+              src={sanitySized(popup.image.asset.url, 896)}
               alt={popup.title}
               className="w-full h-48 object-cover object-center sm:rounded-t-xl"
             />

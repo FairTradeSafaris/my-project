@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { useState } from "react";
 import { Heart, Share2 } from "lucide-react";

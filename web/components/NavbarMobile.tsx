@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Menu, Search, User, X } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/nextjs";

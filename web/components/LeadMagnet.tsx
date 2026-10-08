@@ -5,7 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Gift, X } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/SanityImage";
 
 type Claim = { bookTitle: string; bookUrl: string };
 

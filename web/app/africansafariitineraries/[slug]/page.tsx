@@ -7,6 +7,12 @@ import JsonLd from "@/components/JsonLd";
 import JourneyClient from "./JourneyClient";
 import Link from "next/link";
 import JourneyCard from "@/components/JourneyCard";
+import WetuEmbed from "./WetuEmbed";
+import {
+  sanityDimensions,
+  sanitySized,
+  sanitySrcSet,
+} from "@/lib/sanityImageLoader";
 
 import type { PortableTextBlock } from "@portabletext/types";
 import { PortableText } from "@portabletext/react";
@@ -146,6 +152,9 @@ export default async function Page({
     : [];
 
   const pageUrl = `https://www.fairtradesafaris.com/africansafariitineraries/${journey.slug.current}/`;
+  const routeStops = (journey.destinations ?? [])
+    .map((d) => d?.title)
+    .filter((t): t is string => Boolean(t));
   const relatedBlogs = destinationIds.length
     ? await client.fetch(RELATED_BLOGS_QUERY, { destinationIds })
     : [];
@@ -250,8 +259,13 @@ export default async function Page({
       <main className="bg-[#FAF4EC] text-black">
         <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden md:h-[80vh]">
           {journey.heroImage?.asset?.url && (
+            // Batch 4: sized versions from Sanity's CDN (was the full original)
             <img
-              src={journey.heroImage.asset.url}
+              src={sanitySized(journey.heroImage.asset.url, 1920)}
+              srcSet={sanitySrcSet(journey.heroImage.asset.url)}
+              sizes="100vw"
+              width={sanityDimensions(journey.heroImage.asset.url)?.width}
+              height={sanityDimensions(journey.heroImage.asset.url)?.height}
               alt={journey.alt || journey.title}
               fetchPriority="high"
               className="absolute inset-0 w-full h-full object-cover object-center"
@@ -347,6 +361,12 @@ export default async function Page({
                           {children}
                         </p>
                       ),
+                      // rich-text H1 -> <h2> (journey title is the only <h1>)
+                      h1: ({ children }) => (
+                        <h2 className="text-2xl font-semibold mt-10 mb-4">
+                          {children}
+                        </h2>
+                      ),
                       h2: ({ children }) => (
                         <h2 className="text-2xl font-semibold mt-10 mb-4">
                           {children}
@@ -383,15 +403,28 @@ export default async function Page({
                 Full Safari Itinerary
               </h2>
 
-              <div className="border rounded-2xl overflow-hidden shadow-md">
-                <iframe
-                  src={journey.wetuLink}
-                  className="w-full h-[800px]"
-                  style={{ border: "none" }}
-                  loading="lazy"
-                  allowFullScreen
-                />
-              </div>
+              {/* Batch 4: the trip basics from Sanity as text in the page
+                  (the day-by-day detail lives only inside the Wetu iframe,
+                  which crawlers and AI tools don't read as part of this page). */}
+              {(routeStops.length > 0 || journey.duration) && (
+                <p className="text-center text-gray-700 -mt-3 mb-6">
+                  {routeStops.length > 0 && (
+                    <>
+                      <span className="font-semibold">Route:</span>{" "}
+                      {routeStops.join(" → ")}
+                    </>
+                  )}
+                  {routeStops.length > 0 && journey.duration && " · "}
+                  {journey.duration && (
+                    <>
+                      <span className="font-semibold">Duration:</span>{" "}
+                      {journey.duration}
+                    </>
+                  )}
+                </p>
+              )}
+
+              <WetuEmbed src={journey.wetuLink} title={journey.title} />
             </div>
           </section>
         )}

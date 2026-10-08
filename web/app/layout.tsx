@@ -131,19 +131,24 @@ export default async function RootLayout({
             forcedTheme="light"
           >
             <GlobalScriptWrapper />
+            {/* SEO: page content is no longer inside a <Suspense> boundary.
+                With it, notFound() was caught inside the boundary after the
+                shell was sent, so missing pages returned HTTP 200 (soft 404).
+                Only the client-side widgets keep their Suspense boundary. */}
+            <ClerkConsentGate>
+              {isSlugPage ? (
+                children
+              ) : (
+                <ClientLayout>{children}</ClientLayout>
+              )}
+              <Suspense fallback={null}>
+                <SafariBuilderProvider />
+                {/* were rendered twice each (duplicate modal markup) */}
+                <GlobalBookingPortal />
+                <LeadMagnetGate />
+              </Suspense>
+            </ClerkConsentGate>
             <Suspense fallback={null}>
-              <ClerkConsentGate>
-                {isSlugPage ? (
-                  children
-                ) : (
-                  <ClientLayout>{children}</ClientLayout>
-                )}
-                <SafariBuilderProvider /> {/* 👈 ADD HERE */}
-                <GlobalBookingPortal />
-                <LeadMagnetGate />
-                <GlobalBookingPortal />
-                <LeadMagnetGate />
-              </ClerkConsentGate>
               <CookieConsent />
             </Suspense>
           </ThemeProvider>

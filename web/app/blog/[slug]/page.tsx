@@ -365,9 +365,10 @@ export default async function BlogPost({
 
             {post.heroImage.text && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center px-4">
-                <h1 className="text-white text-3xl sm:text-5xl font-bold text-center max-w-4xl">
+                {/* Slogan only — the post title below is the page's single H1 */}
+                <p className="text-white text-3xl sm:text-5xl font-bold text-center max-w-4xl">
                   {post.heroImage.text}
-                </h1>
+                </p>
               </div>
             )}
           </div>
@@ -455,7 +456,7 @@ export default async function BlogPost({
                   {relatedDestinations.map((d) => (
                     <Link
                       key={d._id}
-                      href={`/destination/${d.slug}`}
+                      href={`/destination/${d.slug}/`}
                       className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full bg-white border border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 transition"
                     >
                       {d.title}
@@ -474,7 +475,14 @@ export default async function BlogPost({
                       {relatedJourneys.map((j) => (
                         <li key={j._id}>
                           <Link
-                            href={`/africansafariitineraries?q=${encodeURIComponent(j.title)}&open=true`}
+                            // Link straight to the itinerary page. The old
+                            // ?q=...&open=true URL is disallowed in robots.txt,
+                            // so these links passed no value to the itineraries.
+                            href={
+                              j.slug
+                                ? `/africansafariitineraries/${j.slug}/`
+                                : `/africansafariitineraries/`
+                            }
                             className="flex items-center gap-3 group"
                           >
                             {j.heroImage && (

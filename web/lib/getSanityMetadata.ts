@@ -1,7 +1,16 @@
 import { client as sanity } from "@/lib/sanity";
 import type { Metadata } from "next";
 
-export async function getSanityMetadata(slug: string): Promise<{
+/**
+ * @param slug      the `sitePages` document slug in Sanity
+ * @param routePath the public URL path of the page (e.g. "/videoTestimonial/").
+ *                  Defaults to `/${slug}/`. Used for the canonical URL so the
+ *                  canonical always points at a route that actually exists.
+ */
+export async function getSanityMetadata(
+  slug: string,
+  routePath?: string,
+): Promise<{
   metadata: Metadata;
   canonicalUrl?: string;
 }> {
@@ -24,9 +33,13 @@ export async function getSanityMetadata(slug: string): Promise<{
   const defaultTitle = "Fair Trade Safaris – Ethical Luxury Safari Travel";
   const defaultDescription =
     "Explore ethical African safaris with heart, luxury, and purpose.";
+  // NOTE: /images/default-og.jpg does not exist in /public — use a real image.
   const defaultOgImage =
-    "https://www.fairtradesafaris.com/images/default-og.jpg";
+    "https://www.fairtradesafaris.com/images/Serengeti-2-cheetahs-sitting-on-mound-1-scaled.jpg";
   const slugPath = slug === "home" ? "" : slug;
+  // Always absolute + trailing slash (next.config has trailingSlash: true)
+  const path =
+    routePath ?? (slugPath ? `/${slugPath}/` : "/");
 
   // 🧼 Strip any HTML tags that may have been entered in Sanity
   const stripTags = (input: string = "") =>
@@ -36,14 +49,14 @@ export async function getSanityMetadata(slug: string): Promise<{
   const description = stripTags(data?.metaDescription) || defaultDescription;
   const ogImageUrl = data?.ogImage?.asset?.url || defaultOgImage;
   const canonical =
-    data?.canonicalUrl || `https://www.fairtradesafaris.com/${slugPath}`;
+    data?.canonicalUrl || `https://www.fairtradesafaris.com${path}`;
 
   const metadata: Metadata = {
     title,
     description,
     metadataBase: new URL("https://www.fairtradesafaris.com"),
     alternates: {
-      canonical: `/${slugPath}`,
+      canonical,
     },
     openGraph: {
       title,

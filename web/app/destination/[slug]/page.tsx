@@ -9,6 +9,17 @@ import Gallery from "@/components/Gallery";
 import type { ImageOrGallery } from "../../../types/types";
 import { resolveImage } from "@components/journey-finder/utils";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  Users,
+  Bird,
+  Trees,
+  PawPrint,
+  Calendar,
+  Mountain,
+  MapPin,
+  Binoculars,
+} from "lucide-react";
 export const dynamic = "force-static";
 export const revalidate = 0;
 export async function generateStaticParams() {
@@ -105,11 +116,65 @@ type DestinationDoc = {
     region?: string;
     image?: string;
   }[];
+  heroIntro?: string;
+
+  stats?: {
+    label?: string;
+    value?: string;
+    icon?: string;
+  }[];
+
+  wildlifeHighlights?: string[];
+
+  featuredParks?: {
+    name?: string;
+    description?: string;
+    image?: {
+      asset?: {
+        url?: string;
+      };
+      alt?: string;
+    };
+    bestFor?: string[];
+  }[];
+
+  bestTimeToVisit?: {
+    summary?: string;
+    peakSeason?: string;
+    greenSeason?: string;
+    bestWildlifeMonths?: string;
+  };
+
+  conservationSection?: {
+    title?: string;
+    content?: PortableTextBlock[];
+    image?: {
+      asset?: {
+        url?: string;
+      };
+      alt?: string;
+    };
+  };
+
+  travelTips?: {
+    title?: string;
+    content?: string;
+  }[];
 };
 
 /* =======================
    QUERY
 ======================= */
+const iconMap = {
+  users: Users,
+  bird: Bird,
+  trees: Trees,
+  paw: PawPrint,
+  calendar: Calendar,
+  mountain: Mountain,
+  "map-pin": MapPin,
+  binoculars: Binoculars,
+};
 
 const query = groq`
 *[_type == "destination" && slug.current == $slug][0]{
@@ -206,6 +271,39 @@ const query = groq`
     question,
     answer
   },
+  heroIntro,
+
+stats,
+
+wildlifeHighlights,
+
+featuredParks[]{
+  name,
+  description,
+  image{
+    asset->{url},
+    alt
+  },
+  bestFor
+},
+
+bestTimeToVisit{
+  summary,
+  peakSeason,
+  greenSeason,
+  bestWildlifeMonths
+},
+
+conservationSection{
+  title,
+  content,
+  image{
+    asset->{url},
+    alt
+  }
+},
+
+travelTips,
 
   // Other destinations
   "otherDestinations": *[
@@ -284,13 +382,13 @@ const components: PortableTextComponents = {
 export default async function DestinationPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params; // ❌ this now throws
+  const { slug } = await params; // Next 15: params is a Promise
 
   const data = (await client.fetch(query, { slug })) as DestinationDoc | null;
 
-  if (!data) return <div className="p-10">Destination not found</div>;
+  if (!data) notFound();
 
   const hero = resolveImage(data.heroImage);
   const flag = resolveImage(data.flagImage);
@@ -309,54 +407,205 @@ export default async function DestinationPage({
       </div>
 
       <main className="bg-white text-gray-900">
-        {/* HERO SECTION */}
-        <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+        <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
           {hero.url && (
-            <div className="relative w-full h-[70vh] min-h-[500px] overflow-hidden">
+            <div className="relative min-h-[900px]">
+              {/* Background */}
               <Image
                 src={hero.url}
                 alt={hero.alt || data.title}
                 fill
-                className="object-cover object-[center_30%]"
-                sizes="100vw"
                 priority
+                className="object-cover"
               />
 
-              <div className="absolute inset-0 bg-black/40 flex flex-col justify-end p-8">
-                <div className="flex items-center gap-4">
-                  {flag?.url && (
-                    <Image
-                      src={flag.url}
-                      alt={`${data.title} flag`}
-                      width={42}
-                      height={28}
-                      className="rounded-sm object-contain"
-                    />
-                  )}
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/20" />
 
-                  <h1 className="text-4xl text-white font-bold">
-                    {data.title}
-                  </h1>
+              <div className="relative z-10 max-w-7xl mx-auto px-6 pt-40">
+                <div className="grid lg:grid-cols-[1fr_380px] gap-16 items-start">
+                  {/* LEFT */}
+                  <div className="max-w-3xl">
+                    {/* Breadcrumb */}
+                    <nav className="flex items-center gap-3 text-sm text-[#E7C98A] mb-8">
+                      <Link href="/">Home</Link>
+                      <span>›</span>
+                      <Link href="/destination/">Destinations</Link>
+                      <span>›</span>
+                      <span className="text-white">{data.title}</span>
+                    </nav>
+
+                    {/* Title */}
+                    <h1 className="text-6xl lg:text-8xl font-serif text-white leading-none mb-5">
+                      {data.title}
+                    </h1>
+
+                    {/* Subtitle */}
+                    <div className="flex items-center gap-3 mb-8">
+                      {flag?.url && (
+                        <Image
+                          src={flag.url}
+                          alt=""
+                          width={34}
+                          height={24}
+                          className="rounded-sm"
+                        />
+                      )}
+
+                      <span className="text-3xl text-white font-light">
+                        {data.heroIntro}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <div className="max-w-2xl text-xl leading-relaxed text-white/90">
+                      <PortableText
+                        value={
+                          data.travelInfo ? data.travelInfo.slice(0, 1) : []
+                        }
+                        components={components}
+                      />
+                    </div>
+
+                    {/* CTA */}
+                    <div className="flex flex-wrap gap-5 mt-10">
+                      <Link
+                        href={`/destination/${data.slug}/safaris/`}
+                        className="
+                  bg-[#D4A64A]
+                  hover:bg-[#c39333]
+                  text-black
+                  font-semibold
+                  px-10
+                  py-5
+                  rounded-lg
+                  transition
+                "
+                      >
+                        Explore {data.title} Safaris →
+                      </Link>
+
+                      <a
+                        href={data.ctaLink}
+                        className="
+                  border
+                  border-white/40
+                  text-white
+                  px-10
+                  py-5
+                  rounded-lg
+                  hover:bg-white/10
+                  transition
+                "
+                      >
+                        Plan Your Safari →
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* RIGHT CARD */}
+                  <aside className="hidden lg:block">
+                    <div
+                      className="
+              bg-[#F7F3EA]
+              rounded-3xl
+              shadow-2xl
+              overflow-hidden
+            "
+                    >
+                      <div className="p-8">
+                        <h3 className="text-3xl font-serif text-gray-900 mb-8">
+                          Tailor Made Safaris
+                        </h3>
+
+                        <div className="space-y-8">
+                          <div>
+                            <h4 className="font-semibold mb-2">
+                              Local Safari Expertise
+                            </h4>
+
+                            <p className="text-gray-600">
+                              Get trusted advice from East Africa safari
+                              specialists.
+                            </p>
+                          </div>
+
+                          <div className="border-t pt-6">
+                            <h4 className="font-semibold mb-2">
+                              Conservation-Focused Travel
+                            </h4>
+
+                            <p className="text-gray-600">
+                              Your journey supports wildlife conservation and
+                              local communities.
+                            </p>
+                          </div>
+                        </div>
+
+                        <a
+                          href={data.ctaLink}
+                          className="
+                    mt-8
+                    w-full
+                    inline-flex
+                    justify-center
+                    items-center
+                    bg-[#D4A64A]
+                    py-4
+                    rounded-lg
+                    font-semibold
+                  "
+                        >
+                          Book a Discovery Call →
+                        </a>
+                      </div>
+                    </div>
+                  </aside>
                 </div>
 
-                {data.region && (
-                  <p className="text-white/80 mt-2">{data.region}</p>
+                {/* Stats */}
+                {Array.isArray(data.stats) && data.stats.length > 0 && (
+                  <div className="mt-16 relative z-20">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                      {data.stats.slice(0, 6).map((stat, idx) => {
+                        const Icon =
+                          stat.icon &&
+                          iconMap[stat.icon as keyof typeof iconMap];
+
+                        return (
+                          <div
+                            key={idx}
+                            className="
+              bg-[#F7F3EA]
+              rounded-3xl
+              p-6
+              min-h-[220px]
+              shadow-xl
+              border border-black/5
+              flex flex-col
+            "
+                          >
+                            {Icon && (
+                              <Icon className="h-6 w-6 text-[#D4A64A] mb-5" />
+                            )}
+
+                            <div className="text-4xl font-serif text-gray-900 leading-tight mb-4">
+                              {stat.value}
+                            </div>
+
+                            <div className="text-gray-700 leading-relaxed">
+                              {stat.label}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
-
-                {/* ✅ NEW BUTTON */}
-                <div className="mt-6">
-                  <Link
-                    href={`/destination/${data.slug}/safaris/`}
-                    className="inline-block bg-[#E5D5B8] text-black px-6 py-3 rounded-md font-semibold hover:bg-[#d6c4a3] transition"
-                  >
-                    Explore {data.title} Safaris
-                  </Link>
-                </div>
               </div>
             </div>
           )}
         </section>
-
         {/* ================= HEADER BLOCK ================= */}
 
         <div className="max-w-7xl mx-auto px-6 mt-6">
@@ -533,7 +782,7 @@ export default async function DestinationPage({
                     {data.otherDestinations.map((dest) => (
                       <Link
                         key={dest._id}
-                        href={`/destination/${dest.slug}`}
+                        href={`/destination/${dest.slug}/`}
                         className="group block border rounded-lg overflow-hidden hover:shadow-lg transition"
                       >
                         {dest.image && (

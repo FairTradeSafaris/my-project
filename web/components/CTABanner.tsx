@@ -19,13 +19,19 @@ export default function CTABanner({
   sideImage,
   backgroundImage,
 }: CTABannerProps) {
+  // Performance: the CMS background was loaded at full size (4500x3000,
+  // ~1.8 MB on the homepage). Ask Sanity's image CDN for a resized WebP/AVIF.
+  const bgUrl = backgroundImage?.asset?.url;
+  const bgSized =
+    bgUrl && bgUrl.includes("cdn.sanity.io/images/") && !bgUrl.endsWith(".svg")
+      ? `${bgUrl}?w=1920&q=70&auto=format&fit=max`
+      : bgUrl;
+
   return (
     <section
       className="py-16 md:py-20 relative overflow-hidden"
       style={{
-        backgroundImage: backgroundImage?.asset?.url
-          ? `url(${backgroundImage.asset.url})`
-          : undefined,
+        backgroundImage: bgSized ? `url(${bgSized})` : undefined,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -54,6 +60,8 @@ export default function CTABanner({
               src={sideImage.asset.url}
               alt={headline || "CTA image"}
               className="w-full max-w-md mx-auto"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         )}

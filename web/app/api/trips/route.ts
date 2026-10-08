@@ -19,7 +19,7 @@ type TripForDebug = {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const email = searchParams.get("email");
+  const email = searchParams.get("email")?.toLowerCase().trim();
 
   console.log("API /api/trips called with email:", email);
 
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     console.log("No email param provided!");
     return NextResponse.json(
       { error: "Missing email parameter" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -65,7 +65,7 @@ export async function GET(req: Request) {
           }
         }
       }`,
-      { email }
+      { email },
     );
 
     console.log(`Fetched ${trips.length} trips for ${email}`);
@@ -81,7 +81,7 @@ export async function GET(req: Request) {
     console.error("Error fetching trips:", error);
     return NextResponse.json(
       { error: "Failed to fetch trips", details: error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

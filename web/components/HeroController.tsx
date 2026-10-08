@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
@@ -217,6 +217,38 @@ function HomeFilters() {
   );
 }
 
+/* -------------------- Art-directed hero image -------------------- */
+function HeroPicture({
+  desktopSrc,
+  mobileSrc,
+  alt,
+}: {
+  desktopSrc: string;
+  mobileSrc: string;
+  alt?: string;
+}) {
+  const common = {
+    alt: alt || "Hero background",
+    fill: true,
+    sizes: "100vw",
+    quality: 70,
+  } as const;
+  const {
+    props: { srcSet: desktopSrcSet },
+  } = getImageProps({ ...common, src: desktopSrc });
+  const {
+    props: { srcSet: mobileSrcSet, ...rest },
+  } = getImageProps({ ...common, src: mobileSrc, priority: true });
+
+  return (
+    <picture>
+      <source media="(min-width: 768px)" srcSet={desktopSrcSet} />
+      <source media="(max-width: 767px)" srcSet={mobileSrcSet} />
+      <img {...rest} fetchPriority="high" className="object-cover object-center" />
+    </picture>
+  );
+}
+
 /* -------------------- Presentational Hero -------------------- */
 function HeroView({
   bgUrlDesktop,
@@ -257,26 +289,11 @@ function HeroView({
   `}
       id="hero"
     >
-      {/* Mobile art-directed image */}
-      {/* Mobile image – DO NOT preload this */}
-      <Image
-        src={mobileSrc}
-        alt={alt || "Hero background"}
-        fill
-        sizes="100vw"
-        className="md:hidden object-cover object-center"
-      />
-
-      {/* Desktop image – THIS is preloaded for LCP */}
-      <Image
-        src={desktopSrc}
-        alt={alt || "Hero background"}
-        fill
-        priority
-        fetchPriority="high"
-        sizes="100vw"
-        className="hidden md:block object-cover object-center"
-      />
+      {/* LCP: art-directed hero via <picture>. The mobile <Image> used to be
+          lazy-loaded (it is the mobile LCP element: 5.5s LCP on Lighthouse
+          mobile). Now one <img>, eager + high priority, and the browser picks
+          the mobile or desktop source, so only one file is downloaded. */}
+      <HeroPicture desktopSrc={desktopSrc} mobileSrc={mobileSrc} alt={alt} />
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
 

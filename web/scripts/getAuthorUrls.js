@@ -2,7 +2,7 @@ const { client } = require("./sanity-client.cjs");
 
 module.exports = async function getAuthorUrls() {
   const authors = await client.fetch(
-    `*[_type == "author" && defined(slug.current)]{ "slug": slug.current }`
+    `*[_type == "author" && defined(slug.current) && !(_id in path("drafts.**"))]{ "slug": slug.current, "lastmod": _updatedAt }`
   );
 
   return authors
@@ -14,7 +14,8 @@ module.exports = async function getAuthorUrls() {
         !author.slug.includes("/")
     )
     .map((author) => ({
-      loc: `/authors/${author.slug}`,
+      loc: `/authors/${author.slug}/`,
+      lastmod: author.lastmod,
       changefreq: "monthly",
       priority: 0.5,
     }));

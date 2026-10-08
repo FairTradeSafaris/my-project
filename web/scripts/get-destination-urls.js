@@ -2,7 +2,7 @@ const { client } = require("./sanity-client.cjs");
 
 module.exports = async function getDestinationUrls() {
   const destinations = await client.fetch(
-    `*[_type == "destination" && defined(slug.current)]{ "slug": slug.current }`,
+    `*[_type == "destination" && defined(slug.current) && !(_id in path("drafts.**"))]{ "slug": slug.current, "lastmod": _updatedAt }`,
   );
 
   return destinations
@@ -15,12 +15,14 @@ module.exports = async function getDestinationUrls() {
     )
     .flatMap((d) => [
       {
-        loc: `/destination/${d.slug}`,
+        loc: `/destination/${d.slug}/`,
+        lastmod: d.lastmod,
         changefreq: "weekly",
         priority: 0.8,
       },
       {
-        loc: `/destination/${d.slug}/safaris`,
+        loc: `/destination/${d.slug}/safaris/`,
+        lastmod: d.lastmod,
         changefreq: "weekly",
         priority: 0.7,
       },

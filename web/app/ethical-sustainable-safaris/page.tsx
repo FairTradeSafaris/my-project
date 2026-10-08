@@ -6,13 +6,24 @@ import { client } from "@/lib/sanity";
 import { groq } from "next-sanity";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { metadata } = await getSanityMetadata("ethicalsustainablesafaris");
+  // Sanity doc slug is "ethicalsustainablesafaris" but the route is
+  // /ethical-sustainable-safaris/ — canonical must point at the real route
+  // (/ethicalsustainablesafaris/ rendered a soft 404; it now 301s here).
+  const { metadata } = await getSanityMetadata(
+    "ethicalsustainablesafaris",
+    "/ethical-sustainable-safaris/",
+  );
 
   if (metadata?.other && "ld-json" in metadata.other) {
     delete metadata.other["ld-json"];
   }
 
-  return metadata;
+  const canonical = "https://www.fairtradesafaris.com/ethical-sustainable-safaris/";
+  return {
+    ...metadata,
+    alternates: { canonical },
+    openGraph: { ...metadata.openGraph, url: canonical },
+  };
 }
 
 /* ✅ ADD HERO QUERY */
@@ -37,7 +48,7 @@ export default async function Page() {
 
   const breadcrumbs = [
     { label: "Home", href: "/" },
-    { label: "Ethical Safaris", href: "/ethicalsustainablesafaris" },
+    { label: "Ethical Safaris", href: "/ethical-sustainable-safaris/" },
   ];
 
   return (

@@ -72,11 +72,15 @@ export async function generateMetadata({
     { slug },
   );
 
-  if (!testimonial) return {};
+  if (!testimonial) notFound();
 
   return {
     title: `${testimonial.name} – ${testimonial.location} Safari Review`,
     description: testimonial.quote,
+    // These pages had no canonical at all
+    alternates: {
+      canonical: `https://www.fairtradesafaris.com/videoTestimonial/${slug}/`,
+    },
     openGraph: {
       title: `${testimonial.name} – Fair Trade Safaris`,
       description: testimonial.quote,

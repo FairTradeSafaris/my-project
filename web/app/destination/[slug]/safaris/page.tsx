@@ -2,11 +2,39 @@ import { groq } from "next-sanity";
 import { client } from "@/lib/sanity";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import JourneyCard from "@/components/JourneyCard";
 
 type PageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
+
+// SEO: this page used to inherit the parent destination's title, description
+// and canonical (13 duplicate title/description pairs, sitemap listing
+// non-canonical URLs). It lists itineraries, so give it its own metadata and a
+// self-referencing canonical.
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const d: { title?: string } | null = await client.fetch(
+    groq`*[_type == "destination" && slug.current == $slug][0]{ title }`,
+    { slug },
+  );
+  if (!d?.title) notFound();
+
+  const url = `https://www.fairtradesafaris.com/destination/${slug}/safaris/`;
+  const title = `${d.title} Safari Itineraries & Packages | Fair Trade Safaris`;
+  const description = `Browse handcrafted ${d.title} safari itineraries from Fair Trade Safaris: private, conservation-focused journeys with local guides and hand-picked lodges.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 type Journey = {
   _id: string;
   title: string;
@@ -53,14 +81,12 @@ const journeysQuery = groq`
 `;
 
 export default async function SafarisPage({ params }: PageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   // 1. Get destination
   const destination = await client.fetch(destinationQuery, { slug });
 
-  if (!destination) {
-    return <div className="p-10">Destination not found</div>;
-  }
+  if (!destination) notFound();
 
   // 2. Get journeys for this destination
   const journeys = await client.fetch(journeysQuery, {
@@ -99,8 +125,8 @@ export default async function SafarisPage({ params }: PageProps) {
       {/* BREADCRUMB */}
       <div className="max-w-7xl mx-auto px-6 mt-6 text-sm text-gray-500">
         <Link href="/">Home</Link> /{" "}
-        <Link href="/destination">Destinations</Link> /{" "}
-        <Link href={`/destination/${slug}`}>{destination.title}</Link> / Safaris
+        <Link href="/destination/">Destinations</Link> /{" "}
+        <Link href={`/destination/${slug}/`}>{destination.title}</Link> / Safaris
       </div>
 
       {/* INTRO */}

@@ -65,8 +65,10 @@ const portableComponents: Partial<PortableTextReactComponents> = {
     },
   },
   block: {
+    // "H1" blocks in post bodies render as <h2>: the post title is the page's
+    // only H1 (posts were showing 2-8 H1s, e.g. "1. Ostrich").
     h1: ({ children }) => (
-      <h1 className="text-3xl sm:text-4xl font-bold my-4">{children}</h1>
+      <h2 className="text-3xl sm:text-4xl font-bold my-4">{children}</h2>
     ),
 
     h2: ({ children }) => (

@@ -40,7 +40,7 @@ export async function generateMetadata({
     { slug: params.slug },
   );
 
-  if (!data) return {};
+  if (!data) notFound();
 
   const descriptionText =
     data.description?.[0]?.children
@@ -110,7 +110,7 @@ export async function generateMetadata({
       images: [imageUrl],
     },
     alternates: {
-      canonical: `https://www.fairtradesafaris.com/ambassadors/${params.slug}`, // ✅ Add this
+      canonical: `https://www.fairtradesafaris.com/ambassadors/${params.slug}/`,
     },
     // Also keep in metadata for crawlers that support it
     other: {

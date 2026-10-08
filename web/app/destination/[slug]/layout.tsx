@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { client } from "@/lib/sanity";
 import { resolveImage } from "@components/journey-finder/utils";
 type MetadataDestination = {
@@ -74,12 +75,8 @@ export async function generateMetadata({
     { slug },
   )) as MetadataDestination | null;
 
-  if (!data) {
-    return {
-      title: "Not Found | Fair Trade Safaris",
-      description: "Destination not found.",
-    };
-  }
+  // Unknown destination -> real 404 instead of 200 + "not found" text
+  if (!data) notFound();
 
   const image = resolveImage(data.heroImage);
   const title = data.metaTitle || `${data.title} | Fair Trade Safaris`;

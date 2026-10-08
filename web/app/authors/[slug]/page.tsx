@@ -49,7 +49,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const author = await getAuthor(params.slug);
-  if (!author) return {};
+  if (!author) notFound();
   return {
     title: `${author.name} | Fair Trade Safaris`,
     description: author.bio?.slice(0, 155),
@@ -59,7 +59,7 @@ export async function generateMetadata({
       images: author.image ? [urlFor(author.image).url()] : [],
     },
     alternates: {
-      canonical: `https://www.fairtradesafaris.com/authors/${params.slug}`,
+      canonical: `https://www.fairtradesafaris.com/authors/${params.slug}/`,
     },
   };
 }

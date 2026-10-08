@@ -125,8 +125,9 @@ heroCTA {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
   const data = await client.fetch(
     groq`
 *[_type == "pillarPage" && slug.current == $slug][0]{
@@ -141,12 +142,14 @@ export async function generateMetadata({
   }
 }
 `,
-    { slug: params.slug },
+    { slug },
   );
 
-  if (!data) {
-    return { title: "Page Not Found" };
-  }
+  // Unknown slug -> real 404 (this used to return 200 + "Page Not Found").
+  if (!data) notFound();
+
+  const canonical =
+    data.canonicalUrl || `https://www.fairtradesafaris.com/${slug}/`;
 
   const title = data.seoTitle || data.title;
   const description = data.metaDescription;
@@ -164,8 +167,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url:
-        data.canonicalUrl || `https://www.fairtradesafaris.com/${params.slug}`,
+      url: canonical,
       images: image ? [{ url: image }] : [],
       type: "article",
     },
@@ -178,8 +180,7 @@ export async function generateMetadata({
     },
 
     alternates: {
-      canonical:
-        data.canonicalUrl || `https://www.fairtradesafaris.com/${params.slug}`,
+      canonical,
     },
   };
 }

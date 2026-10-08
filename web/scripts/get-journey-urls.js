@@ -2,8 +2,9 @@ const { client } = require("./sanity-client.cjs");
 
 module.exports = async function getJourneyUrls() {
   const journeys = await client.fetch(
-    `*[_type == "journey" && defined(slug.current)]{
-      "slug": slug.current
+    `*[_type == "journey" && defined(slug.current) && !(_id in path("drafts.**"))]{
+      "slug": slug.current,
+      "lastmod": _updatedAt
     }`
   );
 
@@ -16,7 +17,8 @@ module.exports = async function getJourneyUrls() {
         !j.slug.includes("/")
     )
     .map((journey) => ({
-      loc: `https://www.fairtradesafaris.com/africansafariitineraries/${journey.slug}`,
+      loc: `https://www.fairtradesafaris.com/africansafariitineraries/${journey.slug}/`,
+      lastmod: journey.lastmod,
       changefreq: "monthly",
       priority: 0.6,
     }));

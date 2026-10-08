@@ -9,6 +9,7 @@ module.exports = {
   changefreq: "weekly",
   priority: 0.9,
   sitemapSize: 5000,
+  trailingSlash: true,
 
   transform: async () => null,
 

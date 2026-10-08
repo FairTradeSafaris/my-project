@@ -45,7 +45,10 @@ type Testimonial = {
    METADATA
 =========================== */
 export async function generateMetadata(): Promise<Metadata> {
-  const { metadata } = await getSanityMetadata("videoTestimonial");
+  const { metadata } = await getSanityMetadata(
+    "videoTestimonial",
+    "/videoTestimonial/",
+  );
 
   return {
     ...metadata,
@@ -54,7 +57,8 @@ export async function generateMetadata(): Promise<Metadata> {
       metadata?.description ||
       "Hear directly from travelers who experienced ethical, luxury safari adventures with us.",
     alternates: {
-      canonical: "https://www.fairtradesafaris.com/video-testimonials/",
+      // /video-testimonials/ does not exist (it rendered a soft 404) — self-canonical
+      canonical: "https://www.fairtradesafaris.com/videoTestimonial/",
     },
   };
 }

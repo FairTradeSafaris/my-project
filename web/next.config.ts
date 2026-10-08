@@ -17,6 +17,12 @@ const baseConfig: NextConfig = {
   reactStrictMode: true,
   trailingSlash: true,
 
+  // SEO: Next 15.2+ streams <title>/<meta>/<link rel=canonical> into <body>
+  // for any UA not matched here (Googlebot, AI crawlers, Screaming Frog...).
+  // Matching every UA makes metadata blocking again, so it always lands in
+  // <head> and notFound() thrown from generateMetadata returns a real 404.
+  htmlLimitedBots: /.*/,
+
   serverExternalPackages: ["@clerk/clerk-sdk-node"],
 
   webpack: (config, { isServer }) => {
@@ -137,6 +143,37 @@ const baseConfig: NextConfig = {
       {
         source: "/destinations/:slug/",
         destination: "/destination/:slug/",
+        permanent: true,
+      },
+      // SEO: legacy / mistyped URLs that currently render soft-404s
+      {
+        source: "/non-profits/",
+        destination: "/nonprofits/",
+        permanent: true,
+      },
+      {
+        source: "/ethicalsustainablesafaris/",
+        destination: "/ethical-sustainable-safaris/",
+        permanent: true,
+      },
+      {
+        source: "/video-testimonials/",
+        destination: "/videoTestimonial/",
+        permanent: true,
+      },
+      {
+        source: "/video-testimonials/:slug/",
+        destination: "/videoTestimonial/:slug/",
+        permanent: true,
+      },
+      {
+        source: "/africansafariitineraries/null/",
+        destination: "/africansafariitineraries/",
+        permanent: true,
+      },
+      {
+        source: "/destination/null/",
+        destination: "/destination/",
         permanent: true,
       },
       {

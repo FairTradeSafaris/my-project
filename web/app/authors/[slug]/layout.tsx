@@ -32,7 +32,7 @@ export async function generateMetadata({
   const title = data.metaTitle || `${data.name} | Fair Trade Safaris`;
   const description = data.metaDescription || data.bio || `About ${data.name}`;
   const imageUrl = data.image?.asset?.url;
-  const canonicalUrl = `https://www.fairtradesafaris.com/authors/${data.slug}`;
+  const canonicalUrl = `https://www.fairtradesafaris.com/authors/${data.slug}/`;
 
   const webPageSchema = {
     "@context": "https://schema.org",

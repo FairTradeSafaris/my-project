@@ -1,6 +1,7 @@
 // africansafariitineraries/[slug]/layout.tsx
 
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { client } from "@/lib/sanity";
 
 export async function generateMetadata({
@@ -22,12 +23,8 @@ export async function generateMetadata({
     { slug },
   );
 
-  if (!data) {
-    return {
-      title: "Safari Itinerary | Fair Trade Safaris",
-      description: "Explore handcrafted African safari itineraries.",
-    };
-  }
+  // Unknown itinerary -> real 404 (e.g. /africansafariitineraries/null/)
+  if (!data) notFound();
 
   const title = data.metaTitle || `${data.title} | Fair Trade Safaris`;
   const description =

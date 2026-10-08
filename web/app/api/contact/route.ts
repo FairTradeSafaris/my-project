@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         </table>
 
         <p style="font-size: 14px; margin-top: 30px; color: #777;">
-          This message was sent from <a href="https://fairtradesafaris.com" target="_blank">fairtradesafaris.com</a>.
+          This message was sent from <a href="https://www.fairtradesafaris.com" target="_blank">fairtradesafaris.com</a>.
         </p>
       </div>
     `,

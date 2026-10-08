@@ -37,13 +37,12 @@ const schemaQuery = groq`
 
 type Props = {
   children: React.ReactNode;
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export default async function Layout({ children, params }: Props) {
-  const data: PageData | null = await client.fetch(schemaQuery, {
-    slug: params.slug,
-  });
+  const { slug } = await params;
+  const data: PageData | null = await client.fetch(schemaQuery, { slug });
 
   // fallback
   if (!data) {
@@ -56,7 +55,7 @@ export default async function Layout({ children, params }: Props) {
     "@type": "CollectionPage",
     name: data.title,
     description: data.metaDescription,
-    url: `https://www.fairtradesafaris.com/${data.slug}`,
+    url: `https://www.fairtradesafaris.com/${data.slug}/`,
   };
 
   // ✅ FAQ schema

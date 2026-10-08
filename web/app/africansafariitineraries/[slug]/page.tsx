@@ -76,6 +76,7 @@ destinations[]->{
 const SUGGESTED_QUERY = groq`
   *[
     _type == "journey" &&
+    defined(slug.current) &&
     slug.current != $slug &&
     count(destinations[@._ref in $destinationIds]) > 0
   ]| order(featuredOnHome desc, price desc){

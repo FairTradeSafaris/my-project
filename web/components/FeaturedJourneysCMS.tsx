@@ -85,9 +85,16 @@ export default function FeaturedJourneysCMS({ section, journeys }: Props) {
           <div className="relative rounded-2xl overflow-hidden group min-h-[420px]">
             {section.customCard.image?.asset?.url && (
               <img
-                src={section.customCard.image.asset.url}
+                // resized via Sanity's image CDN (card is max ~400px wide)
+                src={
+                  section.customCard.image.asset.url.endsWith(".svg")
+                    ? section.customCard.image.asset.url
+                    : `${section.customCard.image.asset.url}?w=800&q=70&auto=format&fit=max`
+                }
                 alt={section.customCard.title || "Custom safari"}
                 className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
             )}
 

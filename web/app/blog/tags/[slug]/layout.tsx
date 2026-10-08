@@ -5,9 +5,11 @@ import type { Metadata } from "next";
 export async function generateMetadata({
   params,
 }: {
-  params: { tag: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const tag = decodeURIComponent(params.tag);
+  // folder is [slug] — `params.tag` was always undefined ("undefined Articles")
+  const { slug } = await params;
+  const tag = decodeURIComponent(slug);
   const title = `${tag} Articles | Fair Trade Safaris Blog`;
   const description = `Explore blog posts tagged with "${tag}" — expert insights, stories, and tips for ethical travel.`;
   const canonicalUrl = `https://www.fairtradesafaris.com/blog/tags/${encodeURIComponent(tag)}/`;

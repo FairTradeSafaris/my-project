@@ -15,9 +15,20 @@ module.exports = {
 
   generateRobotsTxt: true,
 
+  // trailingSlash matches next.config.ts (trailingSlash: true)
+  trailingSlash: true,
+
   exclude: [
     "/404",
     "/500",
+    // never list sitemap files / non-HTML assets as pages
+    "/*.xml",
+    "/journeys-sitemap*",
+    "/sign-in*",
+    "/sign-up*",
+    "/user-profile*",
+    "/bookings",
+    "/_offline",
     "/client-home",
     "/books",
     "/project-portal",
@@ -56,6 +67,7 @@ module.exports = {
 
     allPaths.forEach((item) => {
       if (!item || !item.loc) return;
+      if (/\.(xml|txt|json|png|jpe?g|webp|svg)$/i.test(item.loc)) return;
       uniqueMap.set(item.loc, item);
     });
 

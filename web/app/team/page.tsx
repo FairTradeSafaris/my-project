@@ -60,9 +60,9 @@ export default async function TeamPage() {
               />
             </div>
 
-            <h3 className="text-3xl md:text-4xl font-extrabold text-[#3c2a1e]  tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-[#3c2a1e]  tracking-tight leading-tight">
               {pageData?.title || "Meet the Humans Behind the Magic"}
-            </h3>
+            </h1>
 
             {pageData?.intro && (
               <p className="mt-4 text-gray-700  max-w-2xl mx-auto">

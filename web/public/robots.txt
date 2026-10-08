@@ -1,10 +1,8 @@
 # *
 User-agent: *
 Allow: /
-Disallow: /*?q=
-Disallow: /*&q=
-Disallow: /*?open=
-Disallow: /*&open=
+Disallow: /africansafariitineraries/?q=
+Disallow: /africansafariitineraries/?open=
 
 # GPTBot
 User-agent: GPTBot

@@ -510,6 +510,8 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                       alt="Luxury African safari landscape"
                       fill
                       sizes="100vw"
+                      // q60 keeps every variant under 100 KB (q75 = 116 KB)
+                      quality={60}
                       className="object-cover"
                     />
                   </div>

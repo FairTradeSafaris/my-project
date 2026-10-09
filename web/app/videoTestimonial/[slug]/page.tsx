@@ -2,7 +2,10 @@ import { groq } from "next-sanity";
 import { freshClient as client } from "@/lib/sanityFresh";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { sanitySized } from "@/lib/sanityImageLoader";
+import { sanityDimensions, sanitySized } from "@/lib/sanityImageLoader";
+
+// collapse stray spaces from Sanity names ("Michael Griffith  –")
+const clean = (s?: string) => (s || "").replace(/\s+/g, " ").trim();
 import Link from "next/link";
 
 export const revalidate = 60;
@@ -76,14 +79,14 @@ export async function generateMetadata({
   if (!testimonial) notFound();
 
   return {
-    title: `${testimonial.name} – ${testimonial.location} Safari Review`,
+    title: `${clean(testimonial.name)} – ${clean(testimonial.location)} Safari Review`,
     description: testimonial.quote,
     // These pages had no canonical at all
     alternates: {
       canonical: `https://www.fairtradesafaris.com/videoTestimonial/${slug}/`,
     },
     openGraph: {
-      title: `${testimonial.name} – Fair Trade Safaris`,
+      title: `${clean(testimonial.name)} – Fair Trade Safaris`,
       description: testimonial.quote,
       images: testimonial.thumbnailUrl
         ? [
@@ -253,6 +256,8 @@ export default async function Page({
                   <img
                     src={sanitySized(item.thumbnailUrl, 640) || "/fallback.jpg"}
                     alt={item.name}
+                    width={sanityDimensions(item.thumbnailUrl)?.width}
+                    height={sanityDimensions(item.thumbnailUrl)?.height}
                     loading="lazy"
                     decoding="async"
                     className="object-cover w-full h-full group-hover:scale-105 transition duration-300"

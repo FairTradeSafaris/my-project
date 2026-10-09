@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { draftMode } from "next/headers";
 import { client as sanity } from "@/lib/sanity";
+import { sanityDimensions } from "@/lib/sanityImageLoader";
+
+// Served size of a cover requested at w=600 (Sanity never upscales)
+function coverSize(url: string) {
+  const d = sanityDimensions(url);
+  if (!d) return { width: 600, height: 450 };
+  const width = Math.min(600, d.width);
+  return { width, height: Math.round((width * d.height) / d.width) };
+}
 
 type BlogPost = {
   _id: string;
@@ -89,6 +98,10 @@ export default async function BlogPreview() {
                           : post.coverImage.asset.url
                       }
                       alt={post.coverImage.alt || post.title}
+                      // width/height = the size actually served (<= 600px),
+                      // so the rendered size is unchanged
+                      width={coverSize(post.coverImage.asset.url).width}
+                      height={coverSize(post.coverImage.asset.url).height}
                       className="mb-2 rounded-md aspect-[4/3] object-cover"
                       loading="lazy"
                       decoding="async"

@@ -253,7 +253,9 @@ export default function JourneyFinderClientWithAuth() {
   return (
     <main className="min-h-screen bg-white text-black px-4 py-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">African Safari Itineraries</h1>
+        {/* h2: the page (app/africansafariitineraries/page.tsx) already has
+            the <h1> ("Safari. Reimagined."); same classes, so it looks the same */}
+        <h2 className="text-2xl font-bold mb-6">African Safari Itineraries</h2>
 
         <div className="lg:hidden mb-4 text-right">
           <button

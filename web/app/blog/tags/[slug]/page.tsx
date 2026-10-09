@@ -4,7 +4,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DEFAULT_OG_IMAGE, ogImageUrl } from "@/lib/seoDefaults";
-import { sanitySized, sanitySrcSet } from "@/lib/sanityImageLoader";
+import {
+  sanityDimensions,
+  sanitySized,
+  sanitySrcSet,
+} from "@/lib/sanityImageLoader";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -22,7 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Unknown tag -> real 404 (was HTTP 200 + "Tag not found").
   if (!tag) notFound();
 
-  const title = `${tag.title} Articles | Fair Trade Safaris`;
+  // collapse stray spaces from Sanity ("Lion Safari " gave a double space)
+  const title = `${(tag.title || "").replace(/\s+/g, " ").trim()} Articles | Fair Trade Safaris`;
   const description =
     tag.description ||
     `Explore articles about ${tag.title} and ethical African travel.`;
@@ -84,6 +89,8 @@ export default async function TagPage({ params }: Props) {
               srcSet={sanitySrcSet(tag.heroImage)}
               sizes="100vw"
               fetchPriority="high"
+              width={sanityDimensions(tag.heroImage)?.width}
+              height={sanityDimensions(tag.heroImage)?.height}
               alt={tag.alt || tag.title}
               className="absolute inset-0 w-full h-full object-cover"
             />

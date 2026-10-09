@@ -316,6 +316,8 @@ export default async function Page({
                       key={i}
                       src={journey.starIcon?.asset?.url}
                       alt="Luxury Star"
+                      width={20}
+                      height={20}
                       className="w-5 h-5"
                     />
                   ))}

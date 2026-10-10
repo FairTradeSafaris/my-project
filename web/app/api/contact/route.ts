@@ -23,8 +23,36 @@ async function refreshAccessToken() {
   return accessToken;
 }
 
+const esc = (v: unknown) =>
+  String(v ?? "")
+    .slice(0, 200)
+    .replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+function looksLikeSpam(b: Record<string, unknown>) {
+  if (typeof b.website === "string" && b.website.trim() !== "") return true; // honeypot filled
+  if (typeof b.elapsedMs !== "number" || b.elapsedMs < 3000) return true; // too fast / not from the form
+  const email = String(b.email ?? "");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return true;
+  if ((email.split("@")[0].match(/\./g) || []).length >= 3) return true; // d.v.o.rr.ise.s@ style
+  const name = `${b.firstName ?? ""}${b.lastName ?? ""}`;
+  if (!name.trim() || /https?:|www\./i.test(name)) return true;
+  return false;
+}
+
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const raw = await req.json().catch(() => ({}));
+  if (looksLikeSpam(raw)) {
+    // Pretend success so bots don't retry
+    return NextResponse.json({ ok: true }, { status: 200 });
+  }
+  const body = {
+    firstName: esc(raw.firstName),
+    lastName: esc(raw.lastName),
+    email: esc(raw.email),
+    phone: esc(raw.phone),
+    appointment: !!raw.appointment,
+    marketingConsent: !!raw.marketingConsent,
+  };
 
   // ✅ Send Resend email first
   const resend = new Resend(process.env.RESEND_API_KEY);

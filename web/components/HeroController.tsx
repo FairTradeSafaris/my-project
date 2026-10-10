@@ -297,7 +297,7 @@ function HeroView({
       className={`
     relative w-full
     ${isHome ? "h-[75vh] md:h-[80vh]" : "h-[500px] md:h-[500px]"}
-    ${isHome ? "pt-24 md:pt-28" : ""}
+    ${isHome ? "pt-24 md:pt-28" : "pt-20 md:pt-24"}
   `}
       id="hero"
     >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ContactForm from "@/components/ContactForm";
 import {
   RiCalendarLine,
@@ -27,6 +27,23 @@ export default function ContactPageClient({
   contactInfo?: ContactInfo;
 }) {
   const [bookingOpen, setBookingOpen] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!bookingOpen) return;
+    const prev = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setBookingOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+      prev?.focus();
+    };
+  }, [bookingOpen]);
 
   // No hardcoded placeholder number: if Sanity has no phone, the "Call Us"
   // row is simply not rendered.
@@ -35,12 +52,12 @@ export default function ContactPageClient({
 
   // Brand / palette
   const accent = "#a35c2d";
-  const leftCardBg = "#d7ccc8e6"; // your updated sand tone
-  const iconBg = "#f3eadf";
+  const leftCardBg = "#5c4033"; // solid brand brown
+  const iconBg = "#f2e7db";
 
   // High-contrast text on sand
-  const textPrimary = "#3c2f2f"; // headings & row titles
-  const textSecondary = "#6b4f3f"; // subtitles (phone/email etc.)
+  const textPrimary = "#f2e7db"; // cream on brown
+  const textSecondary = "#e3d3c1"; // softer cream for subtitles
 
   const whatsappHref = useMemo(() => {
     const raw = contactInfo?.whatsappNumber;
@@ -60,26 +77,30 @@ export default function ContactPageClient({
 
   return (
     <main
-      className="text-white font-sans bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: `url('${backgroundImageUrl}')` }}
+      className="font-sans relative bg-[#f2e7db] bg-cover bg-center bg-no-repeat text-[#3c2f2f]"
+      style={backgroundImageUrl ? { backgroundImage: `url('${backgroundImageUrl}')` } : undefined}
     >
-      {/* Overlay tint for readability */}
-      <div className="absolute inset-0 bg-black/20 z-0" />
+      {/* Tint only when a background photo is set in Sanity */}
+      {backgroundImageUrl && <div className="absolute inset-0 bg-black/20 z-0" />}
 
       {/* Content container (optimized spacing) */}
-      <div className="relative z-10 px-4 pt-6 md:pt-8 pb-6 md:pb-8">
+      <div className="relative z-10 px-4 py-10 md:py-14">
         <section className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
           {/* LEFT: Contact Info Card */}
           <div
-            className="rounded-xl p-6 md:p-8 flex flex-col justify-between shadow-xl h-full"
+            className="rounded-xl p-6 md:p-8 flex flex-col justify-between shadow-md h-full"
             style={{ backgroundColor: leftCardBg }}
           >
-            <h3
-              className="text-2xl font-bold mb-5 md:mb-6"
+            <div>
+            <h2
+              className="text-2xl font-bold mb-2"
               style={{ color: textPrimary }}
             >
-              Contact Information
-            </h3>
+              Talk to a real person
+            </h2>
+            <p className="text-sm mb-6 border-b border-[#f2e7db]/25 pb-5" style={{ color: textSecondary }}>
+              Our safari specialists reply within one business day, Monday to Friday (SAST).
+            </p>
 
             {[
               {
@@ -144,8 +165,9 @@ export default function ContactPageClient({
                 <a
                   key={i}
                   href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...(item.href?.startsWith("http")
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
                   className="flex items-start gap-4 group text-left w-full mb-5 md:mb-6"
                 >
                   <div
@@ -162,13 +184,8 @@ export default function ContactPageClient({
                       {item.title}
                     </span>
                     <span
-                      className="text-sm mt-0.5 font-medium group-hover:underline truncate max-w-[16rem]"
-                      style={{
-                        color:
-                          item.title === "Let’s Chat"
-                            ? textPrimary
-                            : textSecondary,
-                      }}
+                      className="text-sm mt-0.5 font-medium group-hover:underline break-all"
+                      style={{ color: textSecondary }}
                     >
                       {item.subtitle}
                     </span>
@@ -176,13 +193,17 @@ export default function ContactPageClient({
                 </a>
               )
             )}
+            </div>
           </div>
 
           {/* RIGHT: Transparent Contact Form */}
-          <div className="rounded-xl p-6 md:p-8 backdrop-blur-md bg-white/20 shadow-xl border border-white/30 h-full">
-            <h2 className="text-2xl font-bold mb-5 md:mb-6 text-white">
+          <div className="rounded-xl p-6 md:p-8 bg-white shadow-md border border-[#e3d3c1] h-full">
+            <h2 className="text-2xl font-bold mb-1 text-[#3c2f2f]">
               Start Your Journey
             </h2>
+            <p className="text-sm text-[#6b4f3f] mb-5 md:mb-6">
+              Tell us a little about your plans and we&apos;ll be in touch.
+            </p>
             <ContactForm />
           </div>
         </section>
@@ -195,6 +216,9 @@ export default function ContactPageClient({
           onClick={() => setBookingOpen(false)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Book a Discovery Call"
             className="absolute top-0 right-0 h-full w-full sm:w-[90vw] md:w-[85vw] lg:w-[75vw] bg-white shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
@@ -203,6 +227,7 @@ export default function ContactPageClient({
                 Book a Discovery Call
               </span>
               <button
+                ref={closeRef}
                 onClick={() => setBookingOpen(false)}
                 className="text-2xl leading-none font-bold text-gray-800 hover:text-black"
                 aria-label="Close"
@@ -213,6 +238,7 @@ export default function ContactPageClient({
 
             <iframe
               src={bookingLink}
+              title="Book a Discovery Call"
               className="w-full h-[calc(100%-56px)]"
               style={{ border: "none" }}
               allowFullScreen

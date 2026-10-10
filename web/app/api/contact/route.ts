@@ -6,26 +6,34 @@ const refreshToken = process.env.ZOHO_REFRESH_TOKEN!;
 const clientId = process.env.ZOHO_CLIENT_ID!;
 const clientSecret = process.env.ZOHO_CLIENT_SECRET!;
 
-async function refreshAccessToken() {
-  const res = await fetch("https://accounts.zoho.com/oauth/v2/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: clientId,
-      client_secret: clientSecret,
-      refresh_token: refreshToken,
-    }),
-  });
-
-  const data = await res.json();
-  accessToken = data.access_token;
-  return accessToken;
+async function refreshAccessToken(): Promise<boolean> {
+  try {
+    const res = await fetch("https://accounts.zoho.com/oauth/v2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.access_token) {
+      console.error("[contact] Zoho token refresh failed", res.status, data?.error);
+      return false;
+    }
+    accessToken = data.access_token;
+    return true;
+  } catch (err) {
+    console.error("[contact] Zoho token refresh error", err);
+    return false;
+  }
 }
 
-const esc = (v: unknown) =>
+const esc = (v: unknown, max = 200) =>
   String(v ?? "")
-    .slice(0, 200)
+    .slice(0, max)
     .replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 function looksLikeSpam(b: Record<string, unknown>) {
@@ -52,11 +60,15 @@ export async function POST(req: NextRequest) {
     phone: esc(raw.phone),
     appointment: !!raw.appointment,
     marketingConsent: !!raw.marketingConsent,
+    travelMonth: esc(raw.travelMonth, 60),
+    message: esc(raw.message, 2000),
   };
 
   // ✅ Send Resend email first
+  let emailOk = false;
+  try {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: process.env.NOTIFY_EMAIL_FROM || "fromwebsite@fairtradesafaris.com",
     to: process.env.NOTIFY_EMAIL_TO || "devon@fairtradesafaris.com",
     subject: `📬 New Safari Inquiry from ${body.firstName} ${body.lastName}`,
@@ -79,6 +91,10 @@ export async function POST(req: NextRequest) {
             <td>${body.phone}</td>
           </tr>
           <tr>
+            <td style="padding: 8px 0;"><strong>Travel month:</strong></td>
+            <td>${body.travelMonth || "-"}</td>
+          </tr>
+          <tr>
             <td style="padding: 8px 0;"><strong>Appointment Requested:</strong></td>
             <td>${body.appointment ? "Yes" : "No"}</td>
           </tr>
@@ -87,6 +103,7 @@ export async function POST(req: NextRequest) {
             <td>${body.marketingConsent ? "Yes" : "No"}</td>
           </tr>
         </table>
+        ${body.message ? `<p style="margin-top: 20px;"><strong>Message:</strong></p><p style="white-space: pre-wrap;">${body.message}</p>` : ""}
 
         <p style="font-size: 14px; margin-top: 30px; color: #777;">
           This message was sent from <a href="https://www.fairtradesafaris.com" target="_blank">fairtradesafaris.com</a>.
@@ -94,6 +111,11 @@ export async function POST(req: NextRequest) {
       </div>
     `,
   });
+    if (error) console.error("[contact] Resend error", error);
+    else emailOk = true;
+  } catch (err) {
+    console.error("[contact] Resend threw", err);
+  }
 
   // 🧾 Create Zoho lead
   const lead = {
@@ -101,31 +123,42 @@ export async function POST(req: NextRequest) {
     Last_Name: body.lastName,
     Email: body.email,
     Phone: body.phone,
-    Description: `Appointment: ${body.appointment ? "Yes" : "No"}, Marketing: ${
-      body.marketingConsent ? "Yes" : "No"
-    }`,
+    Description: [
+      `Appointment: ${body.appointment ? "Yes" : "No"}, Marketing: ${body.marketingConsent ? "Yes" : "No"}`,
+      body.travelMonth ? `Travel month: ${body.travelMonth}` : "",
+      body.message ? `Message: ${body.message}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n"),
   };
 
-  let response = await fetch("https://www.zohoapis.com/crm/v2/Leads", {
-    method: "POST",
-    headers: {
-      Authorization: `Zoho-oauthtoken ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ data: [lead] }),
-  });
-
-  if (response.status === 401) {
-    await refreshAccessToken();
-    response = await fetch("https://www.zohoapis.com/crm/v2/Leads", {
-      method: "POST",
-      headers: {
-        Authorization: `Zoho-oauthtoken ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ data: [lead] }),
-    });
+  let crmOk = false;
+  try {
+    const post = () =>
+      fetch("https://www.zohoapis.com/crm/v2/Leads", {
+        method: "POST",
+        headers: {
+          Authorization: `Zoho-oauthtoken ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ data: [lead] }),
+      });
+    let response = await post();
+    if (response.status === 401 && (await refreshAccessToken())) {
+      response = await post();
+    }
+    const json = await response.json().catch(() => ({}));
+    if (response.ok && json?.data?.[0]?.status !== "error") crmOk = true;
+    else console.error("[contact] Zoho lead failed", response.status, JSON.stringify(json).slice(0, 500));
+  } catch (err) {
+    console.error("[contact] Zoho threw", err);
   }
 
-  return NextResponse.json(await response.json(), { status: response.status });
+  if (emailOk || crmOk) {
+    return NextResponse.json({ ok: true }, { status: 200 });
+  }
+  return NextResponse.json(
+    { ok: false, error: "Sorry, we couldn't send your message right now." },
+    { status: 502 }
+  );
 }

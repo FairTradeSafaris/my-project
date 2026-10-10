@@ -241,6 +241,16 @@ export default async function CorePage({
 
         {/* HERO */}
         <section className="relative w-full h-[90vh] min-h-[600px] max-h-[1000px] overflow-hidden bg-black">
+          {!videoUrl && posterUrl && (
+            // No video in Sanity: show the poster/share image instead of a black box
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={posterUrl}
+              alt={data?.heroPoster?.alt || headline || ""}
+              className="absolute inset-0 w-full h-full object-cover animate-heroZoom"
+              fetchPriority="high"
+            />
+          )}
           {videoUrl && (
             <video
               className="absolute inset-0 w-full h-full object-cover animate-heroZoom"

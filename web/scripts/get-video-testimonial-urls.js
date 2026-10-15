@@ -8,7 +8,8 @@ module.exports = async function getVideoTestimonialUrls() {
     }`,
   );
 
-  return testimonials.map((t) => ({
+  // Batch 8: greg-and-megan-shindler1 is a duplicate doc and 301s away
+  return testimonials.filter((t) => t.slug !== "greg-and-megan-shindler1").map((t) => ({
     loc: `/videoTestimonial/${t.slug}/`,
     lastmod: t.lastmod,
     changefreq: "monthly",

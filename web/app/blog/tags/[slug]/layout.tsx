@@ -31,6 +31,8 @@ export async function generateMetadata({
   return {
     title,
     description,
+    // Batch 8: thin listing pages - keep out of the index, pass link equity
+    robots: { index: false, follow: true },
     alternates: {
       canonical: canonicalUrl,
     },

@@ -71,6 +71,12 @@ const baseConfig: NextConfig = {
 
   async headers() {
     return [
+      // Batch 8: build assets (CSS/JS/fonts) stay crawlable so Google can
+      // render pages, but must not be listed as "Crawled - not indexed".
+      {
+        source: "/_next/static/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
       {
         source: "/:path*",
         headers: [
@@ -137,6 +143,28 @@ const baseConfig: NextConfig = {
         ],
         destination: "/:path*/",
         permanent: true,
+      },
+
+      // Batch 8: GSC "Crawled - currently not indexed" cleanup (301s).
+      // trailingSlash: true already 308s /foo -> /foo/ before these run.
+      { source: "/blog/page/1/", destination: "/blog/", statusCode: 301 },
+      {
+        source:
+          "/blog/tags/:id([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/",
+        destination: "/blog/",
+        statusCode: 301,
+      },
+      // was a 2-hop chain via redirects.json + trailing slash
+      {
+        source: "/trips/destinations/rwanda/",
+        destination: "/destination/rwanda/",
+        statusCode: 301,
+      },
+      // duplicate Sanity doc (same YouTube video as greg-and-megan-shindler)
+      {
+        source: "/videoTestimonial/greg-and-megan-shindler1/",
+        destination: "/videoTestimonial/greg-and-megan-shindler/",
+        statusCode: 301,
       },
 
       // ✅ CORE FIXES

@@ -54,6 +54,10 @@ module.exports = {
     // auto-discovered copies have no trailing slash, so every country was in
     // the sitemap twice.
     "/destination/*",
+    // Batch 8: tag listing pages are noindex
+    "/blog/tags/*",
+    // duplicate of /videoTestimonial/greg-and-megan-shindler/ (301)
+    "/videoTestimonial/greg-and-megan-shindler1*",
   ],
 
   changefreq: "weekly",

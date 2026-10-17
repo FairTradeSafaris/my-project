@@ -2,14 +2,17 @@
 import { serverClient } from "@/lib/sanity.server";
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
+import { getPortalUser, unauthorized } from "@/lib/server/portalAuth";
 
+// Sanity document ids: letters, digits, dot, dash, underscore.
+const SAFE_ID = /^[A-Za-z0-9._-]{1,128}$/;
+
+// The user is always the logged-in Clerk user; any userId sent by the
+// browser is ignored.
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("userId");
-
-  if (!userId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-  }
+  const me = await getPortalUser(req);
+  if (!me) return unauthorized();
+  const userId = me.userId;
 
   try {
     const wishlist = await serverClient.fetch(
@@ -17,11 +20,15 @@ export async function GET(req: Request) {
       { userId }
     );
 
-    return NextResponse.json({
-      journeys: wishlist?.journeys ?? [],
-    });
+    return NextResponse.json(
+      { journeys: wishlist?.journeys ?? [] },
+      { headers: { "Cache-Control": "private, no-store" } }
+    );
   } catch (err) {
-    console.error("❌ Failed to fetch wishlist:", err);
+    console.error(
+      "[wishlist] fetch failed:",
+      err instanceof Error ? err.message : "unknown error"
+    );
     return NextResponse.json(
       { error: "Failed to fetch wishlist" },
       { status: 500 }
@@ -30,15 +37,18 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const me = await getPortalUser(req);
+  if (!me) return unauthorized();
+  const userId = me.userId;
+
   try {
-    console.log("📩 Incoming Wishlist Request");
+    const { journeyId, action } = await req.json();
 
-    const { userId, journeyId, action } = await req.json();
-
-    console.log("📦 Payload Received:", { userId, journeyId, action });
-
-    if (!userId || !journeyId || !["add", "remove"].includes(action)) {
-      console.warn("⚠️ Invalid request payload");
+    if (
+      typeof journeyId !== "string" ||
+      !SAFE_ID.test(journeyId) ||
+      !["add", "remove"].includes(action)
+    ) {
       return NextResponse.json(
         { error: "Missing or invalid fields" },
         { status: 400 }
@@ -73,7 +83,7 @@ export async function POST(req: Request) {
       if (action === "remove" && hasIt) {
         await serverClient
           .patch(existing._id)
-          .unset([`journeys[_ref=="${journeyId}"]`])
+          .unset([`journeys[_ref==${JSON.stringify(journeyId)}]`])
           .set({ updatedAt: new Date().toISOString() })
           .commit();
       }
@@ -91,7 +101,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("❌ Wishlist POST failed:", err);
+    console.error(
+      "[wishlist] update failed:",
+      err instanceof Error ? err.message : "unknown error"
+    );
     return NextResponse.json(
       { error: "Failed to update wishlist" },
       { status: 500 }

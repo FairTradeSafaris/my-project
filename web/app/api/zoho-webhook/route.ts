@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClerkClient } from "@clerk/backend";
+import {
+  hostOf,
+  isAllowedZohoFileUrl,
+  zohoSecretOk,
+} from "@/lib/server/zohoWebhook";
 
 let cachedAccessToken: string | null = null;
 let tokenExpiresAt = 0;
@@ -35,9 +40,13 @@ async function getZohoToken() {
 }
 
 export async function POST(req: NextRequest) {
+  // 🔐 Optional shared secret (enforced only when ZOHO_WEBHOOK_SECRET is set)
+  if (!zohoSecretOk(req, "zoho-webhook")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const data = await req.json();
-    console.log("📥 Zoho payload:", data);
 
     const {
       email,
@@ -58,6 +67,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 🔐 Only download from Zoho (the Zoho OAuth token is sent with it)
+    if (!isAllowedZohoFileUrl(file_url)) {
+      console.warn("[zoho-webhook] rejected file_url host:", hostOf(file_url));
+      return NextResponse.json(
+        { error: "file_url must be a Zoho https URL" },
+        { status: 400 },
+      );
+    }
+
     const sanityToken = process.env.SANITY_API_TOKEN!;
     const projectId = process.env.SANITY_PROJECT_ID!;
     const dataset = process.env.SANITY_DATASET!;
@@ -66,7 +84,7 @@ export async function POST(req: NextRequest) {
     const query = `*[_type=="trip" && clientEmail==$email][0]{_id}`;
     const queryUrl = `https://${projectId}.api.sanity.io/v2021-06-07/data/query/${dataset}?query=${encodeURIComponent(
       query,
-    )}&$email="${email}"`;
+    )}&$email=${encodeURIComponent(JSON.stringify(email))}`;
 
     const queryRes = await fetch(queryUrl, {
       headers: { Authorization: `Bearer ${sanityToken}` },
@@ -75,7 +93,6 @@ export async function POST(req: NextRequest) {
     const queryJson = await queryRes.json();
     let tripId = queryJson.result?._id;
 
-    console.log("🔍 Found trip:", tripId ?? "NONE");
 
     // 🆕 2. CREATE TRIP IF MISSING
     if (!tripId) {
@@ -108,7 +125,6 @@ export async function POST(req: NextRequest) {
       const createJson = await createRes.json();
       tripId = createJson.results?.[0]?.id;
 
-      console.log("🆕 Created trip:", tripId);
     }
 
     // 🔐 3. CLERK USER SYNC
@@ -130,7 +146,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      console.log("🔁 Updated existing Clerk user");
     } else {
       await clerk.users.createUser({
         emailAddress: [email],
@@ -143,7 +158,6 @@ export async function POST(req: NextRequest) {
         skipPasswordRequirement: true,
       });
 
-      console.log("🆕 Created new Clerk user");
     }
 
     // ⬇️ 4. DOWNLOAD FILE FROM ZOHO
@@ -152,6 +166,10 @@ export async function POST(req: NextRequest) {
     const fileRes = await fetch(file_url, {
       headers: { Authorization: `Zoho-oauthtoken ${zohoToken}` },
     });
+
+    if (!fileRes.ok) {
+      throw new Error(`Zoho file download failed (${fileRes.status})`);
+    }
 
     const fileBuffer = await fileRes.arrayBuffer();
 
@@ -205,7 +223,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, tripId, assetId });
   } catch (err) {
-    console.error("❌ Zoho webhook failed:", err);
+    console.error(
+      "❌ Zoho webhook failed:",
+      err instanceof Error ? err.message : "unknown error",
+    );
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

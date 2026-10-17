@@ -1,4 +1,10 @@
 import { NextRequest } from "next/server";
+import { randomUUID } from "crypto";
+import {
+  hostOf,
+  isAllowedZohoFileUrl,
+  zohoSecretOk,
+} from "@/lib/server/zohoWebhook";
 
 let cachedAccessToken: string | null = null;
 let tokenExpiresAt: number = 0;
@@ -39,45 +45,72 @@ async function getAccessToken() {
   return cachedAccessToken;
 }
 
+const json = (obj: unknown, status = 200) =>
+  new Response(JSON.stringify(obj), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+
 export async function POST(request: NextRequest) {
+  // 🔐 Optional shared secret (enforced only when ZOHO_WEBHOOK_SECRET is set)
+  if (!zohoSecretOk(request, "zoho-to-sanity")) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
   try {
     const data = await request.json();
     const { email, file_url, file_name, title, startDate, endDate } = data;
 
     if (!email || !file_url || !title) {
-      return new Response(
-        JSON.stringify({
-          error: "Missing required fields: email, file_url, or title",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+      return json(
+        { error: "Missing required fields: email, file_url, or title" },
+        400,
       );
+    }
+
+    // 🔐 Only download from Zoho (the Zoho OAuth token is sent with it)
+    if (!isAllowedZohoFileUrl(file_url)) {
+      console.warn("[zoho-to-sanity] rejected file_url host:", hostOf(file_url));
+      return json({ error: "file_url must be a Zoho https URL" }, 400);
     }
 
     const sanityToken = process.env.SANITY_API_TOKEN!;
     const sanityProjectId = process.env.SANITY_PROJECT_ID!;
     const sanityDataset = process.env.SANITY_DATASET!;
+    const mutateUrl = `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`;
 
     const zohoAccessToken = await getAccessToken();
 
-    // Look up trip by clientEmail AND title
+    // ⬇️ 1. Download the new file from Zoho FIRST.
+    // If this fails, nothing in Sanity is touched (existing documents stay).
+    const fileResp = await fetch(file_url, {
+      headers: { Authorization: `Zoho-oauthtoken ${zohoAccessToken}` },
+    });
+
+    if (!fileResp.ok) {
+      throw new Error(`Failed to fetch file from Zoho (${fileResp.status})`);
+    }
+
+    const fileBuffer = await fileResp.arrayBuffer();
+
+    // 🔍 2. Look up trip by clientEmail AND title
     const query = `*[_type == "trip" && clientEmail == $email && title == $title][0]{_id}`;
     const sanityQueryUrl = `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/query/${sanityDataset}?query=${encodeURIComponent(
       query,
-    )}&$email="${encodeURIComponent(email)}"&$title="${encodeURIComponent(title)}"`;
+    )}&$email=${encodeURIComponent(JSON.stringify(email))}&$title=${encodeURIComponent(JSON.stringify(title))}`;
 
     const sanityQueryResp = await fetch(sanityQueryUrl, {
       headers: { Authorization: `Bearer ${sanityToken}` },
     });
 
     if (!sanityQueryResp.ok) {
-      const text = await sanityQueryResp.text();
-      throw new Error(`Sanity query failed: ${text}`);
+      throw new Error(`Sanity query failed (${sanityQueryResp.status})`);
     }
 
     const sanityQueryResult = await sanityQueryResp.json();
     let tripId = sanityQueryResult.result?._id;
 
-    // Create trip if not found
+    // 🆕 3. Create trip if not found
     if (!tripId) {
       const createDoc = {
         _type: "trip",
@@ -88,72 +121,27 @@ export async function POST(request: NextRequest) {
         documents: [],
       };
 
-      const createResp = await fetch(
-        `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${sanityToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            mutations: [{ create: createDoc }],
-            returnIds: true,
-          }),
-        },
-      );
-
-      if (!createResp.ok) {
-        const text = await createResp.text();
-        throw new Error(`Failed to create Trip doc: ${text}`);
-      }
-
-      const createResult = await createResp.json();
-      tripId = createResult.results[0].id;
-    }
-
-    // 🔥 CLEAR existing documents (Zoho is source of truth)
-    const clearResp = await fetch(
-      `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
-      {
+      const createResp = await fetch(mutateUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${sanityToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mutations: [
-            {
-              patch: {
-                id: tripId,
-                set: {
-                  documents: [],
-                },
-              },
-            },
-          ],
+          mutations: [{ create: createDoc }],
+          returnIds: true,
         }),
-      },
-    );
+      });
 
-    if (!clearResp.ok) {
-      const text = await clearResp.text();
-      throw new Error(`Failed to clear existing documents: ${text}`);
+      if (!createResp.ok) {
+        throw new Error(`Failed to create Trip doc (${createResp.status})`);
+      }
+
+      const createResult = await createResp.json();
+      tripId = createResult.results[0].id;
     }
 
-    // Download file from Zoho
-    const fileResp = await fetch(file_url, {
-      headers: { Authorization: `Zoho-oauthtoken ${zohoAccessToken}` },
-    });
-
-    if (!fileResp.ok) {
-      const text = await fileResp.text().catch(() => "No body");
-      throw new Error(`Failed to fetch file from Zoho: ${text}`);
-    }
-
-    const fileBuffer = await fileResp.arrayBuffer();
-
-    // Upload file to Sanity assets
+    // ⬆️ 4. Upload file to Sanity assets
     const uploadResp = await fetch(
       `https://${sanityProjectId}.api.sanity.io/v2021-06-07/assets/files/${sanityDataset}`,
       {
@@ -164,64 +152,56 @@ export async function POST(request: NextRequest) {
     );
 
     if (!uploadResp.ok) {
-      const text = await uploadResp.text().catch(() => "No body");
-      throw new Error(`Failed to upload file to Sanity: ${text}`);
+      throw new Error(`Failed to upload file to Sanity (${uploadResp.status})`);
     }
 
     const uploadResult = await uploadResp.json();
     const assetId = uploadResult.document._id;
 
-    // Insert new document
-    const patchResp = await fetch(
-      `https://${sanityProjectId}.api.sanity.io/v2021-06-07/data/mutate/${sanityDataset}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${sanityToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mutations: [
-            {
-              patch: {
-                id: tripId,
-                insert: {
-                  after: "documents[-1]",
-                  items: [
-                    {
-                      label: "other",
-                      file: {
-                        _type: "file",
-                        asset: {
-                          _type: "reference",
-                          _ref: assetId,
-                        },
+    // 🔁 5. Replace the documents list with the new file in ONE mutation
+    // (Zoho is source of truth). Previously the list was cleared before the
+    // download, so a failed download left the client with no documents.
+    const patchResp = await fetch(mutateUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${sanityToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mutations: [
+          {
+            patch: {
+              id: tripId,
+              set: {
+                documents: [
+                  {
+                    _key: randomUUID().replace(/-/g, "").slice(0, 12),
+                    label: "other",
+                    file: {
+                      _type: "file",
+                      asset: {
+                        _type: "reference",
+                        _ref: assetId,
                       },
-                      originalFilename: file_name || "unknown.pdf",
                     },
-                  ],
-                },
+                    originalFilename: file_name || "unknown.pdf",
+                  },
+                ],
               },
             },
-          ],
-        }),
-      },
-    );
+          },
+        ],
+      }),
+    });
 
     if (!patchResp.ok) {
-      const text = await patchResp.text();
-      throw new Error(`Failed to patch Trip doc: ${text}`);
+      throw new Error(`Failed to patch Trip doc (${patchResp.status})`);
     }
 
-    return new Response(JSON.stringify({ status: "ok", tripId, assetId }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ status: "ok", tripId, assetId });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    console.error("API error:", errorMsg);
-    return new Response(JSON.stringify({ error: errorMsg }), {
-      status: 500,
-    });
+    console.error("[zoho-to-sanity] error:", errorMsg);
+    return json({ error: "Zoho to Sanity sync failed" }, 500);
   }
 }

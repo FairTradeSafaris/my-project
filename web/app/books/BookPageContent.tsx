@@ -3,6 +3,7 @@
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import useSWR, { useSWRConfig } from "swr";
 import Image from "@/components/SanityImage";
+import { authFetch } from "@/lib/authFetch";
 
 type Book = {
   _id: string;
@@ -19,6 +20,7 @@ type Claim = {
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const authFetcher = (url: string) => authFetch(url).then((res) => res.json());
 
 // Turn Google Drive "view" links into direct-download links
 function toDriveDownload(url: string) {
@@ -40,7 +42,7 @@ export default function BookPageContent() {
   );
   const { data: claimData } = useSWR(
     userId ? `/api/claim-status?userId=${userId}` : null,
-    fetcher
+    authFetcher
   );
 
   const books: Book[] = bookData?.books || [];
@@ -53,10 +55,10 @@ export default function BookPageContent() {
     }
 
     try {
-      const res = await fetch("/api/claim-book", {
+      const res = await authFetch("/api/claim-book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ book, userId }),
+        body: JSON.stringify({ book }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to record claim");

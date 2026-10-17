@@ -34,18 +34,14 @@ export async function POST(req: Request) {
       "svix-signature": svixSignature,
     }) as ClerkEvent;
 
-    console.log("📩 Event received:", evt);
+    console.log("📩 Clerk event received:", evt.type);
 
     const email = evt.data?.email_addresses?.[0]?.email_address ?? "no-email";
     const firstName = evt.data?.first_name ?? "New";
     const lastName = evt.data?.last_name ?? "Web User";
 
     if (evt.type === "user.created") {
-      console.log("🚀 Creating Zoho lead with:", {
-        firstName,
-        lastName,
-        email,
-      });
+      console.log("🚀 Creating Zoho lead for new Clerk user");
 
       const zohoResult = await createZohoLead({
         firstName,
@@ -57,7 +53,7 @@ export async function POST(req: Request) {
         sourceChannel: "WebClient",
       });
 
-      console.log("✅ Zoho lead created successfully:", zohoResult);
+      console.log("✅ Zoho lead created");
 
       // ✅ Send email via Resend (clean HTML, no try/catch)
       const resend = new Resend(process.env.RESEND_API_KEY);

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { client as sanityClient } from "@/lib/sanity";
+import { authFetch } from "@/lib/authFetch";
 
 type WishlistResponse = {
   journeys?: { _ref: string }[];
@@ -61,7 +62,7 @@ export function useWishlist(journeyId?: string) {
         }
       }
 
-      const res = await fetch(`/api/wishlist?userId=${userId}`);
+      const res = await authFetch(`/api/wishlist`);
       if (!res.ok) return;
 
       const data: WishlistResponse = await res.json();
@@ -86,10 +87,10 @@ export function useWishlist(journeyId?: string) {
     const action = isWishlisted ? "remove" : "add";
 
     try {
-      await fetch("/api/wishlist", {
+      await authFetch("/api/wishlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, journeyId, action }),
+        body: JSON.stringify({ journeyId, action }),
       });
 
       if (action === "add") {

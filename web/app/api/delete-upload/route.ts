@@ -1,5 +1,11 @@
 import { createClient } from "next-sanity";
 import { NextResponse } from "next/server";
+import {
+  getPortalUser,
+  getVerifiedEmails,
+  isClientUploadField,
+  unauthorized,
+} from "@/lib/server/portalAuth";
 
 const sanityClient = createClient({
   projectId: "jw971r14",
@@ -9,7 +15,18 @@ const sanityClient = createClient({
   token: process.env.SANITY_API_TOKEN,
 });
 
+type FileItem = {
+  _key: string;
+  originalFilename?: string;
+  assetRef?: string;
+  assetFilename?: string;
+};
+
 export async function POST(req: Request): Promise<Response> {
+  // 🔐 Must be logged in
+  const me = await getPortalUser(req);
+  if (!me) return unauthorized();
+
   try {
     const { tripId, field, originalFilename } = await req.json();
 
@@ -20,70 +37,68 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
-    // 1️⃣ Get the trip doc
-    const trip = await sanityClient.fetch(
-      `*[_type == "trip" && _id == $tripId][0]{ ${field} }`,
-      { tripId }
-    );
+    // 🔐 Only the passport / flight ticket upload fields
+    if (!isClientUploadField(field) || typeof tripId !== "string") {
+      return NextResponse.json({ error: "Invalid field" }, { status: 400 });
+    }
+
+    const emails = await getVerifiedEmails(me.userId);
+    if (emails.length === 0) {
+      return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+    }
+
+    // 1️⃣ Get the trip doc — only if it belongs to the logged-in user.
+    // The field is chosen with a parameter (no string-built GROQ).
+    const trip: { _id: string; items: FileItem[] | null } | null =
+      await sanityClient.fetch(
+        `*[_type == "trip" && _id == $tripId && lower(clientEmail) in $emails][0]{
+          _id,
+          "items": select(
+            $field == "passportUploads" => passportUploads,
+            $field == "flightTicketUploads" => flightTicketUploads
+          )[]{
+            _key,
+            originalFilename,
+            "assetRef": coalesce(asset._ref, file.asset._ref),
+            "assetFilename": coalesce(asset->originalFilename, file.asset->originalFilename)
+          }
+        }`,
+        { tripId, emails, field }
+      );
 
     if (!trip) {
       return NextResponse.json({ error: "Trip not found" }, { status: 404 });
     }
 
-    type FileItem =
-      | { _key: string; originalFilename?: string }
-      | { _key: string; asset?: { originalFilename?: string; _ref?: string } }
-      | {
-          _key: string;
-          file?: { asset?: { originalFilename?: string; _ref?: string } };
-        };
-
-    const items: FileItem[] = (trip?.[field] as FileItem[]) || [];
+    const items: FileItem[] = trip.items || [];
 
     // 2️⃣ Find item by filename
-    const match = items.find((item) => {
-      if (
-        "originalFilename" in item &&
-        item.originalFilename === originalFilename
-      )
-        return true;
-      if ("asset" in item && item.asset?.originalFilename === originalFilename)
-        return true;
-      if (
-        "file" in item &&
-        item.file?.asset?.originalFilename === originalFilename
-      )
-        return true;
-      return false;
-    });
+    const match = items.find(
+      (item) =>
+        item.originalFilename === originalFilename ||
+        item.assetFilename === originalFilename
+    );
 
     if (!match) {
-      return NextResponse.json(
-        { error: `File with name "${originalFilename}" not found` },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
     const finalKey = match._key;
-    let finalAssetId: string | undefined;
+    const finalAssetId = match.assetRef;
 
-    if ("asset" in match && match.asset?._ref) {
-      finalAssetId = match.asset._ref;
-    } else if ("file" in match && match.file?.asset?._ref) {
-      finalAssetId = match.file.asset._ref;
-    }
-
-    // 3️⃣ Remove from doc
+    // 3️⃣ Remove from doc (key comes from the database, field is allow-listed)
     const patch = sanityClient
-      .patch(tripId)
-      .unset([`${field}[_key == "${finalKey}"]`]);
+      .patch(trip._id)
+      .unset([`${field}[_key == ${JSON.stringify(finalKey)}]`]);
 
     // 4️⃣ Check if asset is used elsewhere
     let stillUsed = false;
     if (finalAssetId) {
-      stillUsed = await sanityClient.fetch(
-        `*[_type != "sanity.fileAsset" && references($assetId)][0]._id`,
-        { assetId: finalAssetId }
+      stillUsed = Boolean(
+        await sanityClient.fetch(
+          `*[_type != "sanity.fileAsset" && references($assetId)][0]._id`,
+          { assetId: finalAssetId }
+        )
       );
     }
 
@@ -97,10 +112,10 @@ export async function POST(req: Request): Promise<Response> {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Delete failed:", err);
-    return NextResponse.json(
-      { error: "Delete failed", details: (err as Error).message },
-      { status: 500 }
+    console.error(
+      "[delete-upload] failed:",
+      err instanceof Error ? err.message : "unknown error"
     );
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   }
 }

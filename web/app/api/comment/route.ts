@@ -11,7 +11,12 @@ export async function POST(req: Request) {
   const { name, email, comment, postId } = body;
 
   if (!name || !email || !comment || !postId) {
-    console.warn("⚠️ Missing fields:", { name, email, comment, postId });
+    console.warn("⚠️ Missing fields:", {
+      name: !name,
+      email: !email,
+      comment: !comment,
+      postId: !postId,
+    });
     return NextResponse.json(
       { message: "Missing required fields" },
       { status: 400 }
@@ -35,7 +40,7 @@ export async function POST(req: Request) {
 
     console.log("📧 Sending email via Resend...");
     const resend = new Resend(process.env.RESEND_API_KEY); // ✅ moved inside POST
-    const emailRes = await resend.emails.send({
+    await resend.emails.send({
       from: process.env.NOTIFY_EMAIL_FROM || "onboarding@resend.dev",
       to: process.env.NOTIFY_EMAIL_TO || "devon@fairtradesafaris.com",
       subject: "📝 New Comment Submitted",
@@ -47,7 +52,7 @@ export async function POST(req: Request) {
       `,
     });
 
-    console.log("✅ Email sent:", emailRes);
+    console.log("✅ Email sent");
 
     return NextResponse.json({ message: "Comment saved and email sent!" });
   } catch (err) {

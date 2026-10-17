@@ -12,11 +12,6 @@ export const serverClient = createClient({
   useCdn: false,
 });
 
-console.log(
-  "🔐 Token from ENV (serverClient):",
-  process.env.SANITY_API_TOKEN?.slice(0, 10)
-);
-
 // Optional: test the token
 export async function testSanityToken() {
   try {
@@ -28,10 +23,12 @@ export async function testSanityToken() {
       },
     });
 
-    const data = await res.json();
-    console.log("🔍 Token Test Response:", JSON.stringify(data, null, 2));
+    // Report only whether the token works; never log the token or data.
+    console.log("Sanity token test status:", res.status);
   } catch (error) {
-    console.error("❌ Sanity token test failed:", error);
+    console.error(
+      "❌ Sanity token test failed:",
+      error instanceof Error ? error.message : "unknown error"
+    );
   }
 }
-testSanityToken(); // 👈 Call it directly for now

@@ -4,8 +4,7 @@ const client = createClient({
   projectId: "jw971r14", // ← Replace this
   dataset: "production", // or your dataset name
   apiVersion: "2023-01-01",
-  token:
-    "skQaJiwZRt72irJOimBJqt1Bdq61nPzLMi5kD27BhFhLv2ut01kucbEBiA8Yc5VEItAl33Aoy0iyZuzEaYQSwpFDftbnhx4taf0qVXJJpCBm0VLp4mbF2OzDcOlHzXQPBzaLQLF3bQfr63fKiaBcZl7Lgm1VDC7CvyE6PKGnjcEZghDwA1xI", // ← Replace this with a secure token
+  token: process.env.SANITY_WRITE_TOKEN || process.env.SANITY_API_TOKEN, // set in your shell; never hard-code
   useCdn: false,
 });
 

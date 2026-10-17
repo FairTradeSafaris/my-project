@@ -6,6 +6,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Gift, X } from "lucide-react";
 import Image from "@/components/SanityImage";
+import { authFetch } from "@/lib/authFetch";
 
 type Claim = { bookTitle: string; bookUrl: string };
 
@@ -41,7 +42,7 @@ export default function LeadMagnet() {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/claim-status?userId=${user.id}`);
+        const res = await authFetch(`/api/claim-status?userId=${user.id}`);
         const data = await res.json();
         setClaim(data.claim || null);
       } catch (e) {

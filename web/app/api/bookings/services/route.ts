@@ -5,10 +5,11 @@ const refreshToken = process.env.ZOHO_REFRESH_TOKEN!;
 const clientId = process.env.ZOHO_CLIENT_ID!;
 const clientSecret = process.env.ZOHO_CLIENT_SECRET!;
 
-// Function to refresh Zoho access token
-async function refreshAccessToken() {
-  console.log("🔄 Refreshing Zoho access token...");
+const MAX_ATTEMPTS = 2; // first try + at most one retry after a token refresh
+const TIMEOUT_MS = 8000; // per Zoho request
 
+// Function to refresh Zoho access token
+async function refreshAccessToken(): Promise<string | null> {
   const res = await fetch("https://accounts.zoho.com/oauth/v2/token", {
     method: "POST",
     headers: {
@@ -20,49 +21,47 @@ async function refreshAccessToken() {
       client_secret: clientSecret,
       refresh_token: refreshToken,
     }),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
 
-  const data = await res.json();
-  console.log("🔐 Refreshed Access Token:", data.access_token);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data?.access_token) {
+    console.error("[bookings/services] Zoho token refresh failed", res.status);
+    return null;
+  }
 
   accessToken = data.access_token;
   return accessToken;
 }
 
-// Function to fetch services from Zoho Bookings API
+// Function to fetch services from Zoho Bookings API (bounded retries)
 async function fetchZohoServices() {
   const url = "https://www.zohoapis.com/bookings/v1/json/getservices";
 
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Zoho-oauthtoken ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (res.status === 401) {
-    console.warn("⚠️ Access token expired. Refreshing...");
-    await refreshAccessToken();
-    return fetchZohoServices(); // Retry
-  }
-
-  if (!res.ok) {
-    const contentType = res.headers.get("content-type");
-    const errorBody = contentType?.includes("application/json")
-      ? await res.json()
-      : await res.text();
-
-    console.error("❌ Zoho API error:", {
-      status: res.status,
-      body: errorBody,
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Zoho-oauthtoken ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
-    throw new Error(`Failed with status ${res.status}`);
+    if (res.status === 401 && attempt < MAX_ATTEMPTS) {
+      const refreshed = await refreshAccessToken();
+      if (!refreshed) break;
+      continue; // retry once with the new token
+    }
+
+    if (!res.ok) {
+      console.error("[bookings/services] Zoho API error", res.status);
+      throw new Error(`Failed with status ${res.status}`);
+    }
+
+    return res.json();
   }
 
-  const json = await res.json();
-  console.log("📦 Services fetched:", JSON.stringify(json, null, 2));
-  return json;
+  throw new Error("Zoho authorisation failed");
 }
 
 // GET handler
@@ -71,7 +70,10 @@ export async function GET() {
     const data = await fetchZohoServices();
     return NextResponse.json(data);
   } catch (err) {
-    console.error("🔥 Error in /api/bookings/services:", err);
+    console.error(
+      "[bookings/services] error:",
+      err instanceof Error ? err.message : "unknown error",
+    );
     return NextResponse.json(
       {
         error: "Failed to load bookings",

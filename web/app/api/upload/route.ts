@@ -6,6 +6,12 @@ import fs from "fs/promises";
 import type { IncomingMessage } from "http";
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
+import {
+  getPortalUser,
+  getVerifiedEmails,
+  isClientUploadField,
+  unauthorized,
+} from "@/lib/server/portalAuth";
 
 // disable formidable’s default body parser
 export const config = { api: { bodyParser: false } };
@@ -42,6 +48,10 @@ async function createNodeRequest(req: Request): Promise<IncomingMessage> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  // 🔐 Must be logged in
+  const me = await getPortalUser(request);
+  if (!me) return unauthorized();
+
   try {
     const nodeReq = await createNodeRequest(request);
 
@@ -87,7 +97,31 @@ export async function POST(request: Request): Promise<Response> {
             return;
           }
 
+          // 🔐 Only the passport / flight ticket upload fields
+          if (!isClientUploadField(field)) {
+            resolve(
+              NextResponse.json({ error: "Invalid field" }, { status: 400 })
+            );
+            return;
+          }
+
           try {
+            // 🔐 The trip must belong to the logged-in user
+            const emails = await getVerifiedEmails(me.userId);
+            const ownedId: string | null = emails.length
+              ? await sanityClient.fetch(
+                  `*[_type == "trip" && _id == $tripId && lower(clientEmail) in $emails][0]._id`,
+                  { tripId, emails }
+                )
+              : null;
+
+            if (!ownedId) {
+              resolve(
+                NextResponse.json({ error: "Trip not found" }, { status: 404 })
+              );
+              return;
+            }
+
             const buffer = await fs.readFile(uploadedFile.filepath);
 
             const assetType = uploadedFile.mimetype?.startsWith("image/")
@@ -101,7 +135,7 @@ export async function POST(request: Request): Promise<Response> {
 
             // 2️⃣ Patch the trip document
             const updatedDoc = await sanityClient
-              .patch(tripId)
+              .patch(ownedId)
               .setIfMissing({ [field]: [] })
               .append(field, [
                 {
@@ -127,28 +161,23 @@ export async function POST(request: Request): Promise<Response> {
               )
             );
           } catch (error) {
-            const err = error as Error & { response?: { data?: unknown } };
+            console.error(
+              "[upload] failed:",
+              error instanceof Error ? error.message : "unknown error"
+            );
             resolve(
-              new Response(
-                JSON.stringify({
-                  error: "Upload or patch failed",
-                  message: err.message,
-                  details: err.response?.data,
-                }),
-                {
-                  status: 500,
-                  headers: { "Content-Type": "application/json" },
-                }
+              NextResponse.json(
+                { error: "Upload or patch failed" },
+                { status: 500 }
               )
             );
           }
         }
       );
     });
-  } catch (err) {
-    const error = err as Error;
+  } catch {
     return NextResponse.json(
-      { error: "Request stream conversion failed", message: error.message },
+      { error: "Request stream conversion failed" },
       { status: 500 }
     );
   }

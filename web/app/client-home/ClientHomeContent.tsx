@@ -7,6 +7,7 @@ import { groq } from "next-sanity";
 import { useWishlist } from "@/hooks/useWishlist";
 import JourneyCard from "@/components/JourneyCard";
 import Link from "next/link";
+import { authFetch } from "@/lib/authFetch";
 
 const fetchWishlistJourneys = async (ids: string[]) => {
   if (!ids.length) return [];
@@ -164,7 +165,7 @@ export default function ClientHomeContent() {
       }
     }
 
-    fetch(`/api/trips?email=${encodeURIComponent(email)}&ts=${Date.now()}`)
+    authFetch(`/api/trips?email=${encodeURIComponent(email)}&ts=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
         const fresh = Array.isArray(data.trips) ? data.trips : data;
@@ -294,7 +295,7 @@ export default function ClientHomeContent() {
                                 formData.append("tripId", trip._id);
                                 formData.append("field", "passportUploads");
 
-                                const response = await fetch("/api/upload", {
+                                const response = await authFetch("/api/upload", {
                                   method: "POST",
                                   body: formData,
                                 });
@@ -303,7 +304,7 @@ export default function ClientHomeContent() {
                                 console.log("Passport upload result:", result);
 
                                 // 🔁 Refresh trips after upload
-                                const refreshed = await fetch(
+                                const refreshed = await authFetch(
                                   `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
                                 );
 
@@ -377,7 +378,7 @@ export default function ClientHomeContent() {
                                         },
                                       );
 
-                                      await fetch("/api/delete-upload", {
+                                      await authFetch("/api/delete-upload", {
                                         method: "POST",
                                         headers: {
                                           "Content-Type": "application/json",
@@ -391,7 +392,7 @@ export default function ClientHomeContent() {
                                       });
 
                                       // 🔁 Refresh trips after delete
-                                      const refreshed = await fetch(
+                                      const refreshed = await authFetch(
                                         `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
                                       );
                                       const data = await refreshed.json();
@@ -444,7 +445,7 @@ export default function ClientHomeContent() {
                                     "flightTicketUploads",
                                   );
 
-                                  const response = await fetch("/api/upload", {
+                                  const response = await authFetch("/api/upload", {
                                     method: "POST",
                                     body: formData,
                                   });
@@ -456,7 +457,7 @@ export default function ClientHomeContent() {
                                   );
 
                                   // 🔁 Refresh trips after upload
-                                  const refreshed = await fetch(
+                                  const refreshed = await authFetch(
                                     `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
                                   );
                                   const data = await refreshed.json();
@@ -538,7 +539,7 @@ export default function ClientHomeContent() {
                                         },
                                       );
 
-                                      await fetch("/api/delete-upload", {
+                                      await authFetch("/api/delete-upload", {
                                         method: "POST",
                                         headers: {
                                           "Content-Type": "application/json",
@@ -552,7 +553,7 @@ export default function ClientHomeContent() {
                                       });
 
                                       // 🔁 Refresh trips after delete
-                                      const refreshed = await fetch(
+                                      const refreshed = await authFetch(
                                         `/api/trips?email=${encodeURIComponent(email || "")}&ts=${Date.now()}`,
                                       );
                                       const data = await refreshed.json();

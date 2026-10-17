@@ -6,6 +6,10 @@ import fs from "fs/promises";
 import type { IncomingMessage } from "http";
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
+import { randomUUID } from "crypto";
+import { after } from "next/server";
+import { put } from "@vercel/blob";
+import { attachToZohoDeal, findDealId } from "@/lib/server/zohoPortal";
 import {
   getPortalUser,
   getVerifiedEmails,
@@ -108,12 +112,14 @@ export async function POST(request: Request): Promise<Response> {
           try {
             // 🔐 The trip must belong to the logged-in user
             const emails = await getVerifiedEmails(me.userId);
-            const ownedId: string | null = emails.length
-              ? await sanityClient.fetch(
-                  `*[_type == "trip" && _id == $tripId && lower(clientEmail) in $emails][0]._id`,
-                  { tripId, emails }
-                )
-              : null;
+            const owned: { _id: string; zohoDealId?: string | null } | null =
+              emails.length
+                ? await sanityClient.fetch(
+                    `*[_type == "trip" && _id == $tripId && lower(clientEmail) in $emails][0]{_id, zohoDealId}`,
+                    { tripId, emails }
+                  )
+                : null;
+            const ownedId = owned?._id ?? null;
 
             if (!ownedId) {
               resolve(
@@ -124,38 +130,79 @@ export async function POST(request: Request): Promise<Response> {
 
             const buffer = await fs.readFile(uploadedFile.filepath);
 
-            const assetType = uploadedFile.mimetype?.startsWith("image/")
-              ? "image"
-              : "file";
+            const originalName = uploadedFile.originalFilename || "upload";
+            const mimeType = uploadedFile.mimetype || "application/octet-stream";
+            const assetType = mimeType.startsWith("image/") ? "image" : "file";
+            const key = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+            let item: Record<string, unknown>;
+            let assetId: string | null = null;
 
-            // 1️⃣ Upload asset
-            const asset = await sanityClient.assets.upload(assetType, buffer, {
-              filename: uploadedFile.originalFilename || "upload",
-            });
+            if (process.env.BLOB_READ_WRITE_TOKEN) {
+              // 🔒 Private Vercel Blob storage, random unguessable path,
+              // served only through /api/portal-file after an ownership check.
+              const ext = (originalName.match(/\.[A-Za-z0-9]{1,8}$/)?.[0] || "").toLowerCase();
+              const blob = await put(
+                `portal/${ownedId}/${randomUUID()}${ext}`,
+                buffer,
+                { access: "private", contentType: mimeType, addRandomSuffix: true }
+              );
+              item = {
+                _key: key,
+                _type: assetType,
+                blobPath: blob.pathname,
+                originalFilename: originalName,
+                mimeType,
+                size: buffer.length,
+              };
+            } else {
+              // Fallback: Sanity asset (same as before batch 10)
+              const asset = await sanityClient.assets.upload(assetType, buffer, {
+                filename: originalName,
+              });
+              assetId = asset._id;
+              item = {
+                _key: key,
+                _type: assetType,
+                asset: { _type: "reference", _ref: asset._id },
+              };
+            }
 
-            // 2️⃣ Patch the trip document
-            const updatedDoc = await sanityClient
+            await sanityClient
               .patch(ownedId)
               .setIfMissing({ [field]: [] })
-              .append(field, [
-                {
-                  _key: Date.now().toString(), // ✅ unique key for array item
-                  _type: assetType,
-                  asset: { _type: "reference", _ref: asset._id },
-                },
-              ])
-
+              .append(field, [item])
               .commit();
+
+            // 📎 Copy to the client's Zoho Deal after the response is sent.
+            // Never blocks or fails the upload.
+            const meId = me.userId;
+            const dealHint = owned?.zohoDealId ?? null;
+            after(async () => {
+              try {
+                const dealId = await findDealId(dealHint, meId);
+                await attachToZohoDeal({
+                  dealId,
+                  label: field === "passportUploads" ? "Passport" : "Flight ticket",
+                  originalName,
+                  buffer,
+                  mimeType,
+                });
+              } catch (e) {
+                console.error(
+                  "[upload] zoho copy failed:",
+                  e instanceof Error ? e.message : "unknown error"
+                );
+              }
+            });
 
             resolve(
               NextResponse.json(
                 {
                   success: true,
-                  assetId: asset._id,
-                  url: asset.url,
-                  originalFilename: asset.originalFilename,
+                  key,
+                  assetId,
+                  originalFilename: originalName,
                   field,
-                  updatedDoc,
                 },
                 { status: 200 }
               )

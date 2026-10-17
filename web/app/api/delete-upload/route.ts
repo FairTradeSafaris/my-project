@@ -1,5 +1,6 @@
 import { createClient } from "next-sanity";
 import { NextResponse } from "next/server";
+import { del } from "@vercel/blob";
 import {
   getPortalUser,
   getVerifiedEmails,
@@ -20,6 +21,7 @@ type FileItem = {
   originalFilename?: string;
   assetRef?: string;
   assetFilename?: string;
+  blobPath?: string;
 };
 
 export async function POST(req: Request): Promise<Response> {
@@ -28,9 +30,9 @@ export async function POST(req: Request): Promise<Response> {
   if (!me) return unauthorized();
 
   try {
-    const { tripId, field, originalFilename } = await req.json();
+    const { tripId, field, originalFilename, key } = await req.json();
 
-    if (!tripId || !field || !originalFilename) {
+    if (!tripId || !field || (!originalFilename && !key)) {
       return NextResponse.json(
         { error: "Missing tripId, field, or originalFilename" },
         { status: 400 }
@@ -59,6 +61,7 @@ export async function POST(req: Request): Promise<Response> {
           )[]{
             _key,
             originalFilename,
+            blobPath,
             "assetRef": coalesce(asset._ref, file.asset._ref),
             "assetFilename": coalesce(asset->originalFilename, file.asset->originalFilename)
           }
@@ -75,6 +78,7 @@ export async function POST(req: Request): Promise<Response> {
     // 2️⃣ Find item by filename
     const match = items.find(
       (item) =>
+        (typeof key === "string" && item._key === key) ||
         item.originalFilename === originalFilename ||
         item.assetFilename === originalFilename
     );
@@ -109,6 +113,18 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     await tx.commit();
+
+    // 🔒 Remove the private blob too (if this upload lives in Vercel Blob)
+    if (match.blobPath && process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        await del(match.blobPath);
+      } catch (e) {
+        console.error(
+          "[delete-upload] blob delete failed:",
+          e instanceof Error ? e.message : "unknown error"
+        );
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

@@ -33,29 +33,27 @@ export async function GET(req: Request) {
         documents[] {
           _key,
           label,
-          originalFilename,
-          file {
-            asset->{
-              url,
-              mimeType
-            }
-          }
+          zohoAttachmentId,
+          "name": coalesce(originalFilename, file.asset->originalFilename, label),
+          "mimeType": file.asset->mimeType,
+          "size": file.asset->size,
+          "assetId": file.asset._ref
         },
         passportUploads[] {
           _key,
-          asset->{
-            url,
-            originalFilename,
-            mimeType
-          }
+          "isPrivate": defined(blobPath),
+          "name": coalesce(originalFilename, asset->originalFilename),
+          "mimeType": coalesce(mimeType, asset->mimeType),
+          "size": coalesce(size, asset->size),
+          "assetId": asset._ref
         },
         flightTicketUploads[] {
           _key,
-          asset->{
-            url,
-            originalFilename,
-            mimeType
-          }
+          "isPrivate": defined(blobPath),
+          "name": coalesce(originalFilename, asset->originalFilename),
+          "mimeType": coalesce(mimeType, asset->mimeType),
+          "size": coalesce(size, asset->size),
+          "assetId": asset._ref
         }
       }`,
       { emails },

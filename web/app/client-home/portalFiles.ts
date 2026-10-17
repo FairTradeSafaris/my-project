@@ -42,10 +42,11 @@ export function dedupeFiles(files: PortalFile[]): PortalFile[] {
 
 export function groupOf(name: string): FileGroup {
   const n = name.toLowerCase();
-  if (/itinerar|programme|program|day.?by.?day|safari plan/.test(n)) return "Itinerary";
-  if (/flight|ticket|e-?ticket|boarding|airline|airways|\bair\b|\bjhb\b|\bjnb\b|transfer/.test(n)) return "Flights";
+  if (/itinerar|programme|day.?by.?day|safari plan/.test(n)) return "Itinerary";
   if (/invoice|receipt|payment|quote|quotation|statement|deposit|proforma|pro-forma/.test(n)) return "Invoices";
+  if (/flight|ticket|e-?ticket|boarding|airline|airways|\bair\b|\bjhb\b|\bjnb\b|transfer/.test(n)) return "Flights";
   if (/checklist|packing|info|guide|visa|insurance|health|medical|terms|conditions|faq|welcome|tips/.test(n)) return "Checklists & info";
+  if (/experience|safari|tour|journey|adventure|holiday|program|\(final\)/.test(n)) return "Itinerary";
   return "Other";
 }
 

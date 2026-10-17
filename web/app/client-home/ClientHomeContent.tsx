@@ -147,24 +147,24 @@ export default function ClientHomeContent() {
   return (
     <div className="mx-auto max-w-6xl space-y-10 px-4 py-10 sm:px-8">
       <SignedIn>
-        <div className="flex flex-col items-start justify-between gap-5 rounded-2xl bg-[#fffaf3] p-6 ring-1 ring-border/60 sm:flex-row sm:items-center sm:p-7">
+        <div className="flex flex-col items-start justify-between gap-5 rounded-2xl bg-[#fffaf3] p-6 ring-1 ring-[#bcae9e]/60 sm:flex-row sm:items-center sm:p-7">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8a7766]">Client portal</p>
-            <h2 className="mt-1 text-2xl font-semibold text-accent sm:text-3xl">
+            <h2 className="mt-1 text-2xl font-semibold text-[#5d4037] sm:text-3xl">
               Welcome{user?.firstName ? `, ${user.firstName}` : ""}
             </h2>
             <p className="mt-1 text-sm text-[#6b5647]">{email}</p>
           </div>
           <Link
             href="/books/"
-            className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4a3229]"
+            className="rounded-full bg-[#5d4037] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4a3229]"
           >
             Download your free book
           </Link>
         </div>
 
         {isOffline && (
-          <div className="rounded-xl bg-[#efe5d6] px-4 py-2 text-center text-sm font-medium text-accent">
+          <div className="rounded-xl bg-[#efe5d6] px-4 py-2 text-center text-sm font-medium text-[#5d4037]">
             You’re offline. Showing your saved trip details.
           </div>
         )}
@@ -172,7 +172,7 @@ export default function ClientHomeContent() {
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-[#3e2a20]">Your trips</h2>
           {trips.length === 0 ? (
-            <p className="rounded-2xl bg-[#fffaf3] p-6 text-sm text-[#6b5647] ring-1 ring-border/60">
+            <p className="rounded-2xl bg-[#fffaf3] p-6 text-sm text-[#6b5647] ring-1 ring-[#bcae9e]/60">
               No trips yet. Once your booking is confirmed, your trip and documents will appear here.
             </p>
           ) : (

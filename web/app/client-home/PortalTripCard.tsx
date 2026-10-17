@@ -70,7 +70,7 @@ function FileIcon({ mime }: { mime?: string | null }) {
   return (
     <span
       aria-hidden
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#efe5d6] text-[11px] font-semibold uppercase tracking-wide text-accent"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#efe5d6] text-[11px] font-semibold uppercase tracking-wide text-[#5d4037]"
     >
       {isImg ? "IMG" : "PDF"}
     </span>
@@ -148,7 +148,7 @@ function UploadBox({
         if (files.length) onFiles(multiple ? files : files.slice(0, 1));
       }}
       className={`relative flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed px-4 py-3.5 transition ${
-        over ? "border-accent bg-[#efe5d6]" : "border-border bg-white hover:border-accent"
+        over ? "border-[#5d4037] bg-[#efe5d6]" : "border-[#bcae9e] bg-white hover:border-[#5d4037]"
       } ${busy ? "cursor-wait opacity-80" : ""}`}
     >
       <input
@@ -164,7 +164,7 @@ function UploadBox({
           if (ref.current) ref.current.value = "";
         }}
       />
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-lg text-white" aria-hidden>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5d4037] text-lg text-white" aria-hidden>
         {busy ? (
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
         ) : (
@@ -261,9 +261,9 @@ export default function PortalTripCard({
   const shownGroups = openGroup === "all" ? grouped : grouped.filter(([g]) => g === openGroup);
 
   return (
-    <li className="overflow-hidden rounded-2xl border border-border/70 bg-[#fffaf3] shadow-[0_1px_0_rgba(93,64,55,0.06),0_8px_24px_-12px_rgba(93,64,55,0.25)]">
-      <header className="border-b border-border/60 bg-[#efe5d6]/60 px-5 py-4 sm:px-7">
-        <h3 className="text-xl font-semibold leading-tight sm:text-2xl text-accent">{trip.title}</h3>
+    <li className="overflow-hidden rounded-2xl border border-[#bcae9e]/70 bg-[#fffaf3] shadow-[0_1px_0_rgba(93,64,55,0.06),0_8px_24px_-12px_rgba(93,64,55,0.25)]">
+      <header className="border-b border-[#bcae9e]/60 bg-[#efe5d6]/60 px-5 py-4 sm:px-7">
+        <h3 className="text-xl font-semibold leading-tight sm:text-2xl text-[#5d4037]">{trip.title}</h3>
         <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-[#6b5647]">
           {dates && <span>{dates}</span>}
           {trip.destination?.name && <span>{trip.destination.name}</span>}
@@ -288,7 +288,7 @@ export default function PortalTripCard({
                       type="button"
                       onClick={() => setOpenGroup(g)}
                       className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition ${
-                        openGroup === g ? "bg-accent text-white" : "bg-white text-[#5d4037] ring-1 ring-border hover:ring-accent"
+                        openGroup === g ? "bg-[#5d4037] text-white" : "bg-white text-[#5d4037] ring-1 ring-[#bcae9e] hover:ring-[#5d4037]"
                       }`}
                     >
                       {g === "all" ? `All (${docs.length})` : g}
@@ -298,8 +298,8 @@ export default function PortalTripCard({
               )}
               <div className="mt-3 space-y-4">
                 {shownGroups.map(([g, list]) => (
-                  <div key={g} className="rounded-xl bg-white px-4 py-2 ring-1 ring-border/50">
-                    <p className="pt-2 text-sm font-semibold text-accent">
+                  <div key={g} className="rounded-xl bg-white px-4 py-2 ring-1 ring-[#bcae9e]/50">
+                    <p className="pt-2 text-sm font-semibold text-[#5d4037]">
                       {g} <span className="font-normal text-[#8a7766]">· {list.length}</span>
                     </p>
                     <ul className="divide-y divide-[#efe5d6]">
@@ -357,7 +357,7 @@ export default function PortalTripCard({
         {toast && (
           <div
             className={`pointer-events-auto rounded-full px-5 py-2.5 text-sm font-medium shadow-lg ${
-              toast.kind === "ok" ? "bg-accent text-white" : "bg-[#a1442f] text-white"
+              toast.kind === "ok" ? "bg-[#5d4037] text-white" : "bg-[#a1442f] text-white"
             }`}
           >
             {toast.text}

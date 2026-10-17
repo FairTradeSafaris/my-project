@@ -1,24 +1,32 @@
 // app/api/zoho-remove-file/route.ts
-// Zoho CRM -> website: remove files from a client's portal.
+// Zoho CRM -> website: take files off a client's portal.
 //
 // Called by the "Sync Portal" button on a Zoho Deal. Protected by the
 // REQUIRED shared secret (header "x-zoho-secret"); refuses if the
-// ZOHO_WEBHOOK_SECRET env var is missing or wrong, because it deletes things.
+// ZOHO_WEBHOOK_SECRET env var is missing or wrong.
+//
+// SAFETY RULES (batch 11b, after a sync removed files that were still in Zoho):
+//  - Only trips linked to the clicked deal are touched: the trip's zohoDealId
+//    equals dealId, or (trips without a zohoDealId) the trip title equals the
+//    deal name. Other trips of the same email are NEVER touched.
+//  - Sync mode refuses an empty or missing keep list.
+//  - Sync mode refuses (removes nothing) if it would remove more than
+//    MAX_REMOVE files in total, or more than half of any trip's files:
+//    { error: "too_many", wouldRemove: [...] }.
+//  - Removing only unsets the item from the trip. The Sanity asset and the
+//    Vercel Blob are KEPT, so a mistake can be undone by re-adding the item.
 //
 // Two modes (JSON body):
 //  1. Sync (used by the button):
-//     { dealId, email, keepAttachmentIds: [...], keepFileNames: [...], dryRun? }
-//     Removes portal items that are no longer in Zoho:
+//     { dealId, dealName, email, keepAttachmentIds: [...], keepFileNames: [...], dryRun? }
+//     Removes items no longer in Zoho:
 //       - documents (files Zoho sent): removed when their zohoAttachmentId is
 //         not in keepAttachmentIds; older items without an id are compared by
-//         file name instead. Items with neither an id nor a name are never touched.
-//       - passport / flight uploads (client uploads): ONLY those that have a
-//         zohoAttachmentId stored, removed when that id is not in
-//         keepAttachmentIds. Uploads without an id are never touched.
+//         normalised file name. Items with neither are never touched.
+//       - passport / flight uploads (client uploads): ONLY those with a
+//         zohoAttachmentId, removed when that id is not in keepAttachmentIds.
 //  2. Single file:
-//     { dealId, email, zohoAttachmentId?, fileName?, dryRun? }
-//     Removes items with that Zoho attachment id, or (if none match by id)
-//     with that exact file name.
+//     { dealId, dealName, email, zohoAttachmentId?, fileName?, dryRun? }
 //
 // Response: { removed: n, files: [names], dryRun? }
 export const runtime = "nodejs";
@@ -26,7 +34,6 @@ export const dynamic = "force-dynamic";
 
 import { createClient } from "next-sanity";
 import { NextResponse } from "next/server";
-import { del } from "@vercel/blob";
 import { zohoSecretRequired } from "@/lib/server/zohoWebhook";
 
 const sanityClient = createClient({
@@ -40,17 +47,22 @@ const sanityClient = createClient({
 const FIELDS = ["documents", "passportUploads", "flightTicketUploads"] as const;
 type Field = (typeof FIELDS)[number];
 
+/** A sync may remove at most this many files in one click. */
+const MAX_REMOVE = 2;
+/** ...and never more than this share of one trip's files. */
+const MAX_SHARE = 0.5;
+
 type Item = {
   _key: string;
   name?: string | null;
   zohoAttachmentId?: string | null;
   ofn?: string | null; // originalFilename as stored by the Zoho webhook
-  blobPath?: string | null;
-  assetRef?: string | null;
 };
 
 type Trip = {
   _id: string;
+  title?: string | null;
+  zohoDealId?: string | null;
   documents?: Item[] | null;
   passportUploads?: Item[] | null;
   flightTicketUploads?: Item[] | null;
@@ -59,14 +71,38 @@ type Trip = {
 const PORTAL_PREFIX =
   /^\s*(passport|flight ticket)\s*-\s*from client portal\s*-\s*/i;
 
-/** File name without the "Passport - from client portal - " style prefix. */
+/** Display name without the "Passport - from client portal - " prefix. */
 function cleanName(v: unknown): string {
   return typeof v === "string" ? v.replace(PORTAL_PREFIX, "").trim() : "";
 }
 
-function strList(v: unknown, max = 1000): string[] | null {
-  if (!Array.isArray(v)) return null;
-  return v
+/** Comparison key for a file name: prefix stripped, trimmed, lowercase, single spaces. */
+function normName(v: unknown): string {
+  return cleanName(v).replace(/\s+/g, " ").toLowerCase();
+}
+
+/** Comparison key for a trip title / deal name. */
+function normTitle(v: unknown): string {
+  return typeof v === "string" ? v.replace(/\s+/g, " ").trim().toLowerCase() : "";
+}
+
+/**
+ * A list from the Zoho payload. Accepts a JSON array, or a string holding a
+ * JSON array (in case Deluge serialised the List as text). Anything else: null.
+ */
+function strList(v: unknown, max = 2000): string[] | null {
+  let arr: unknown = v;
+  if (typeof v === "string") {
+    const s = v.trim();
+    if (!s.startsWith("[")) return null;
+    try {
+      arr = JSON.parse(s);
+    } catch {
+      return null;
+    }
+  }
+  if (!Array.isArray(arr)) return null;
+  return arr
     .slice(0, max)
     .map((x) => (x == null ? "" : String(x).trim()))
     .filter(Boolean);
@@ -95,22 +131,23 @@ export async function POST(req: Request): Promise<Response> {
   const email =
     typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const dealId = body.dealId == null ? "" : String(body.dealId).trim();
+  const dealName = normTitle(body.dealName);
   const dryRun = body.dryRun === true || body.dryRun === "true";
 
   if (!email || !email.includes("@")) {
     return json({ error: "Missing email" }, 400);
   }
-  if (dealId && !/^\d+$/.test(dealId)) {
-    return json({ error: "Invalid dealId" }, 400);
+  if (!dealId || !/^\d+$/.test(dealId)) {
+    return json({ error: "Missing or invalid dealId" }, 400);
   }
 
-  const keepIdsRaw = strList(body.keepAttachmentIds);
-  const keepNamesRaw = strList(body.keepFileNames);
-  const syncMode = keepIdsRaw !== null || keepNamesRaw !== null;
+  const hasKeepIds = body.keepAttachmentIds !== undefined;
+  const hasKeepNames = body.keepFileNames !== undefined;
+  const syncMode = hasKeepIds || hasKeepNames;
 
   const singleId =
     body.zohoAttachmentId == null ? "" : String(body.zohoAttachmentId).trim();
-  const singleName = cleanName(body.fileName);
+  const singleName = normName(body.fileName);
 
   if (!syncMode && !singleId && !singleName) {
     return json(
@@ -119,21 +156,39 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const keepIds = new Set(keepIdsRaw ?? []);
-  const keepNames = new Set((keepNamesRaw ?? []).map(cleanName).filter(Boolean));
+  let keepIds = new Set<string>();
+  let keepNames = new Set<string>();
+  if (syncMode) {
+    const ids = strList(body.keepAttachmentIds);
+    const names = strList(body.keepFileNames);
+    // An empty or unreadable keep list would mean "remove everything": refuse.
+    if (!ids || !names || ids.length === 0 || names.length === 0) {
+      return json(
+        {
+          error: "empty_keep_list",
+          detail:
+            "keepAttachmentIds and keepFileNames must both be non-empty lists. Nothing was removed.",
+          received: { keepAttachmentIds: ids?.length ?? null, keepFileNames: names?.length ?? null },
+        },
+        400,
+      );
+    }
+    keepIds = new Set(ids);
+    keepNames = new Set(names.map(normName).filter(Boolean));
+  }
 
   try {
     const itemProj = `{
       _key,
       zohoAttachmentId,
-      blobPath,
       "ofn": originalFilename,
-      "name": coalesce(originalFilename, file.asset->originalFilename, asset->originalFilename),
-      "assetRef": coalesce(file.asset._ref, asset._ref)
+      "name": coalesce(originalFilename, file.asset->originalFilename, asset->originalFilename)
     }`;
-    const trips: Trip[] = await sanityClient.fetch(
+    const allTrips: Trip[] = await sanityClient.fetch(
       `*[_type == "trip" && !(_id in path("drafts.**")) && lower(clientEmail) == $email]{
         _id,
+        title,
+        zohoDealId,
         documents[]${itemProj},
         passportUploads[]${itemProj},
         flightTicketUploads[]${itemProj}
@@ -141,28 +196,49 @@ export async function POST(req: Request): Promise<Response> {
       { email },
     );
 
-    if (!trips || trips.length === 0) {
-      return json({ removed: 0, files: [], note: "No portal trip for this client" });
+    // Only trips linked to THIS deal.
+    const trips = (allTrips ?? []).filter((t) => {
+      const tripDeal = t.zohoDealId == null ? "" : String(t.zohoDealId).trim();
+      if (tripDeal) return tripDeal === dealId;
+      return Boolean(dealName) && normTitle(t.title) === dealName;
+    });
+
+    if (trips.length === 0) {
+      return json({
+        removed: 0,
+        files: [],
+        note: dealName
+          ? "No portal trip for this client is linked to this deal"
+          : "No portal trip linked to this deal (dealName missing)",
+      });
     }
 
     // Decide what to remove
     const toRemove: { tripId: string; field: Field; item: Item }[] = [];
+    const tripSize = new Map<string, number>();
     for (const trip of trips) {
+      let size = 0;
       for (const field of FIELDS) {
         const items = Array.isArray(trip[field]) ? (trip[field] as Item[]) : [];
+        size += items.filter((i) => i?._key).length;
         const isZohoDoc = field === "documents";
 
         if (syncMode) {
           for (const item of items) {
             if (!item?._key) continue;
-            const id = item.zohoAttachmentId ? String(item.zohoAttachmentId) : "";
+            const id = item.zohoAttachmentId ? String(item.zohoAttachmentId).trim() : "";
             if (id) {
-              if (!keepIds.has(id)) toRemove.push({ tripId: trip._id, field, item });
+              // Also keep it if the same file name is still in Zoho (the
+              // attachment may have been re-uploaded with a new id).
+              const n = normName(item.ofn ?? item.name);
+              if (!keepIds.has(id) && !(n && keepNames.has(n))) {
+                toRemove.push({ tripId: trip._id, field, item });
+              }
             } else if (isZohoDoc) {
-              // Older Zoho files (before ids were stored): compare by the
-              // name the webhook saved. Files added by hand in Sanity Studio
-              // have no such name and are never touched.
-              const n = cleanName(item.ofn);
+              // Older Zoho files (no id stored): compare by normalised name.
+              // Files added by hand in Sanity Studio have no stored name and
+              // are never touched.
+              const n = normName(item.ofn);
               if (n && !keepNames.has(n)) {
                 toRemove.push({ tripId: trip._id, field, item });
               }
@@ -177,24 +253,40 @@ export async function POST(req: Request): Promise<Response> {
             matches = items.filter(
               (i) =>
                 i?._key &&
-                cleanName(i.ofn ?? i.name) === singleName &&
-                // a client upload must be linked to Zoho to be removed from Zoho
+                normName(i.ofn ?? i.name) === singleName &&
                 (isZohoDoc || Boolean(i.zohoAttachmentId)),
             );
           }
           for (const item of matches) toRemove.push({ tripId: trip._id, field, item });
         }
       }
+      tripSize.set(trip._id, size);
     }
 
     const files = toRemove.map((r) => cleanName(r.item.name) || "(unnamed file)");
+
+    // 🛑 Safety cap: refuse big removals outright.
+    const perTrip = new Map<string, number>();
+    for (const r of toRemove) perTrip.set(r.tripId, (perTrip.get(r.tripId) ?? 0) + 1);
+    const tooShare = Array.from(perTrip).some(
+      ([tripId, n]) => n > MAX_SHARE * (tripSize.get(tripId) ?? 0),
+    );
+    if (toRemove.length > MAX_REMOVE || tooShare) {
+      console.warn(
+        `[zoho-remove-file] safety stop for deal ${dealId}: would remove ${toRemove.length} item(s)`,
+      );
+      return json(
+        { error: "too_many", count: toRemove.length, wouldRemove: files },
+        409,
+      );
+    }
 
     if (dryRun || toRemove.length === 0) {
       return json({ removed: 0, wouldRemove: toRemove.length, files, dryRun });
     }
 
-    // Remove from the trip docs (same unset approach as delete-upload).
-    // Field names are allow-listed; keys come from the database.
+    // Unset from the trip docs only. Assets and Blobs are kept, so an item
+    // can be put back. Field names are allow-listed; keys come from the database.
     const tx = sanityClient.transaction();
     const byTrip = new Map<string, string[]>();
     for (const r of toRemove) {
@@ -207,34 +299,8 @@ export async function POST(req: Request): Promise<Response> {
     }
     await tx.commit();
 
-    // Clean up the stored files. Sanity refuses to delete an asset that is
-    // still referenced elsewhere, so a failure here just means "still in use".
-    const assetIds = Array.from(
-      new Set(toRemove.map((r) => r.item.assetRef).filter((v): v is string => Boolean(v))),
-    );
-    for (const assetId of assetIds) {
-      try {
-        await sanityClient.delete(assetId);
-      } catch {
-        // still referenced, or already gone: leave it
-      }
-    }
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
-      for (const r of toRemove) {
-        if (!r.item.blobPath) continue;
-        try {
-          await del(r.item.blobPath);
-        } catch (e) {
-          console.error(
-            "[zoho-remove-file] blob delete failed:",
-            e instanceof Error ? e.message : "unknown error",
-          );
-        }
-      }
-    }
-
     console.log(
-      `[zoho-remove-file] removed ${toRemove.length} item(s)${dealId ? ` for deal ${dealId}` : ""} (${syncMode ? "sync" : "single"})`,
+      `[zoho-remove-file] unset ${toRemove.length} item(s) for deal ${dealId} (${syncMode ? "sync" : "single"}); assets kept`,
     );
     return json({ removed: toRemove.length, files });
   } catch (err) {

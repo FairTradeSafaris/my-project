@@ -25,6 +25,25 @@ export function zohoSecretOk(req: Request, route: string): boolean {
   return timingSafeEqual(a, b);
 }
 
+/**
+ * STRICT shared-secret check, for routes that delete things.
+ * Unlike zohoSecretOk, this REFUSES when ZOHO_WEBHOOK_SECRET is not set.
+ * Header only ("x-zoho-secret"), so the secret never lands in URL logs.
+ */
+export function zohoSecretRequired(req: Request, route: string): boolean {
+  const expected = process.env.ZOHO_WEBHOOK_SECRET;
+  if (!expected) {
+    console.error(
+      `[${route}] ZOHO_WEBHOOK_SECRET is not set; refusing. Set it in Vercel (Production) and redeploy.`,
+    );
+    return false;
+  }
+  const provided = req.headers.get("x-zoho-secret") ?? "";
+  const a = createHash("sha256").update(provided).digest();
+  const b = createHash("sha256").update(expected).digest();
+  return timingSafeEqual(a, b);
+}
+
 // Zoho hosts we are willing to send the Zoho OAuth token to.
 // The current flow downloads CRM attachments from the Zoho API
 // (www.zohoapis.com) with "Authorization: Zoho-oauthtoken ...".

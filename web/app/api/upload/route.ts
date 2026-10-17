@@ -180,13 +180,24 @@ export async function POST(request: Request): Promise<Response> {
             after(async () => {
               try {
                 const dealId = await findDealId(dealHint, meId);
-                await attachToZohoDeal({
+                const zohoAttachmentId = await attachToZohoDeal({
                   dealId,
                   label: field === "passportUploads" ? "Passport" : "Flight ticket",
                   originalName,
                   buffer,
                   mimeType,
                 });
+                // Remember the Zoho copy's id, so "Sync Portal" in Zoho can
+                // remove this upload if staff delete the Zoho attachment.
+                if (zohoAttachmentId && /^\d+$/.test(String(zohoAttachmentId))) {
+                  await sanityClient
+                    .patch(ownedId)
+                    .set({
+                      [`${field}[_key == ${JSON.stringify(key)}].zohoAttachmentId`]:
+                        String(zohoAttachmentId),
+                    })
+                    .commit();
+                }
               } catch (e) {
                 console.error(
                   "[upload] zoho copy failed:",

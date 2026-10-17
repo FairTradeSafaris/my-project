@@ -54,6 +54,46 @@ export function isAllowedZohoFileUrl(raw: unknown): boolean {
   );
 }
 
+/**
+ * Zoho CRM attachment id from a URL like
+ * https://crm.zoho.com/crm/v2/Deals/<dealId>/Attachments/<attachmentId>
+ */
+export function zohoAttachmentIdFrom(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const m = raw.match(/\/Attachments\/(\d+)(?:[/?#]|$)/i);
+  return m ? m[1] : null;
+}
+
+export type ExistingDoc = {
+  originalFilename?: string | null;
+  zohoAttachmentId?: string | null;
+};
+
+/**
+ * Is this Zoho attachment already on the trip?
+ * - Same zohoAttachmentId -> yes.
+ * - Same file name on an older item that has no zohoAttachmentId (uploaded
+ *   before batch 9) -> yes.
+ * - Same file name but a DIFFERENT attachment id -> no (a genuinely new file).
+ * - No attachment id in the URL -> fall back to the file name.
+ */
+export function isDuplicateZohoDoc(
+  docs: ExistingDoc[] | null | undefined,
+  attachmentId: string | null,
+  fileName: unknown,
+): boolean {
+  const list = Array.isArray(docs) ? docs : [];
+  const name = typeof fileName === "string" && fileName ? fileName : null;
+  if (attachmentId) {
+    if (list.some((d) => d?.zohoAttachmentId === attachmentId)) return true;
+    return Boolean(
+      name &&
+        list.some((d) => !d?.zohoAttachmentId && d?.originalFilename === name),
+    );
+  }
+  return Boolean(name && list.some((d) => d?.originalFilename === name));
+}
+
 /** Hostname only (never the full URL), for safe logging. */
 export function hostOf(raw: unknown): string {
   try {

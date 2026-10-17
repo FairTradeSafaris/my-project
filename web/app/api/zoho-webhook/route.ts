@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClerkClient } from "@clerk/backend";
+import { randomUUID } from "crypto";
 import {
+  type ExistingDoc,
   hostOf,
   isAllowedZohoFileUrl,
+  isDuplicateZohoDoc,
+  zohoAttachmentIdFrom,
   zohoSecretOk,
 } from "@/lib/server/zohoWebhook";
 
@@ -81,7 +85,7 @@ export async function POST(req: NextRequest) {
     const dataset = process.env.SANITY_DATASET!;
 
     // 🔍 1. FIND TRIP
-    const query = `*[_type=="trip" && clientEmail==$email][0]{_id}`;
+    const query = `*[_type=="trip" && clientEmail==$email][0]{_id, "docs": documents[]{originalFilename, zohoAttachmentId}}`;
     const queryUrl = `https://${projectId}.api.sanity.io/v2021-06-07/data/query/${dataset}?query=${encodeURIComponent(
       query,
     )}&$email=${encodeURIComponent(JSON.stringify(email))}`;
@@ -92,6 +96,8 @@ export async function POST(req: NextRequest) {
 
     const queryJson = await queryRes.json();
     let tripId = queryJson.result?._id;
+    const existingDocs: ExistingDoc[] = queryJson.result?.docs ?? [];
+    const zohoAttachmentId = zohoAttachmentIdFrom(file_url);
 
 
     // 🆕 2. CREATE TRIP IF MISSING
@@ -160,6 +166,12 @@ export async function POST(req: NextRequest) {
 
     }
 
+    // ♻️ 3b. SKIP if this attachment is already on the trip
+    // (repeated Deal edits used to add the same file again)
+    if (isDuplicateZohoDoc(existingDocs, zohoAttachmentId, file_name)) {
+      return NextResponse.json({ success: true, skipped: true, tripId });
+    }
+
     // ⬇️ 4. DOWNLOAD FILE FROM ZOHO
     const zohoToken = await getZohoToken();
 
@@ -183,11 +195,15 @@ export async function POST(req: NextRequest) {
       },
     );
 
+    if (!uploadRes.ok) {
+      throw new Error(`Sanity asset upload failed (${uploadRes.status})`);
+    }
+
     const uploadJson = await uploadRes.json();
     const assetId = uploadJson.document._id;
 
     // 🧩 6. PATCH TRIP
-    await fetch(
+    const patchRes = await fetch(
       `https://${projectId}.api.sanity.io/v2021-06-07/data/mutate/${dataset}`,
       {
         method: "POST",
@@ -205,8 +221,10 @@ export async function POST(req: NextRequest) {
                   after: "documents[-1]",
                   items: [
                     {
+                      _key: randomUUID().replace(/-/g, "").slice(0, 12),
                       label: "other",
                       originalFilename: file_name,
+                      ...(zohoAttachmentId ? { zohoAttachmentId } : {}),
                       file: {
                         _type: "file",
                         asset: { _type: "reference", _ref: assetId },
@@ -220,6 +238,10 @@ export async function POST(req: NextRequest) {
         }),
       },
     );
+
+    if (!patchRes.ok) {
+      throw new Error(`Sanity trip patch failed (${patchRes.status})`);
+    }
 
     return NextResponse.json({ success: true, tripId, assetId });
   } catch (err) {

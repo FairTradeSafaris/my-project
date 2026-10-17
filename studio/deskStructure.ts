@@ -119,6 +119,16 @@ export const myStructure = (S: StructureBuilder) =>
             ]),
         ),
 
+      // 🤝 Ambassador Programme (SINGLETON, batch 12)
+      S.listItem()
+        .title('🤝 Ambassador Settings')
+        .child(
+          S.editor()
+            .id('ambassadorSettings')
+            .schemaType('ambassadorSettings')
+            .documentId('ambassadorSettings'),
+        ),
+
       // 📬 Contact Us
       S.listItem()
         .title('📬 Contact Us')

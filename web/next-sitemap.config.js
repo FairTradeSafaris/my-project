@@ -74,10 +74,13 @@ module.exports = {
     const pillarPaths = await getPillarUrls();
 
     const homePage = [{ loc: "/", changefreq: "weekly", priority: 1.0 }];
+    // batch 12: ambassador / affiliate programme join page
+    const programmePages = [{ loc: "/affiliate-program/", changefreq: "monthly", priority: 0.7 }];
 
     // Combine everything
     const allPaths = [
       ...homePage,
+      ...programmePages,
       ...pillarPaths,
       ...staticPaths,
       ...blogPaths,

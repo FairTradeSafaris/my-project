@@ -62,6 +62,9 @@ export async function POST(req: NextRequest) {
     marketingConsent: !!raw.marketingConsent,
     travelMonth: esc(raw.travelMonth, 60),
     message: esc(raw.message, 2000),
+    // batch 12: ambassador referral (optional)
+    referralCode: String(raw.referralCode ?? "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 32),
+    referredBy: esc(raw.referredBy, 120),
   };
 
   // ✅ Send Resend email first
@@ -94,6 +97,10 @@ export async function POST(req: NextRequest) {
             <td style="padding: 8px 0;"><strong>Travel month:</strong></td>
             <td>${body.travelMonth || "-"}</td>
           </tr>
+          ${body.referralCode || body.referredBy ? `<tr>
+            <td style="padding: 8px 0;"><strong>Referred by:</strong></td>
+            <td>${[body.referralCode && `Code ${body.referralCode}`, body.referredBy].filter(Boolean).join(" - ")}</td>
+          </tr>` : ""}
           <tr>
             <td style="padding: 8px 0;"><strong>Appointment Requested:</strong></td>
             <td>${body.appointment ? "Yes" : "No"}</td>
@@ -118,7 +125,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 🧾 Create Zoho lead
-  const lead = {
+  const lead: Record<string, unknown> = {
     First_Name: body.firstName,
     Last_Name: body.lastName,
     Email: body.email,
@@ -127,10 +134,17 @@ export async function POST(req: NextRequest) {
       `Appointment: ${body.appointment ? "Yes" : "No"}, Marketing: ${body.marketingConsent ? "Yes" : "No"}`,
       body.travelMonth ? `Travel month: ${body.travelMonth}` : "",
       body.message ? `Message: ${body.message}` : "",
+      body.referralCode ? `Referral code: ${body.referralCode}` : "",
+      body.referredBy ? `Who referred them: ${body.referredBy}` : "",
     ]
       .filter(Boolean)
       .join("\n"),
   };
+
+  // batch 12: only sent once the "Referral Code" field exists in Zoho and
+  // ZOHO_REFERRAL_FIELD=1 is set in Vercel. It's always in Description too.
+  const withReferralField = process.env.ZOHO_REFERRAL_FIELD === "1" && !!body.referralCode;
+  if (withReferralField) lead.Referral_Code = body.referralCode;
 
   let crmOk = false;
   try {
@@ -147,7 +161,13 @@ export async function POST(req: NextRequest) {
     if (response.status === 401 && (await refreshAccessToken())) {
       response = await post();
     }
-    const json = await response.json().catch(() => ({}));
+    let json = await response.json().catch(() => ({}));
+    if (withReferralField && !(response.ok && json?.data?.[0]?.status !== "error")) {
+      // Field missing or rejected: save the lead without it (code is in Description).
+      delete lead.Referral_Code;
+      response = await post();
+      json = await response.json().catch(() => ({}));
+    }
     if (response.ok && json?.data?.[0]?.status !== "error") crmOk = true;
     else console.error("[contact] Zoho lead failed", response.status, JSON.stringify(json).slice(0, 500));
   } catch (err) {

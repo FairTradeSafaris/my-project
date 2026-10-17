@@ -67,6 +67,7 @@ import featuredJourneysSection from './schemas/featuredJourneysSection'
 import homePage from './schemas/homePage'
 import ctaCardGrid from './schemas/blocks/ctaCardGrid'
 import ctaCard from './schemas/objects/ctaCard'
+import ambassadorSettings from './schemas/ambassadorSettings' // batch 12 (new type only)
 
 const schemaTypes = [
   blog,
@@ -135,6 +136,7 @@ const schemaTypes = [
   homePage,
   ctaCardGrid,
   ctaCard,
+  ambassadorSettings,
 ]
 
 export default schemaTypes

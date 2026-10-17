@@ -1,0 +1,46 @@
+/* app/affiliate-program/affiliate.module.css (batch 12) */
+
+/* Slow "Ken Burns" drift on the hero photo */
+@keyframes ftsDrift {
+  from { transform: scale(1.08) translate3d(0, 0, 0); }
+  to   { transform: scale(1) translate3d(0, -1%, 0); }
+}
+.heroImg { animation: ftsDrift 16s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes ftsRise {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+.rise { animation: ftsRise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.rise2 { animation: ftsRise 0.9s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.rise3 { animation: ftsRise 0.9s 0.24s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.rise4 { animation: ftsRise 0.9s 0.36s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Scroll reveal (Reveal.tsx toggles data-shown) */
+.reveal { opacity: 0; transform: translate3d(0, 24px, 0); transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+.reveal[data-shown="true"] { opacity: 1; transform: none; }
+
+/* Subtle paper grain for the dark bands (pure CSS, no image request) */
+.grain { background-image:
+  radial-gradient(1200px 500px at 85% -10%, rgba(217, 180, 138, 0.18), transparent 60%),
+  radial-gradient(900px 400px at -10% 110%, rgba(164, 113, 72, 0.22), transparent 60%); }
+
+/* Range slider */
+.range { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; outline: none; cursor: pointer; background: transparent; }
+.range::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: transparent; }
+.range::-moz-range-track { height: 6px; border-radius: 999px; background: rgba(245, 235, 221, 0.18); }
+.range::-moz-range-progress { height: 6px; border-radius: 999px; background: #d9b48a; }
+.range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -9px; width: 24px; height: 24px; border-radius: 999px; background: #fbf6ef; border: 6px solid #d9b48a; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); transition: transform 0.15s ease; }
+.range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 999px; background: #fbf6ef; border: 6px solid #d9b48a; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
+.range:active::-webkit-slider-thumb { transform: scale(1.12); }
+.range:focus-visible { box-shadow: 0 0 0 4px rgba(217, 180, 138, 0.45); }
+
+/* FAQ chevron */
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary { list-style: none; }
+.faq[open] .faqIcon { transform: rotate(45deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .heroImg, .rise, .rise2, .rise3, .rise4 { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}

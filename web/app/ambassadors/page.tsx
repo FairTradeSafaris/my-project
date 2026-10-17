@@ -7,6 +7,7 @@ import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import AmbassadorCard from "@/components/AmbassadorCard";
 import type { Ambassador } from "@/types/ambassador";
 import HeroController from "@/components/HeroController";
+import AmbassadorCtaStrip from "@/components/AmbassadorCtaStrip"; // batch 12
 import { client as sanity } from "@/lib/sanity";
 
 // -----------------------------------------
@@ -173,6 +174,9 @@ export default async function AmbassadorsPage() {
           ))}
         </div>
       </section>
+
+      {/* batch 12: Become an Ambassador strip (text from Ambassador Settings) */}
+      <AmbassadorCtaStrip />
     </main>
   );
 }

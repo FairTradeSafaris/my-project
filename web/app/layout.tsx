@@ -17,6 +17,7 @@ import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
 import GlobalBookingPortal from "@/components/GlobalBookingPortal";
 import LeadMagnetGate from "@/components/LeadMagnetGate";
 import CookieConsent from "@/components/CookieConsent";
+import ReferralTracker from "@/components/ReferralTracker"; // batch 12
 
 import { headers } from "next/headers";
 import { DEFAULT_OG_IMAGE } from "@/lib/seoDefaults";
@@ -182,6 +183,7 @@ export default async function RootLayout({
             </ClerkConsentGate>
             <Suspense fallback={null}>
               <CookieConsent />
+              <ReferralTracker />
             </Suspense>
           </ThemeProvider>
         </ClerkOnDemand>

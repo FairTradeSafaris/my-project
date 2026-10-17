@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getReferral } from "@/lib/referral";
 
 type Status = "idle" | "sending" | "success" | "error";
 
@@ -12,6 +13,11 @@ export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const startedAt = useRef(Date.now());
+  // batch 12: ambassador code remembered from a ?ref= link
+  const [refCode, setRefCode] = useState("");
+  useEffect(() => {
+    setRefCode(getReferral());
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,6 +34,8 @@ export default function ContactForm() {
       message: String(f.get("message") ?? ""),
       appointment: f.get("appointment") === "on",
       marketingConsent: f.get("promos") === "on",
+      referralCode: String(f.get("referralCode") ?? ""),
+      referredBy: String(f.get("referredBy") ?? ""),
       website: String(f.get("website") ?? ""),
       elapsedMs: Date.now() - startedAt.current,
     };
@@ -119,6 +127,31 @@ export default function ContactForm() {
           className={inputCls}
         />
       </div>
+      <details className="group rounded-md border border-[#e3d6c8] bg-[#fbf6f0] px-3 py-2" open={!!refCode}>
+        <summary className="cursor-pointer select-none text-sm font-medium text-[#5c4033] marker:text-[#a47148]">
+          Were you referred by an ambassador? <span className="font-normal text-[#6b4f3f]">(optional)</span>
+        </summary>
+        <div className="mt-3 grid grid-cols-1 gap-4 pb-1 sm:grid-cols-2">
+          <div>
+            <label htmlFor="cf-ref" className={labelCls}>Referral code</label>
+            <input
+              id="cf-ref"
+              name="referralCode"
+              type="text"
+              key={refCode || "noref"}
+              defaultValue={refCode}
+              placeholder="e.g. SARAH5"
+              className={`${inputCls} uppercase`}
+              maxLength={32}
+              autoComplete="off"
+            />
+          </div>
+          <div>
+            <label htmlFor="cf-refby" className={labelCls}>Who referred you?</label>
+            <input id="cf-refby" name="referredBy" type="text" placeholder="Their name" className={inputCls} maxLength={120} />
+          </div>
+        </div>
+      </details>
       <div className="flex items-start gap-3">
         <input type="checkbox" name="appointment" id="appointment" className="mt-1 h-4 w-4 accent-[#5c4033]" />
         <label htmlFor="appointment" className="text-sm text-[#3c2f2f]">

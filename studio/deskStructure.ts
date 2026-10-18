@@ -129,6 +129,11 @@ export const myStructure = (S: StructureBuilder) =>
             .documentId('ambassadorSettings'),
         ),
 
+      // 🤝 Ambassador Accounts (batch 24): code <-> website login link
+      S.listItem()
+        .title('🤝 Ambassador Accounts')
+        .child(S.documentTypeList('ambassadorAccount').title('Ambassador Accounts')),
+
       // 📬 Contact Us
       S.listItem()
         .title('📬 Contact Us')

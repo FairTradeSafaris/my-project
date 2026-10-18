@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getReferral } from "@/lib/referral";
+import { cleanRefCode, getReferral } from "@/lib/referral";
 
 type Status = "idle" | "sending" | "success" | "error";
 
@@ -16,7 +16,16 @@ export default function ContactForm() {
   // batch 12: ambassador code remembered from a ?ref= link
   const [refCode, setRefCode] = useState("");
   useEffect(() => {
-    setRefCode(getReferral());
+    // batch 24: also read ?ref= / ?ambassador= on this page itself, so the box
+    // is filled even on the very first visit (prefill only; submit unchanged)
+    let fromUrl = "";
+    try {
+      const p = new URLSearchParams(window.location.search);
+      fromUrl = cleanRefCode(p.get("ref") || p.get("ambassador"));
+    } catch {
+      fromUrl = "";
+    }
+    setRefCode(fromUrl || getReferral());
   }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -129,11 +138,11 @@ export default function ContactForm() {
       </div>
       <details className="group rounded-md border border-[#e3d6c8] bg-[#fbf6f0] px-3 py-2" open={!!refCode}>
         <summary className="cursor-pointer select-none text-sm font-medium text-[#5c4033] marker:text-[#a47148]">
-          Were you referred by an ambassador? <span className="font-normal text-[#6b4f3f]">(optional)</span>
+          Have an ambassador&apos;s referral code? <span className="font-normal text-[#6b4f3f]">(optional)</span>
         </summary>
         <div className="mt-3 grid grid-cols-1 gap-4 pb-1 sm:grid-cols-2">
           <div>
-            <label htmlFor="cf-ref" className={labelCls}>Referral code</label>
+            <label htmlFor="cf-ref" className={labelCls}>Ambassador referral code</label>
             <input
               id="cf-ref"
               name="referralCode"
@@ -144,7 +153,12 @@ export default function ContactForm() {
               className={`${inputCls} uppercase`}
               maxLength={32}
               autoComplete="off"
+              aria-describedby="cf-ref-hint"
             />
+            {/* batch 24: plain hint; the code is filled in from a saved ?ref= link (unchanged logic) */}
+            <p id="cf-ref-hint" className="mt-1 text-[13px] leading-5 text-[#6b4f3f]">
+              {refCode ? "We've filled in the code from your friend's link." : "If a friend gave you their code, enter it here."}
+            </p>
           </div>
           <div>
             <label htmlFor="cf-refby" className={labelCls}>Who referred you?</label>

@@ -9,6 +9,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 import JourneyCard from "@/components/JourneyCard";
 import Link from "next/link";
 import { authFetch } from "@/lib/authFetch";
+import AmbassadorHubCard from "@/components/ambassador/AmbassadorHubCard"; // batch 24
 
 const fetchWishlistJourneys = async (ids: string[]) => {
   if (!ids.length) return [];
@@ -168,6 +169,9 @@ export default function ClientHomeContent() {
             You’re offline. Showing your saved trip details.
           </div>
         )}
+
+        {/* batch 24: only shown to people with an ambassador account */}
+        <AmbassadorHubCard />
 
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-[#3e2a20]">Your trips</h2>

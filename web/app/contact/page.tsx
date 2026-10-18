@@ -8,6 +8,8 @@ import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import Script from "next/script";
 import Link from "next/link";
 import HeroController from "@/components/HeroController";
+import LineArt from "@/components/LineArt";
+import { coreBody, coreButtonOutline, coreCard, coreContainer, coreH2 } from "@/components/core/coreStyles";
 
 export const revalidate = 60;
 
@@ -71,7 +73,8 @@ export default async function ContactPage() {
   ];
   return (
     <>
-      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
+      <HeroController
+        look="calm" heroData={heroData} breadcrumbs={breadcrumbs} />
 
       {/* Inject Breadcrumb structured data for SEO */}
       <Script
@@ -85,13 +88,16 @@ export default async function ContactPage() {
 
       {/* Link to FAQ Page */}
       {/* FAQ Teaser Section */}
-      <section className="max-w-6xl mx-auto px-4 mt-16 mb-16">
-        <div className="bg-neutral-50 rounded-2xl p-10 text-center shadow-sm border border-neutral-200">
-          <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+      {/* Batch 23: homepage-style card (display only) */}
+      <section className="bg-white py-10 md:py-14">
+        <div className={coreContainer}>
+        <div className={`${coreCard} mx-auto max-w-4xl px-6 py-8 text-center md:px-10 md:py-10`}>
+          <LineArt name="wildebeest" className="mx-auto mb-4 w-32 text-[#c9974f]/70" />
+          <h2 className={`${coreH2} mb-4`}>
             Frequently Asked Questions
           </h2>
 
-          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+          <p className={`${coreBody} mx-auto mb-6 max-w-2xl md:text-[17px] md:leading-8`}>
             Planning a safari comes with important questions. Explore our
             answers about ethical travel, sustainability, pricing, and what to
             expect on your journey.
@@ -99,10 +105,11 @@ export default async function ContactPage() {
 
           <Link
             href="/faq/"
-            className="inline-block bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition"
+            className={coreButtonOutline}
           >
             View All FAQs →
           </Link>
+        </div>
         </div>
       </section>
     </>

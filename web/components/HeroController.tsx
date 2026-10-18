@@ -399,8 +399,11 @@ function HeroView({
   breadcrumbs,
   headlineAs = "h1",
   slides,
+  look = "default",
 }: {
   headlineAs?: "h1" | "p";
+  /** Batch 23: "calm" = homepage-style banner (core pages opt in) */
+  look?: "default" | "calm";
   /** Batch 21: homepage only, all background images for the rotation */
   slides?: Slide[];
   bgUrlDesktop?: string;
@@ -418,6 +421,7 @@ function HeroView({
   breadcrumbs?: { label: string; href: string }[];
 }) {
   const isHome = variant === "home";
+  const calm = !isHome && look === "calm";
   const desktopSrc = bgUrlDesktop || bgUrlMobile || "/sunset-safari.webp";
   const mobileSrc = bgUrlMobile || bgUrlDesktop || "/sunset-safari.webp";
 
@@ -469,6 +473,78 @@ function HeroView({
               >
                 {primaryLink.label} &rarr;
               </Link>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  if (calm) {
+    // Batch 23: homepage-style banner for the core pages (display only). Same
+    // image (server-rendered, high priority), same breadcrumbs, label,
+    // headline tag, subheadline, search and link; text left-aligned in the
+    // 1440 container over the homepage's dark brown gradient.
+    return (
+      <section className="relative flex h-[440px] w-full items-end pt-20 md:h-[500px] md:pt-24" id="hero">
+        <HeroPicture desktopSrc={desktopSrc} mobileSrc={mobileSrc} alt={alt} />
+
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#1a100a]/90 via-[#1a100a]/45 to-[#1a100a]/20" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#1a100a]/60 via-transparent to-transparent" />
+
+        <div className="relative z-20 mx-auto w-full max-w-[1440px] px-6 pb-10 text-[#fbf6ef] sm:px-8 md:pb-12 lg:px-12 xl:px-16">
+          {breadcrumbs && (
+            <div className="mb-4 text-[14px] text-[#e9dccb]">
+              {breadcrumbs.map((item, i) => (
+                <span key={item.href}>
+                  {i > 0 && " / "}
+                  <Link href={item.href} className="hover:text-white hover:underline">
+                    {item.label}
+                  </Link>
+                </span>
+              ))}
+            </div>
+          )}
+          {pageLabel && (
+            <span className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.24em] text-[#e2c39c]">
+              {pageLabel}
+            </span>
+          )}
+
+          {headline && headlineAs === "p" ? (
+            <p className="max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+              {headline}
+            </p>
+          ) : headlineAs === "p" ? null : headline ? (
+            <h1 className="max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+              {headline}
+            </h1>
+          ) : (
+            <h1 className="sr-only">
+              Luxury African Safaris That Make a Difference
+            </h1>
+          )}
+
+          {sub && (
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[#efe4d6] sm:text-xl">
+              {sub}
+            </p>
+          )}
+
+          {children && (
+            <div className="mt-6 w-full max-w-3xl">
+              {children}
+
+              {primaryLink && (
+                <div className="mt-5">
+                  <Link
+                    href={primaryLink.href}
+                    className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#fbf6ef] px-6 text-[15px] font-semibold text-[#24170f] transition hover:bg-white"
+                  >
+                    {primaryLink.label} →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -689,11 +765,14 @@ export default function HeroController({
   heroData,
   breadcrumbs,
   headlineAs = "h1",
+  look = "default",
 }: {
   heroData?: HeroData;
   breadcrumbs?: { label: string; href: string }[];
   /** use "p" on pages that already render their own <h1> */
   headlineAs?: "h1" | "p";
+  /** Batch 23: "calm" = homepage-style banner; other pages keep the default */
+  look?: "default" | "calm";
 }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -783,6 +862,7 @@ export default function HeroController({
       variant={isHome ? "home" : "banner"}
       headlineAs={headlineAs}
       slides={homeSlides}
+      look={look}
     >
       {showHomeFilters && (
         <>

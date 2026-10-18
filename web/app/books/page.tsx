@@ -44,7 +44,8 @@ export default async function BooksPage() {
 
   return (
     <>
-      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
+      <HeroController
+        look="calm" heroData={heroData} breadcrumbs={breadcrumbs} />
       <BookPageWrapper />
     </>
   );

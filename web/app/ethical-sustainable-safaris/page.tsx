@@ -54,6 +54,7 @@ export default async function Page() {
   return (
     <>
       <HeroController
+        look="calm"
         heroData={heroData}
         breadcrumbs={breadcrumbs}
         headlineAs="p"

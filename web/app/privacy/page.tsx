@@ -96,6 +96,7 @@ export default async function PrivacyPolicyPage() {
           HERO
       =========================== */}
       <HeroController
+        look="calm"
         heroData={heroData ?? undefined}
         breadcrumbs={[
           { label: "Home", href: "/" },
@@ -106,15 +107,18 @@ export default async function PrivacyPolicyPage() {
       {/* ===========================
           CONTENT
       =========================== */}
-      <main className="min-h-screen text-black bg-[#fdf8f3]">
-        <section className="max-w-3xl mx-auto px-6 py-12">
+      {/* Batch 23: policy text in a white card on cream (display only) */}
+      <main className="min-h-screen text-[#24170f] bg-[#f7f3ec]">
+        <section className="mx-auto max-w-[960px] px-6 py-10 md:py-14">
           {/* ❌ REMOVED H1 (hero owns it) */}
 
-          <div className="prose prose-lg text-gray-700">
+          <div className="rounded-2xl border border-[#ebe1d3] bg-white px-6 py-8 shadow-[0_1px_2px_rgba(36,23,15,0.04),0_14px_32px_-22px_rgba(36,23,15,0.30)] md:px-12 md:py-12">
+          <div className="prose max-w-none text-[16px] leading-7 text-[#5c4a3d] md:text-[17px] md:leading-8 prose-headings:font-semibold prose-headings:text-[#24170f] prose-h2:text-[26px] prose-h3:text-[20px] prose-strong:text-[#24170f] prose-a:text-[#9a4f22] prose-li:marker:text-[#c9974f]">
             <PortableText
               value={data.content}
               components={portableTextComponents}
             />
+          </div>
           </div>
         </section>
       </main>

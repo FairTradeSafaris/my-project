@@ -12,6 +12,7 @@ import type { FAQCategory, FAQItem } from "../../types/types";
 import type { PortableTextBlock } from "@portabletext/types";
 import type { HeroData } from "@/components/HeroController";
 import Link from "next/link";
+import { coreContainer, coreH1, coreTextLink } from "@/components/core/coreStyles";
 // Batch 17: "Popular questions" links to the Safari Questions pages
 import {
   QUESTIONS_PATH,
@@ -142,12 +143,13 @@ export default async function FAQPage() {
     <>
       {/* ✅ HERO */}
       <HeroController
+        look="calm"
         heroData={heroData ?? undefined}
         breadcrumbs={breadcrumbs}
         headlineAs="p"
       />
 
-      <main className="min-h-screen px-4 py-5 bg-[#f9f6f2]">
+      <main className="min-h-screen bg-[#f7f3ec] py-10 md:py-14">
         {/* Structured Data (batch 16: plain <script> tags so the JSON-LD is
             in the HTML itself; next/script only added it after JS ran) */}
         <script
@@ -164,8 +166,8 @@ export default async function FAQPage() {
           }}
         />
 
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-900">
+        <div className={coreContainer}>
+          <h1 className={`${coreH1} mb-6 text-center`}>
             Your Safari Questions, Answered
           </h1>
 
@@ -173,11 +175,11 @@ export default async function FAQPage() {
           {popular.length > 0 && (
             <nav
               aria-labelledby="popular-questions"
-              className="mx-auto mb-2 max-w-4xl px-4 text-center"
+              className="mx-auto mb-2 max-w-5xl text-center"
             >
               <h2
                 id="popular-questions"
-                className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a0703f]"
+                className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#a35c2d]"
               >
                 Popular questions
               </h2>
@@ -186,7 +188,7 @@ export default async function FAQPage() {
                   <li key={q._id}>
                     <Link
                       href={`${QUESTIONS_PATH}/${q.slug}/`}
-                      className="inline-block rounded-full bg-white px-4 py-2 text-sm text-[#4a3527] ring-1 ring-[#e6d8c8] transition hover:bg-[#fbf6ef] hover:text-[#24170f] hover:ring-[#c9a57f]"
+                      className="inline-block rounded-lg border border-[#e6d8c8] bg-white px-4 py-2.5 text-[15px] text-[#3c2a1e] transition hover:border-[#c9a57f] hover:text-[#24170f]"
                     >
                       {q.question}
                     </Link>
@@ -195,7 +197,7 @@ export default async function FAQPage() {
               </ul>
               <Link
                 href={`${QUESTIONS_PATH}/`}
-                className="mt-4 inline-block text-sm font-semibold text-[#5d4037] underline decoration-[#c9a57f] decoration-2 underline-offset-[6px] hover:text-[#24170f]"
+                className={`mt-5 ${coreTextLink}`}
               >
                 See all safari questions
               </Link>

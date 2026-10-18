@@ -3,99 +3,122 @@
 import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { ShieldCheck, Wallet, RefreshCcw, Star, Quote } from "lucide-react";
+import {
+  coreBody,
+  coreButtonOutline,
+  coreCard,
+  coreContainer,
+  coreCream,
+  coreDivider,
+  coreH1,
+  coreH2,
+  coreH3,
+  coreIconBadge,
+  coreLead,
+  coreLink,
+  coreSection,
+} from "@/components/core/coreStyles";
+
+// Batch 23: homepage-style layout (display only). Same headings, words, links,
+// line art and order; S.A.F.E. points are white cards on cream.
+const body = `${coreBody} md:text-[17px] md:leading-8`;
 
 export default function OurPromisePage() {
   return (
-    <main className="min-h-screen bg-[#fdf8f3] text-black font-sans">
-      <section className="px-5 sm:px-6 py-14 sm:py-16 md:py-20 max-w-5xl mx-auto space-y-12 sm:space-y-14 md:space-y-16">
-        {/* Header */}
-        <div className="space-y-5 sm:space-y-6">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#5c4033]">
-            The Founder’s Promise
-          </h1>
+    <main className="min-h-screen bg-white text-[#24170f] font-sans">
+      <section className={`bg-white ${coreSection}`}>
+        <div className={`${coreContainer} grid gap-8 md:grid-cols-12 md:items-center`}>
+          {/* Header */}
+          <div className="space-y-5 md:col-span-6">
+            <h1 className={coreH1}>
+              The Founder’s Promise
+            </h1>
 
-          <p className="text-lg sm:text-xl text-gray-700 leading-relaxed max-w-3xl">
-            At{" "}
-            <Link
-              href="/"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              Fair Trade Safaris
-            </Link>
-            , travel isn’t just business — it’s personal.
-          </p>
-        </div>
+            <p className={`${coreLead} max-w-3xl`}>
+              At{" "}
+              <Link href="/" className={coreLink}>
+                Fair Trade Safaris
+              </Link>
+              , travel isn’t just business — it’s personal.
+            </p>
+          </div>
 
-        {/* Quote Block */}
-        <div className="bg-white border border-gray-200 p-6 sm:p-8 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
-          <Quote className="w-8 h-8 sm:w-10 sm:h-10 text-[#5c4033] shrink-0 sm:mt-1" />
-          <div>
-            <p className="text-xl sm:text-2xl italic text-gray-800 mb-3 leading-relaxed">
-              I would never design a trip for you that I wouldn’t take myself —
-              with my own family.
-            </p>
-            <p className="text-gray-600">
-              That’s not marketing. That’s a promise.
-            </p>
+          {/* Quote Block */}
+          <div className={`${coreCard} flex flex-col items-start gap-4 p-6 sm:flex-row sm:gap-5 sm:p-8 md:col-span-6`}>
+            <span className={coreIconBadge}>
+              <Quote className="h-6 w-6" />
+            </span>
+            <div>
+              <p className="mb-3 text-[21px] italic leading-relaxed text-[#24170f] sm:text-[24px]">
+                I would never design a trip for you that I wouldn’t take myself —
+                with my own family.
+              </p>
+              <p className="text-[16px] text-[#5c4a3d]">
+                That’s not marketing. That’s a promise.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Line Art Divider */}
-        <div className="relative w-full h-[160px] sm:h-[200px] md:h-[220px] opacity-60 mt-8 sm:mt-12">
-          <Image
-            src="/line-art-team.png"
-            alt="Safari line art illustration featuring acacia trees, safari vehicle, and giraffes"
-            fill
-            className="object-contain"
-            priority
-          />
+        <div className={coreContainer}>
+          <div className="relative mt-8 h-[140px] w-full opacity-60 sm:h-[180px] md:mt-10 md:h-[200px]">
+            <Image
+              src="/line-art-team.png"
+              alt="Safari line art illustration featuring acacia trees, safari vehicle, and giraffes"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
+      </section>
 
-        {/* SAFE Framework */}
-        <div className="space-y-8 sm:space-y-10">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-[#5c4033]">
+      {/* SAFE Framework */}
+      <section className={`${coreCream} ${coreSection}`}>
+        <div className={coreContainer}>
+          <div className="max-w-3xl">
+            <h2 className={coreH2}>
               What is S.A.F.E.?
             </h2>
 
-            <p className="mt-4 text-base sm:text-lg text-gray-800 leading-relaxed">
+            <p className={`mt-4 ${body}`}>
               S.A.F.E. stands for{" "}
-              <strong>
+              <strong className="font-semibold text-[#24170f]">
                 Security, Affordability, Flexibility, and Experiences
               </strong>{" "}
               — the framework behind every safari we design.
             </p>
 
-            <p className="mt-4 text-base sm:text-lg text-gray-800 leading-relaxed">
+            <p className={`mt-4 ${body}`}>
               It also reflects our broader commitment to{" "}
-              <Link
-                href="/ethical-sustainable-safaris"
-                className="text-[#5c4033] underline hover:no-underline"
-              >
+              <Link href="/ethical-sustainable-safaris" className={coreLink}>
                 ethical and sustainable safari travel in Africa
               </Link>
               .
             </p>
           </div>
 
-          <ul className="space-y-10 sm:space-y-12">
+          <ul className="mt-8 grid gap-6 md:grid-cols-2">
             {/* Security */}
-            <li className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
-              <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033] shrink-0 sm:mt-1" />
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-3">
+            <li className={`${coreCard} flex flex-col items-start gap-4 p-6 sm:flex-row sm:gap-5 md:p-8`}>
+              <span className={coreIconBadge}>
+                <ShieldCheck className="h-6 w-6" />
+              </span>
+              <div className="flex h-full w-full flex-col">
+                <h3 className={`${coreH3} mb-3`}>
                   Security
                 </h3>
-                <p className="text-gray-800 leading-relaxed text-base sm:text-lg">
+                <p className={body}>
                   From bush flights to private conservancies across Africa,
                   every partner is vetted for safety, professionalism, and
                   reliability.
                 </p>
 
-                <div className="mt-6">
+                <div className={`mt-6 ${coreDivider} pt-6`}>
                   <Link
                     href="/destination/"
-                    className="inline-block w-full sm:w-auto text-center border border-[#5c4033] text-[#5c4033] px-6 py-3 rounded-lg font-medium hover:bg-[#5c4033] hover:text-white transition"
+                    className={`${coreButtonOutline} w-full sm:w-auto`}
                   >
                     Explore All Destinations
                   </Link>
@@ -104,21 +127,23 @@ export default function OurPromisePage() {
             </li>
 
             {/* Affordability */}
-            <li className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
-              <Wallet className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033] shrink-0 sm:mt-1" />
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-3">
+            <li className={`${coreCard} flex flex-col items-start gap-4 p-6 sm:flex-row sm:gap-5 md:p-8`}>
+              <span className={coreIconBadge}>
+                <Wallet className="h-6 w-6" />
+              </span>
+              <div className="flex h-full w-full flex-col">
+                <h3 className={`${coreH3} mb-3`}>
                   Affordability
                 </h3>
-                <p className="text-gray-800 leading-relaxed text-base sm:text-lg">
+                <p className={body}>
                   Luxury should reflect value — not inflated margins. Our
                   long-standing relationships across Africa allow us to deliver
                   premium safari experiences responsibly.
                 </p>
-                <div className="mt-4">
+                <div className={`mt-6 ${coreDivider} pt-6`}>
                   <Link
                     href="/africansafariitineraries/"
-                    className="text-[#5c4033] font-medium underline hover:no-underline"
+                    className={`${coreButtonOutline} w-full sm:w-auto`}
                   >
                     Explore Our Safari Itineraries
                   </Link>
@@ -127,13 +152,15 @@ export default function OurPromisePage() {
             </li>
 
             {/* Flexibility */}
-            <li className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
-              <RefreshCcw className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033] shrink-0 sm:mt-1" />
+            <li className={`${coreCard} flex flex-col items-start gap-4 p-6 sm:flex-row sm:gap-5 md:p-8`}>
+              <span className={coreIconBadge}>
+                <RefreshCcw className="h-6 w-6" />
+              </span>
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-3">
+                <h3 className={`${coreH3} mb-3`}>
                   Flexibility
                 </h3>
-                <p className="text-gray-800 leading-relaxed text-base sm:text-lg">
+                <p className={body}>
                   Whether you&apos;re planning a honeymoon, a private
                   expedition, or a multi-generational safari, your itinerary is
                   designed entirely around your goals.
@@ -142,21 +169,23 @@ export default function OurPromisePage() {
             </li>
 
             {/* Experiences */}
-            <li className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
-              <Star className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033] shrink-0 sm:mt-1" />
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-3">
+            <li className={`${coreCard} flex flex-col items-start gap-4 p-6 sm:flex-row sm:gap-5 md:p-8`}>
+              <span className={coreIconBadge}>
+                <Star className="h-6 w-6" />
+              </span>
+              <div className="flex h-full w-full flex-col">
+                <h3 className={`${coreH3} mb-3`}>
                   Experiences
                 </h3>
-                <p className="text-gray-800 leading-relaxed text-base sm:text-lg">
+                <p className={body}>
                   Every lodge, guide, and experience we recommend has been
                   personally vetted. If it’s included in your safari, it meets
                   our standards — no exceptions.
                 </p>
-                <div className="mt-4">
+                <div className={`mt-6 ${coreDivider} pt-6`}>
                   <Link
                     href="/africansafariitineraries/"
-                    className="text-[#5c4033] font-medium underline hover:no-underline"
+                    className={`${coreButtonOutline} w-full sm:w-auto`}
                   >
                     View Featured Safari Experiences
                   </Link>
@@ -165,16 +194,15 @@ export default function OurPromisePage() {
             </li>
           </ul>
         </div>
+      </section>
 
-        {/* Closing CTA */}
-        <div className="pt-10 sm:pt-12 border-t border-gray-300 space-y-6">
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed max-w-3xl">
+      {/* Closing CTA */}
+      <section className={`bg-white ${coreSection}`}>
+        <div className={coreContainer}>
+          <p className={`${coreLead} max-w-3xl`}>
             If you’re ready to plan a safari built on trust, integrity, and
             purpose, we invite you to{" "}
-            <Link
-              href="/contact"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
+            <Link href="/contact" className={coreLink}>
               begin your journey with us
             </Link>
             .

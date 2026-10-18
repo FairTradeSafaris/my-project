@@ -77,28 +77,30 @@ export default function ContactPageClient({
 
   return (
     <main
-      className="font-sans relative bg-[#f2e7db] bg-cover bg-center bg-no-repeat text-[#3c2f2f]"
+      className="font-sans relative bg-[#f7f3ec] bg-cover bg-center bg-no-repeat text-[#24170f]"
       style={backgroundImageUrl ? { backgroundImage: `url('${backgroundImageUrl}')` } : undefined}
     >
       {/* Tint only when a background photo is set in Sanity */}
       {backgroundImageUrl && <div className="absolute inset-0 bg-black/20 z-0" />}
 
       {/* Content container (optimized spacing) */}
-      <div className="relative z-10 px-4 py-10 md:py-14">
-        <section className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+      {/* Batch 23: 1440 container, homepage-style cards (display only; the
+          form, its spam protection and submit logic are untouched) */}
+      <div className="relative z-10 py-10 md:py-14">
+        <section className="mx-auto grid w-full max-w-[1440px] grid-cols-1 items-stretch gap-6 px-6 sm:px-8 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8 lg:px-12 xl:px-16">
           {/* LEFT: Contact Info Card */}
           <div
-            className="rounded-xl p-6 md:p-8 flex flex-col justify-between shadow-md h-full"
+            className="flex h-full flex-col justify-between rounded-2xl p-6 shadow-[0_14px_32px_-22px_rgba(36,23,15,0.45)] md:p-9"
             style={{ backgroundColor: leftCardBg }}
           >
             <div>
             <h2
-              className="text-2xl font-bold mb-2"
+              className="mb-2 text-[26px] font-semibold leading-tight md:text-[30px]"
               style={{ color: textPrimary }}
             >
               Talk to a real person
             </h2>
-            <p className="text-sm mb-6 border-b border-[#f2e7db]/25 pb-5" style={{ color: textSecondary }}>
+            <p className="mb-6 border-b border-[#f2e7db]/25 pb-6 text-[16px] leading-7" style={{ color: textSecondary }}>
               Our safari specialists reply within one business day, Monday to Friday (SAST).
             </p>
 
@@ -137,7 +139,7 @@ export default function ContactPageClient({
                 <button
                   key={i}
                   onClick={item.onClick}
-                  className="flex items-start gap-4 group text-left w-full mb-5 md:mb-6"
+                  className="group mb-3 flex w-full items-start gap-4 rounded-xl p-2 text-left transition-colors hover:bg-white/5 md:mb-4"
                 >
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center"
@@ -147,13 +149,13 @@ export default function ContactPageClient({
                   </div>
                   <div className="flex flex-col">
                     <span
-                      className="text-base font-semibold"
+                      className="text-[17px] font-semibold"
                       style={{ color: textPrimary }}
                     >
                       {item.title}
                     </span>
                     <span
-                      className="text-sm mt-0.5 font-medium group-hover:underline"
+                      className="mt-0.5 text-[15px] font-medium group-hover:underline"
                       style={{ color: textSecondary }}
                     >
                       {item.subtitle}{" "}
@@ -168,7 +170,7 @@ export default function ContactPageClient({
                   {...(item.href?.startsWith("http")
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
-                  className="flex items-start gap-4 group text-left w-full mb-5 md:mb-6"
+                  className="group mb-3 flex w-full items-start gap-4 rounded-xl p-2 text-left transition-colors hover:bg-white/5 md:mb-4"
                 >
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center"
@@ -178,13 +180,13 @@ export default function ContactPageClient({
                   </div>
                   <div className="flex flex-col">
                     <span
-                      className="text-base font-semibold"
+                      className="text-[17px] font-semibold"
                       style={{ color: textPrimary }}
                     >
                       {item.title}
                     </span>
                     <span
-                      className="text-sm mt-0.5 font-medium group-hover:underline break-all"
+                      className="mt-0.5 break-all text-[15px] font-medium group-hover:underline"
                       style={{ color: textSecondary }}
                     >
                       {item.subtitle}
@@ -197,11 +199,11 @@ export default function ContactPageClient({
           </div>
 
           {/* RIGHT: Transparent Contact Form */}
-          <div className="rounded-xl p-6 md:p-8 bg-white shadow-md border border-[#e3d3c1] h-full">
-            <h2 className="text-2xl font-bold mb-1 text-[#3c2f2f]">
+          <div className="h-full rounded-2xl border border-[#ebe1d3] bg-white p-6 shadow-[0_1px_2px_rgba(36,23,15,0.04),0_14px_32px_-22px_rgba(36,23,15,0.30)] md:p-9">
+            <h2 className="mb-2 text-[26px] font-semibold leading-tight text-[#24170f] md:text-[30px]">
               Start Your Journey
             </h2>
-            <p className="text-sm text-[#6b4f3f] mb-5 md:mb-6">
+            <p className="mb-6 border-b border-[#efe5d6] pb-6 text-[16px] leading-7 text-[#5c4a3d]">
               Tell us a little about your plans and we&apos;ll be in touch.
             </p>
             <ContactForm />

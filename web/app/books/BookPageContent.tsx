@@ -4,6 +4,14 @@ import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import useSWR, { useSWRConfig } from "swr";
 import Image from "@/components/SanityImage";
 import { authFetch } from "@/lib/authFetch";
+import {
+  coreBody,
+  coreButton,
+  coreButtonOutline,
+  coreCard,
+  coreH2,
+  coreH3,
+} from "@/components/core/coreStyles";
 
 type Book = {
   _id: string;
@@ -77,21 +85,24 @@ export default function BookPageContent() {
 
   return (
     <>
-      <div className="max-w-4xl mx-auto py-12 px-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold">Fair Trade Safari Guides</h2>
+      {/* Batch 23: homepage-style cards and buttons (display only; same
+          Clerk components, claim logic and text) */}
+      <div className="bg-[#f7f3ec]">
+      <div className="mx-auto max-w-5xl px-6 py-10 md:py-14">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className={coreH2}>Fair Trade Safari Guides</h2>
           <SignedIn>
             <UserButton />
           </SignedIn>
         </div>
 
-        <p className="mb-4 text-lg text-gray-700">
+        <p className={`mb-4 ${coreBody} md:text-[17px] md:leading-8`}>
           Our expertly curated travel guides are available to preview. Sign up
           to claim one for free.
         </p>
 
         <SignedOut>
-          <p className="text-red-600 font-medium mb-6">
+          <p className="mb-6 rounded-xl border border-[#e6d8c8] bg-white px-4 py-3 text-[16px] font-medium text-[#9a4f22]">
             Sign up or log in to claim your free book.
           </p>
         </SignedOut>
@@ -101,16 +112,16 @@ export default function BookPageContent() {
             {[1, 2].map((i) => (
               <div
                 key={i}
-                className="border rounded-lg p-4 shadow bg-white space-y-3 animate-pulse"
+                className={`${coreCard} space-y-3 p-5 animate-pulse`}
               >
-                <div className="w-full h-48 bg-gray-200 rounded" />
-                <div className="h-6 bg-gray-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
+                <div className="h-48 w-full rounded-xl bg-[#f2e7db]" />
+                <div className="h-6 w-3/4 rounded bg-[#f2e7db]" />
+                <div className="h-4 w-1/2 rounded bg-[#f2e7db]" />
               </div>
             ))}
           </div>
         ) : books.length === 0 ? (
-          <p className="text-red-600">No books found.</p>
+          <p className="text-[16px] text-[#9a4f22]">No books found.</p>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {books.map((book) => {
@@ -119,11 +130,11 @@ export default function BookPageContent() {
               return (
                 <div
                   key={book._id}
-                  className="border rounded-lg p-4 shadow bg-white space-y-3"
+                  className={`${coreCard} space-y-4 p-5 md:p-6`}
                 >
                   {book.previewImage?.asset?.url ? (
-                    <div className="relative w-full h-48">
-                      <div className="relative w-full h-48">
+                    <div className="relative w-full overflow-hidden rounded-xl bg-[#f7f3ec] p-3">
+                      <div className="relative w-full">
                         <Image
                           src={book.previewImage.asset.url}
                           alt={book.title}
@@ -135,22 +146,22 @@ export default function BookPageContent() {
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-48 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-sm">
+                    <div className="flex h-48 w-full items-center justify-center rounded-xl bg-[#f7f3ec] text-[15px] text-[#7a6656]">
                       No image
                     </div>
                   )}
 
-                  <h3 className="text-xl font-semibold">{book.title}</h3>
+                  <h3 className={coreH3}>{book.title}</h3>
 
                   <SignedIn>
                     {claimed ? (
                       isClaimed ? (
                         <div className="space-y-2">
-                          <p className="text-green-700 text-sm font-medium">
+                          <p className="text-[15px] font-medium text-[#3f6b3a]">
                             ✅ You downloaded this book
                           </p>
                           <button
-                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                            className={coreButtonOutline}
                             onClick={() =>
                               (window.location.href = toDriveDownload(
                                 book.previewUrl
@@ -161,13 +172,13 @@ export default function BookPageContent() {
                           </button>
                         </div>
                       ) : (
-                        <p className="text-gray-500 text-sm italic">
+                        <p className="text-[15px] italic text-[#5c4a3d]">
                           You’ve already claimed a free guide.
                         </p>
                       )
                     ) : (
                       <button
-                        className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                        className={`mt-1 ${coreButton}`}
                         onClick={() => handleClaim(book)}
                       >
                         Claim & Download
@@ -179,7 +190,7 @@ export default function BookPageContent() {
                         href={book.buyLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                        className={`mt-3 ${coreButtonOutline}`}
                       >
                         Buy on Amazon
                       </a>
@@ -190,6 +201,7 @@ export default function BookPageContent() {
             })}
           </div>
         )}
+      </div>
       </div>
     </>
   );

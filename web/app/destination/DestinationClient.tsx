@@ -234,19 +234,20 @@ export default function DestinationClient({
       {/* Mobile sticky chips */}
       {/* Elegant Intro Transition */}
 
-      <section className="relative bg-gradient-to-b from-[#f8f5f0] to-[#f2e7db] py-8 md:py-12 border-b border-black/5">
+      {/* Batch 23: homepage-style intro (display only; the rest of the page is unchanged) */}
+      <section className="relative bg-[#f7f3ec] py-10 md:py-12 border-b border-[#ebe1d3]">
         <div className="max-w-5xl mx-auto px-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-semibold text-[#2F3E46] tracking-wide">
+          <h2 className="text-[28px] font-semibold leading-tight tracking-[-0.01em] text-[#24170f] md:text-[36px]">
             Discover Africa’s Finest Safari Countries
           </h2>
 
-          <p className="mt-4 text-base md:text-lg text-black/70 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-4 text-[16px] leading-7 md:text-[17px] md:leading-8 text-[#5c4a3d] max-w-2xl mx-auto">
             Each destination offers its own rhythm — wildlife migrations,
             dramatic landscapes, cultural richness, and meaningful travel
             experiences.
           </p>
 
-          <div className="mt-8 w-20 h-[2px] bg-[#2F3E46] mx-auto opacity-40" />
+          <div className="mt-7 w-20 h-[2px] bg-[#c9974f] mx-auto opacity-70" />
         </div>
       </section>
       <div className="md:hidden sticky top-0 z-20 bg-[#f2e7db] border-b border-[var(--border)]">

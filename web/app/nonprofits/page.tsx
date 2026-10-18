@@ -6,6 +6,8 @@ import type { NonProfit } from "@/types/nonProfit";
 import Link from "next/link";
 import HeroController from "@/components/HeroController";
 import Script from "next/script";
+import LineArt from "@/components/LineArt";
+import { coreBody, coreButton, coreCard, coreContainer, coreH2 } from "@/components/core/coreStyles";
 
 export const revalidate = 60;
 
@@ -104,6 +106,7 @@ export default async function NonProfitsPage() {
           HERO
       =========================== */}
       <HeroController
+        look="calm"
         heroData={heroData ?? undefined}
         breadcrumbs={[
           { label: "Home", href: "/" },
@@ -114,33 +117,38 @@ export default async function NonProfitsPage() {
       {/* ===========================
           MAIN CONTENT
       =========================== */}
-      <main className="bg-white text-[#2c1b13] min-h-screen">
+      {/* Batch 23: homepage-style cards and sections (display only) */}
+      <main className="bg-white text-[#24170f] min-h-screen">
         {/* GRID */}
-        <section className="max-w-6xl mx-auto px-6 py-16 grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="bg-[#f7f3ec] py-10 md:py-14">
+          <div className={`${coreContainer} grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`}>
           {nonprofits.map((org) => (
             <NonProfitCard key={org._id} org={org} />
           ))}
+          </div>
         </section>
 
         {/* QUOTE */}
-        <section className="bg-[#f7f3ee] py-10">
-          <div className="max-w-4xl mx-auto px-6 text-center italic text-[#3c2a1e] text-lg">
+        <section className="bg-white py-10 md:py-14">
+          <LineArt name="giraffes" className="mx-auto mb-5 w-36 text-[#c9974f]/70" />
+          <div className="max-w-3xl mx-auto px-6 text-center italic text-[#24170f] text-[21px] leading-relaxed md:text-[24px]">
             “When we travel consciously, we don’t just visit — we contribute.”
             <br />
-            <span className="not-italic text-sm text-gray-600">
+            <span className="not-italic text-[15px] text-[#5c4a3d]">
               – FTS Non-Profit Partner
             </span>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="bg-[#fdf4ea] py-14">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-2xl font-semibold text-[#3c2a1e] mb-4">
+        <section className="bg-[#f7f3ec] py-10 md:py-14">
+          <div className={coreContainer}>
+          <div className={`${coreCard} mx-auto max-w-4xl px-6 py-8 text-center md:px-10 md:py-10`}>
+            <h2 className={`${coreH2} mb-4`}>
               Want to Partner With Us?
             </h2>
 
-            <p className="text-gray-700 mb-6">
+            <p className={`${coreBody} mx-auto mb-6 max-w-2xl md:text-[17px] md:leading-8`}>
               We&apos;re always open to teaming up with mission-aligned
               organizations. If your non-profit supports ethical travel,
               conservation, or community development — let’s talk.
@@ -148,10 +156,11 @@ export default async function NonProfitsPage() {
 
             <Link
               href="/contact/"
-              className="inline-block px-6 py-3 bg-[#5a3e2b] text-white rounded-full hover:bg-[#3a291e] transition font-medium"
+              className={coreButton}
             >
               Become a Partner
             </Link>
+          </div>
           </div>
         </section>
       </main>

@@ -3,211 +3,226 @@
 import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { ShieldCheck, Leaf, Users, Gem } from "lucide-react";
+import LineArt from "@/components/LineArt";
+import {
+  coreBody,
+  coreButtonOutline,
+  coreCard,
+  coreContainer,
+  coreCream,
+  coreDivider,
+  coreH1,
+  coreH2,
+  coreIconBadge,
+  coreLead,
+  coreLink,
+  coreSection,
+} from "@/components/core/coreStyles";
+
+// Batch 23: homepage-style layout (display only). Same headings, words, links,
+// image and order as before; the content now sits in white rounded cards on
+// alternating cream / white sections.
+const h2 = `${coreH2} text-[24px] md:text-[28px]`;
+const body = `${coreBody} md:text-[17px] md:leading-8`;
 
 export default function EthicalSustainableSafarisPage() {
   return (
-    <main className="min-h-screen bg-[#fdf8f3] text-black font-sans">
-      <section className="px-5 sm:px-6 py-14 sm:py-16 md:py-20 max-w-4xl mx-auto space-y-12 sm:space-y-14 md:space-y-16">
-        {/* H1 */}
-        <div className="space-y-5 sm:space-y-6">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#5c4033] leading-tight">
-            Ethical Safari Company in Africa
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-700 max-w-3xl">
-            Travel that protects wildlife, empowers communities, and delivers
-            unforgettable safari experiences.
-          </p>
-        </div>
+    <main className="min-h-screen bg-white text-[#24170f] font-sans">
+      {/* H1 + Intro */}
+      <section className={`bg-white ${coreSection}`}>
+        <div className={`${coreContainer} grid gap-8 md:grid-cols-12 md:items-center`}>
+          <div className="space-y-5 md:col-span-8">
+            <h1 className={coreH1}>Ethical Safari Company in Africa</h1>
+            <p className={`${coreLead} max-w-3xl`}>
+              Travel that protects wildlife, empowers communities, and delivers
+              unforgettable safari experiences.
+            </p>
 
-        {/* Intro */}
-        <div className="space-y-5 sm:space-y-6 text-base sm:text-lg leading-relaxed text-gray-800">
-          <p>
-            If you are searching for an ethical safari company in Africa, you
-            are not just planning a trip — you are choosing how your travel
-            impacts the continent.
-          </p>
-          <p>
-            At{" "}
-            <Link
-              href="/"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              Fair Trade Safaris
-            </Link>
-            , every journey is designed to support conservation, strengthen
-            local communities, and provide exceptional luxury experiences
-            without compromise.
-          </p>
+            <div className={`space-y-4 ${body} max-w-3xl`}>
+              <p>
+                If you are searching for an ethical safari company in Africa, you
+                are not just planning a trip — you are choosing how your travel
+                impacts the continent.
+              </p>
+              <p>
+                At{" "}
+                <Link href="/" className={coreLink}>
+                  Fair Trade Safaris
+                </Link>
+                , every journey is designed to support conservation, strengthen
+                local communities, and provide exceptional luxury experiences
+                without compromise.
+              </p>
+            </div>
+          </div>
+          <LineArt
+            name="elephant-acacia"
+            className="hidden w-full max-w-[360px] justify-self-end text-[#c9974f]/70 md:col-span-4 md:block"
+          />
         </div>
+      </section>
 
-        {/* Ethical Definition */}
-        <div className="space-y-5 sm:space-y-6">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033]" />
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#5c4033]">
-              What Makes a Safari Company Ethical?
-            </h2>
+      {/* Ethical definition + regions */}
+      <section className={`${coreCream} ${coreSection}`}>
+        <div className={`${coreContainer} grid gap-6 lg:grid-cols-2`}>
+          {/* Ethical Definition */}
+          <div className={`${coreCard} space-y-4 p-6 md:p-8`}>
+            <div className="flex items-center gap-4">
+              <span className={coreIconBadge}>
+                <ShieldCheck className="h-6 w-6" />
+              </span>
+              <h2 className={h2}>What Makes a Safari Company Ethical?</h2>
+            </div>
+
+            <p className={body}>
+              An ethical safari company goes beyond game drives and luxury lodges.
+              It ensures tourism protects wildlife, funds conservation, creates
+              fair employment, and preserves ecosystems.
+            </p>
+
+            <ul className={`list-disc space-y-2 pl-5 marker:text-[#c9974f] ${body}`}>
+              <li>Supports endangered wildlife protection</li>
+              <li>Funds anti-poaching and conservation programs</li>
+              <li>Creates fair local employment</li>
+              <li>Preserves cultural heritage</li>
+              <li>Operates transparently and responsibly</li>
+            </ul>
           </div>
 
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
-            An ethical safari company goes beyond game drives and luxury lodges.
-            It ensures tourism protects wildlife, funds conservation, creates
-            fair employment, and preserves ecosystems.
-          </p>
+          {/* Safari Regions */}
+          <div className={`${coreCard} flex flex-col p-6 md:p-8`}>
+            <h2 className={h2}>Sustainable Safari Tours Across Africa</h2>
 
-          <ul className="list-disc list-inside space-y-3 text-base sm:text-lg text-gray-800">
-            <li>Supports endangered wildlife protection</li>
-            <li>Funds anti-poaching and conservation programs</li>
-            <li>Creates fair local employment</li>
-            <li>Preserves cultural heritage</li>
-            <li>Operates transparently and responsibly</li>
-          </ul>
-        </div>
+            <p className={`mt-4 ${body}`}>
+              Our sustainable safari tours operate across East and Southern
+              Africa, including{" "}
+              <Link href="/destination/tanzania" className={coreLink}>
+                Tanzania
+              </Link>
+              ,{" "}
+              <Link href="/destination/botswana" className={coreLink}>
+                Botswana
+              </Link>
+              ,{" "}
+              <Link href="/destination/kenya" className={coreLink}>
+                Kenya
+              </Link>
+              ,{" "}
+              <Link href="/destination/zambia" className={coreLink}>
+                Zambia
+              </Link>
+              ,{" "}
+              <Link href="/destination/zimbabwe" className={coreLink}>
+                Zimbabwe
+              </Link>
+              , and{" "}
+              <Link href="/destination/south-africa" className={coreLink}>
+                South Africa
+              </Link>
+              .
+            </p>
 
-        {/* Safari Regions */}
-        <div className="space-y-5 sm:space-y-6">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#5c4033]">
-            Sustainable Safari Tours Across Africa
-          </h2>
-
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
-            Our sustainable safari tours operate across East and Southern
-            Africa, including{" "}
-            <Link
-              href="/destination/tanzania"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              Tanzania
-            </Link>
-            ,{" "}
-            <Link
-              href="/destination/botswana"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              Botswana
-            </Link>
-            ,{" "}
-            <Link
-              href="/destination/kenya"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              Kenya
-            </Link>
-            ,{" "}
-            <Link
-              href="/destination/zambia"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              Zambia
-            </Link>
-            ,{" "}
-            <Link
-              href="/destination/zimbabwe"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              Zimbabwe
-            </Link>
-            , and{" "}
-            <Link
-              href="/destination/south-africa"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              South Africa
-            </Link>
-            .
-          </p>
-
-          <div className="mt-4">
-            <Link
-              href="/destination/"
-              className="inline-block w-full sm:w-auto text-center border border-[#5c4033] text-[#5c4033] px-6 py-3 rounded-lg font-medium hover:bg-[#5c4033] hover:text-white transition"
-            >
-              Explore All Destinations
-            </Link>
+            <div className={`mt-auto pt-6`}>
+              <div className={`${coreDivider} pt-6`}>
+                <Link
+                  href="/destination/"
+                  className={`${coreButtonOutline} w-full sm:w-auto`}
+                >
+                  Explore All Destinations
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Wildlife */}
-        <div className="space-y-5 sm:space-y-6">
-          <div className="flex items-center gap-3">
-            <Leaf className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033]" />
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#5c4033]">
-              Wildlife Conservation Comes First
-            </h2>
+      {/* Wildlife + image (feature card) */}
+      <section className={`bg-white ${coreSection}`}>
+        <div className={coreContainer}>
+          <div className={`${coreCard} grid gap-6 p-5 sm:p-7 md:grid-cols-12 md:gap-10 md:p-9`}>
+            {/* Wildlife */}
+            <div className="space-y-4 self-center md:col-span-6">
+              <div className="flex items-center gap-4">
+                <span className={coreIconBadge}>
+                  <Leaf className="h-6 w-6" />
+                </span>
+                <h2 className={h2}>Wildlife Conservation Comes First</h2>
+              </div>
+
+              <p className={body}>
+                Africa’s wildlife faces growing pressure from habitat loss and
+                poaching. We partner with lodges and conservancies that actively
+                fund ranger patrols, wildlife research, and habitat restoration.
+              </p>
+
+              <p className={body}>
+                Learn more about how our safaris align with our{" "}
+                <Link href="/founderspromise" className={coreLink}>
+                  founder’s promise and core values
+                </Link>
+                .
+              </p>
+            </div>
+
+            {/* Image Anchor */}
+            <div className="md:order-first md:col-span-6">
+              <div className="relative h-[260px] w-full overflow-hidden rounded-xl bg-[#f2e7db] sm:h-[360px] md:h-[420px]">
+                <Image
+                  src="/images/Serengeti-2-cheetahs-sitting-on-mound-1-scaled.jpg"
+                  alt="Cheetahs resting on a mound in the Serengeti representing wildlife conservation in Africa"
+                  fill
+                  sizes="(min-width: 1440px) 660px, (min-width: 768px) 50vw, 100vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
           </div>
-
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
-            Africa’s wildlife faces growing pressure from habitat loss and
-            poaching. We partner with lodges and conservancies that actively
-            fund ranger patrols, wildlife research, and habitat restoration.
-          </p>
-
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
-            Learn more about how our safaris align with our{" "}
-            <Link
-              href="/founderspromise"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              founder’s promise and core values
-            </Link>
-            .
-          </p>
         </div>
+      </section>
 
-        {/* Image Anchor */}
-        <div className="my-10 sm:my-12">
-          <div className="relative w-full h-[320px] sm:h-[420px] md:h-[550px] rounded-2xl overflow-hidden shadow-lg">
-            <Image
-              src="/images/Serengeti-2-cheetahs-sitting-on-mound-1-scaled.jpg"
-              alt="Cheetahs resting on a mound in the Serengeti representing wildlife conservation in Africa"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
+      {/* Community + Luxury */}
+      <section className={`${coreCream} ${coreSection}`}>
+        <div className={`${coreContainer} grid gap-6 lg:grid-cols-2`}>
+          {/* Community */}
+          <div className={`${coreCard} space-y-4 p-6 md:p-8`}>
+            <div className="flex items-center gap-4">
+              <span className={coreIconBadge}>
+                <Users className="h-6 w-6" />
+              </span>
+              <h2 className={h2}>Community-Based Tourism That Empowers</h2>
+            </div>
 
-        {/* Community */}
-        <div className="space-y-5 sm:space-y-6">
-          <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033]" />
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#5c4033]">
-              Community-Based Tourism That Empowers
-            </h2>
+            <p className={body}>
+              Sustainable travel must benefit local communities. We prioritize
+              partnerships that provide fair wages, support women-led enterprises,
+              and reinvest in schools and healthcare.
+            </p>
           </div>
 
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
-            Sustainable travel must benefit local communities. We prioritize
-            partnerships that provide fair wages, support women-led enterprises,
-            and reinvest in schools and healthcare.
-          </p>
-        </div>
+          {/* Luxury */}
+          <div className={`${coreCard} space-y-4 p-6 md:p-8`}>
+            <div className="flex items-center gap-4">
+              <span className={coreIconBadge}>
+                <Gem className="h-6 w-6" />
+              </span>
+              <h2 className={h2}>Luxury That Gives Back</h2>
+            </div>
 
-        {/* Luxury */}
-        <div className="space-y-5 sm:space-y-6">
-          <div className="flex items-center gap-3">
-            <Gem className="w-6 h-6 sm:w-7 sm:h-7 text-[#5c4033]" />
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#5c4033]">
-              Luxury That Gives Back
-            </h2>
+            <p className={body}>
+              Ethical safaris do not mean sacrificing comfort. Our guests enjoy
+              eco-luxury lodges, private guides, curated itineraries, and seamless
+              logistics — all designed with sustainability in mind.
+            </p>
+
+            <p className={body}>
+              When you are ready, we invite you to{" "}
+              <Link href="/contact" className={coreLink}>
+                start planning your safari
+              </Link>
+              .
+            </p>
           </div>
-
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
-            Ethical safaris do not mean sacrificing comfort. Our guests enjoy
-            eco-luxury lodges, private guides, curated itineraries, and seamless
-            logistics — all designed with sustainability in mind.
-          </p>
-
-          <p className="text-base sm:text-lg text-gray-800 leading-relaxed">
-            When you are ready, we invite you to{" "}
-            <Link
-              href="/contact"
-              className="text-[#5c4033] underline hover:no-underline"
-            >
-              start planning your safari
-            </Link>
-            .
-          </p>
         </div>
       </section>
     </main>

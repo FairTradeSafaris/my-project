@@ -82,7 +82,8 @@ export default async function DestinationsPage() {
 
   return (
     <>
-      <HeroController heroData={heroData} breadcrumbs={breadcrumbs} />
+      <HeroController
+        look="calm" heroData={heroData} breadcrumbs={breadcrumbs} />
       <DestinationClient
         initialDestinations={Array.isArray(data) ? data : []}
       />

@@ -107,10 +107,10 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
       <button
         key={title}
         onClick={() => handleCategoryClick(title)}
-        className={`rounded-full px-4 py-1 border transition ${
+        className={`rounded-lg border px-3.5 py-2 text-[15px] transition-colors ${
           activeCategory === title
-            ? "bg-black text-white border-black"
-            : "border-[#e5ddd2] text-gray-700 hover:bg-white"
+            ? "border-[#24170f] bg-[#24170f] text-white"
+            : "border-[#e5ddd2] bg-white text-[#3c2a1e] hover:border-[#c9a57f]"
         }`}
       >
         {title}
@@ -118,22 +118,22 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
     ));
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-12 font-sans">
-      <div className="rounded-3xl shadow-sm border bg-[#f9f6f2] border-[#e5ddd2] overflow-hidden">
-        <div className="px-6 md:px-10 py-8 border-b border-[#e5ddd2]">
+    <section className="mx-auto max-w-[1440px] py-8 font-sans md:py-10">
+      <div className="overflow-hidden rounded-2xl border border-[#ebe1d3] bg-white shadow-[0_1px_2px_rgba(36,23,15,0.04),0_14px_32px_-22px_rgba(36,23,15,0.30)]">
+        <div className="border-b border-[#efe5d6] px-5 py-7 md:px-10 md:py-8">
           <input
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setActiveCategory(null);
             }}
-            className="w-full rounded-xl border border-[#e5ddd2] px-4 py-3 text-base focus:outline-none"
+            className="w-full rounded-xl border border-[#e5ddd2] bg-[#fbf8f3] px-4 py-3.5 text-[16px] text-[#24170f] placeholder:text-[#7a6656] focus:border-[#c9974f] focus:outline-none"
             placeholder="Search safari questions..."
           />
 
           {/* Destinations */}
           <div className="mt-6">
-            <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">
+            <h4 className="mb-3 text-[13px] font-semibold uppercase tracking-[0.14em] text-[#a35c2d]">
               🌍 Destinations
             </h4>
             <div className="flex flex-wrap gap-2 text-sm">
@@ -143,7 +143,7 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
 
           {/* Planning Topics */}
           <div className="mt-6">
-            <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">
+            <h4 className="mb-3 text-[13px] font-semibold uppercase tracking-[0.14em] text-[#a35c2d]">
               🧭 Planning & Travel Topics
             </h4>
             <div className="flex flex-wrap gap-2 text-sm">
@@ -154,48 +154,48 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
           {activeCategory && (
             <button
               onClick={clearCategory}
-              className="mt-4 text-gray-500 underline"
+              className="mt-5 text-[15px] font-semibold text-[#24170f] underline decoration-[#c9974f] decoration-2 underline-offset-[6px] hover:text-[#a35c2d]"
             >
               Show All
             </button>
           )}
         </div>
 
-        <div className="px-6 md:px-10 py-10">
+        <div className="bg-[#f7f3ec] px-5 py-8 md:px-10 md:py-10">
           {filteredCategories.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filteredCategories.map((cat) => (
                 <div
                   key={cat._id}
                   ref={(el) => {
                     categoryRefs.current[cat.title] = el;
                   }}
-                  className="bg-white rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-lg transition-all duration-300"
+                  className="rounded-2xl border border-[#ebe1d3] bg-white p-6 shadow-[0_1px_2px_rgba(36,23,15,0.04),0_14px_32px_-22px_rgba(36,23,15,0.30)] md:p-7"
                 >
                   {/* Batch 16: category = h2, each question = h3 (same classes,
                       so the look is unchanged) */}
-                  <h2 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">
+                  <h2 className="mb-4 border-b border-[#efe5d6] pb-4 text-[20px] font-semibold leading-snug text-[#24170f]">
                     {cat.title}
                   </h2>
 
-                  <ul className="space-y-4">
+                  <ul className="space-y-1">
                     {cat.items.map((q) => {
                       const isOpen = openQuestionId === q._id;
 
                       return (
                         <li key={q._id}>
-                          <h3 className="text-sm font-normal">
+                          <h3 className="text-[16px] font-normal">
                             <button
                               type="button"
                               onClick={() => toggleQuestion(q._id)}
                               aria-expanded={isOpen}
                               aria-controls={`faq-answer-${q._id}`}
-                              className="w-full flex justify-between items-start text-left text-sm text-gray-800 hover:text-black transition"
+                              className="flex w-full items-start justify-between gap-3 rounded-lg py-2 text-left text-[16px] text-[#3c2a1e] transition hover:text-[#a35c2d]"
                             >
                               <span className="leading-snug">{q.question}</span>
                               <span
                                 aria-hidden="true"
-                                className={`text-lg transition-transform duration-300 ${
+                                className={`text-xl leading-none text-[#a35c2d] transition-transform duration-300 ${
                                   isOpen ? "rotate-45" : ""
                                 }`}
                               >
@@ -210,11 +210,11 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
                             id={`faq-answer-${q._id}`}
                             className={`overflow-hidden transition-all duration-300 ${
                               isOpen
-                                ? "max-h-96 mt-4 opacity-100"
+                                ? "max-h-96 mt-1 mb-3 opacity-100"
                                 : "max-h-0 opacity-0"
                             }`}
                           >
-                            <div className="faq-content text-gray-600 text-sm leading-relaxed space-y-3 [&_a]:underline [&_a]:hover:text-black">
+                            <div className="faq-content space-y-3 text-[15px] leading-7 text-[#5c4a3d] [&_a]:text-[#9a4f22] [&_a]:underline [&_a]:hover:text-[#24170f]">
                               <PortableText value={q.answer} />
                             </div>
                           </div>
@@ -226,7 +226,7 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-500">
+            <p className="text-center text-[16px] text-[#5c4a3d]">
               No FAQs matched your search.
             </p>
           )}

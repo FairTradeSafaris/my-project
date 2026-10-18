@@ -11,6 +11,7 @@ import type { Block } from "@/types/block";
 import {
   homeBody,
   homeButton,
+  homeButtonOutline,
   homeCard,
   homeContainer,
   homeH2,
@@ -25,13 +26,27 @@ function Container({ children }: { children: ReactNode }) {
   return <div className={homeContainer}>{children}</div>;
 }
 const CREAM = "bg-[#f7f3ec]";
-const sectionPad: Record<string, string> = {
-  default: "py-10 md:py-14",
-  top: "pt-10 md:pt-14 pb-0",
-  bottom: "pt-0 pb-10 md:pb-14",
-  none: "",
-};
-const padFor = (p?: string) => sectionPad[p ?? "default"] ?? sectionPad.default;
+// v2 (homepage "Featured Connection" look): content sits in white cards on
+// cream; Sanity "neutral" sections flip to white with soft cream cards so
+// the page alternates.
+const surface = (neutral: boolean) =>
+  neutral
+    ? { section: "bg-white", card: "rounded-2xl border border-[#ebe1d3] bg-[#fbf8f3] shadow-[0_1px_2px_rgba(36,23,15,0.03),0_14px_32px_-24px_rgba(36,23,15,0.25)]" }
+    : { section: CREAM, card: homeCard };
+const ART = ["savanna", "elephant-acacia", "giraffes", "antelope", "lions-acacia", "wildebeest"] as const;
+
+type Span = { _type?: string; text?: string; marks?: string[] };
+type PT = PTBlock & { children?: Span[]; markDefs?: { _key: string; _type: string }[] };
+
+/** A closing paragraph that is only a link starting with "→" (e.g. "→ Read
+ *  the full story…") is shown as the card's outlined button. Same text/link. */
+function isArrowLink(b?: PT): boolean {
+  if (!b || b._type !== "block" || (b.style && b.style !== "normal") || b.listItem) return false;
+  const kids = (b.children ?? []).filter((c) => (c.text ?? "").trim() !== "");
+  if (kids.length !== 1) return false;
+  const linkKeys = new Set((b.markDefs ?? []).filter((m) => m._type === "link").map((m) => m._key));
+  return (kids[0].text ?? "").trim().startsWith("→") && (kids[0].marks ?? []).some((m) => linkKeys.has(m));
+}
 
 type PTBlock = { _type?: string; style?: string; listItem?: string };
 
@@ -98,7 +113,7 @@ const portableComponents: Partial<PortableTextReactComponents> = {
       <h3 className={`${homeH3} mb-3 mt-8 first:mt-0`}>{children}</h3>
     ),
     normal: ({ children }: PortableProps) => (
-      <p className={`${homeBody} mb-4 last:mb-0`}>{children}</p>
+      <p className={`${homeBody} mb-4 last:mb-0 empty:hidden`}>{children}</p>
     ),
   },
   list: {
@@ -125,10 +140,57 @@ const portableComponents: Partial<PortableTextReactComponents> = {
   },
 };
 
+const buttonComponents: Partial<PortableTextReactComponents> = {
+  block: { normal: ({ children }: PortableProps) => <div>{children}</div> },
+  marks: {
+    link: ({ children, value }) => (
+      <a href={value?.href ?? "#"} target="_blank" rel="noopener noreferrer" className={homeButtonOutline}>
+        {children}
+      </a>
+    ),
+  },
+};
+
+/** Section heading (h2) on the left, the rest on the right, inside a card. */
+function SplitProse({ body, art }: { body: PT[]; art: number }) {
+  const first = body[0];
+  const hasHead = first?._type === "block" && first.style === "h2";
+  if (!hasHead) {
+    return (
+      <div className="max-w-[880px]">
+        <PortableText value={body as never} components={portableComponents} />
+      </div>
+    );
+  }
+  return (
+    <div className="grid gap-4 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] md:gap-12">
+      <div>
+        <PortableText value={[first] as never} components={portableComponents} />
+        <LineArt name={ART[art % ART.length]} className="mt-2 hidden w-32 text-[#c9974f]/70 md:block" />
+      </div>
+      <div className="max-w-[760px]">
+        <PortableText value={body.slice(1) as never} components={portableComponents} />
+      </div>
+    </div>
+  );
+}
+
 export default function PillarContent({ blocks }: { blocks: Block[] }) {
   return (
     <div className="flex flex-col text-[#24170f]">
       {blocks?.map((block, index) => {
+        // v2: a textBlock that continues the textImage before it (Sanity
+        // padding "top" then "bottom") is shown inside that same card.
+        const prevB = index > 0 ? blocks[index - 1] : undefined;
+        if (
+          block._type === "textBlock" &&
+          prevB?._type === "textImage" &&
+          prevB.padding === ("top" as string) &&
+          block.padding === ("bottom" as string) &&
+          (prevB.backgroundStyle === "neutral") === (block.backgroundStyle === "neutral")
+        ) {
+          return null;
+        }
         switch (block._type) {
           /* HERO */
           case "zohoForm": {
@@ -273,25 +335,33 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
           case "textImage": {
             const src = getUrl(block.image);
             const isRight = block.align === "right";
-
-            const bg =
-              block.backgroundStyle === "neutral" ? CREAM : "bg-white";
-
-            const padding = padFor(block.padding);
+            const sf = surface(block.backgroundStyle === "neutral");
+            const nextB = blocks[index + 1];
+            const cont =
+              nextB?._type === "textBlock" &&
+              block.padding === ("top" as string) &&
+              nextB.padding === ("bottom" as string) &&
+              (nextB.backgroundStyle === "neutral") === (block.backgroundStyle === "neutral")
+                ? ((nextB.body ?? []) as PT[])
+                : [];
+            const all = [...((block.text ?? []) as PT[]), ...cont];
+            const button = isArrowLink(all[all.length - 1]) ? all[all.length - 1] : undefined;
+            const textBlocks = button ? all.slice(0, -1) : all;
+            const tall = all.length > 4;
 
             return (
-              <section key={index} className={`${padding} ${bg}`}>
+              <section key={index} className={`py-6 md:py-8 ${sf.section}`}>
                 <Container>
-                  <div className="grid md:grid-cols-2 gap-7 lg:gap-14 items-center">
+                  <div className={`${sf.card} grid grid-cols-1 gap-6 p-5 sm:p-7 md:grid-cols-12 md:gap-10 md:p-9`}>
                     {/* IMAGE */}
                     {src && (
-                      <div className={`${isRight ? "order-2" : ""}`}>
-                        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl bg-[#f2e7db] shadow-[0_14px_32px_-22px_rgba(36,23,15,0.35)]">
+                      <div className={`md:col-span-5 ${isRight ? "order-2" : ""} ${tall ? "md:sticky md:top-28 md:self-start" : "md:self-center"}`}>
+                        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-[#f2e7db]">
                           <Image
                             src={src}
                             alt={block.image?.alt ?? ""}
                             fill
-                            sizes="(min-width: 1440px) 680px, (min-width: 768px) 50vw, 100vw"
+                            sizes="(min-width: 1440px) 560px, (min-width: 768px) 40vw, 100vw"
                             className="object-cover"
                           />
                         </div>
@@ -310,11 +380,18 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                     )}
 
                     {/* TEXT */}
-                    <div className={`max-w-[640px] ${isRight ? "order-1" : ""}`}>
-                      <PortableText
-                        value={block.text}
-                        components={portableComponents}
-                      />
+                    <div className={`min-w-0 ${src ? "md:col-span-7" : "md:col-span-12"} ${isRight ? "order-1" : ""} self-center`}>
+                      <div className="max-w-[760px]">
+                        <PortableText
+                          value={textBlocks as never}
+                          components={portableComponents}
+                        />
+                      </div>
+                      {button && (
+                        <div className="mt-6 border-t border-[#efe5d6] pt-6">
+                          <PortableText value={[button] as never} components={buttonComponents} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Container>
@@ -324,29 +401,27 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
 
           /* TEXT */
           case "textBlock": {
-            const neutral = block.backgroundStyle === "neutral";
-            const bg = neutral ? CREAM : "bg-white";
-            const padding = padFor(block.padding);
+            const sf = surface(block.backgroundStyle === "neutral");
             const cards = splitIntoCards(block.body);
 
             return (
-              <section key={index} className={`${padding} ${bg}`}>
+              <section key={index} className={`py-8 md:py-12 ${sf.section}`}>
                 <Container>
                   {cards ? (
                     <>
                       {cards.intro.length > 0 && (
                         <div className="mb-7 max-w-[880px]">
                           <PortableText
-                            value={cards.intro as typeof block.body}
+                            value={cards.intro as never}
                             components={portableComponents}
                           />
                         </div>
                       )}
                       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                         {cards.groups.map((g, gi) => (
-                          <div key={gi} className={`${homeCard} p-6 md:p-7`}>
+                          <div key={gi} className={`${sf.card} p-6 md:p-7`}>
                             <PortableText
-                              value={g as typeof block.body}
+                              value={g as never}
                               components={portableComponents}
                             />
                           </div>
@@ -355,18 +430,15 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                       {cards.outro.length > 0 && (
                         <div className="mt-7 max-w-[880px]">
                           <PortableText
-                            value={cards.outro as typeof block.body}
+                            value={cards.outro as never}
                             components={portableComponents}
                           />
                         </div>
                       )}
                     </>
                   ) : (
-                    <div className="max-w-[880px]">
-                      <PortableText
-                        value={block.body}
-                        components={portableComponents}
-                      />
+                    <div className={`${sf.card} p-6 sm:p-8 md:p-10`}>
+                      <SplitProse body={(block.body ?? []) as PT[]} art={index} />
                     </div>
                   )}
                 </Container>
@@ -578,8 +650,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             };
 
             return (
-              // white between the cream text sections around it; cream cards
-              <section key={index} className="py-12 md:py-16 bg-white">
+              <section key={index} className={`py-10 md:py-14 ${CREAM}`}>
                 {/* HEADER */}
                 <Container>
                   <div className="grid md:grid-cols-2 gap-4 md:gap-10 items-end mb-7">
@@ -622,14 +693,14 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                 <Container>
                   <div className="grid md:grid-cols-2 gap-5">
                     {section.regions?.map((regionBlock, i) => (
-                      <div key={i} className="rounded-2xl border border-[#ebe1d3] bg-[#f7f3ec] p-6 md:p-7">
+                      <div key={i} className={`${homeCard} p-6 md:p-7`}>
                         {/* REGION TITLE */}
                         <h3 className={`${homeH3} mb-4`}>
                           {regionBlock.region?.title}
                         </h3>
 
                         {/* PERIODS */}
-                        <div className="divide-y divide-[#e6d9c6]">
+                        <div className="divide-y divide-[#efe5d6]">
                           {regionBlock.periods
                             ?.sort(
                               (a, b) => (a.priority ?? 99) - (b.priority ?? 99),

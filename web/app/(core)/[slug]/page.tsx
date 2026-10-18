@@ -7,6 +7,11 @@ import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
 import { preload } from "react-dom";
 import { DEFAULT_OG_IMAGE } from "@/lib/seoDefaults";
+import {
+  homeContainer,
+  homeH2,
+  homeTextLink,
+} from "@/components/home/homeStyles";
 
 export const revalidate = 0;
 
@@ -219,7 +224,7 @@ export default async function CorePage({
 
   return (
     <SafariLoader>
-      <main className="bg-white text-black min-h-screen relative">
+      <main className="bg-white text-[#24170f] min-h-screen relative">
         {/* AI Article Schema (server-rendered; next/script beforeInteractive
             only injected it client-side). FAQPage is already emitted as a real
             <script> by (core)/[slug]/layout.tsx, so the duplicate here was removed. */}
@@ -265,16 +270,18 @@ export default async function CorePage({
             </video>
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/10" />
+          {/* Batch 22 v2: homepage-style hero text (display only) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1a100a] via-[#1a100a]/50 to-[#1a100a]/15" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a100a]/60 via-transparent to-transparent" />
 
           <div className="relative z-10 h-full flex items-end animate-fadeInSlow">
-            <div className="w-full max-w-6xl mx-auto px-6 pb-14">
-              <h1 className="text-white text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05]">
+            <div className={`${homeContainer} pb-14 sm:pb-16`}>
+              <h1 className="max-w-4xl text-[#fbf6ef] text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
                 {headline}
               </h1>
 
               {subheadline && (
-                <p className="mt-5 max-w-2xl text-white/90 text-base sm:text-lg leading-relaxed">
+                <p className="mt-5 max-w-2xl text-[#efe4d6] text-lg sm:text-xl leading-relaxed">
                   {subheadline}
                 </p>
               )}
@@ -282,7 +289,7 @@ export default async function CorePage({
               {data?.heroCTA?.text && data?.heroCTA?.link && (
                 <a
                   href={data.heroCTA.link}
-                  className="inline-block mt-8 bg-white text-black px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
+                  className="mt-8 inline-flex h-12 items-center gap-2 rounded-xl bg-[#fbf6ef] px-7 text-[15px] font-semibold text-[#24170f] transition hover:bg-white"
                 >
                   {data.heroCTA.text}
                 </a>
@@ -296,22 +303,25 @@ export default async function CorePage({
 
         {/* FAQ SECTION */}
         {faqs.length > 0 && (
-          <section className="max-w-3xl mx-auto px-6 py-5">
-            <h2 className="text-3xl md:text-4xl font-semibold text-center mb-10 tracking-tight">
+          // Batch 22 v2: homepage-style FAQ (display only; same text/order/tags)
+          <section className="bg-[#f7f3ec] py-12 md:py-16">
+          <div className={homeContainer}>
+          <div className="mx-auto max-w-[900px]">
+            <h2 className={`${homeH2} text-center mb-8`}>
               Frequently Asked Questions
             </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {faqs.map((item, i) => (
                 <div
                   key={i}
-                  className="border border-gray-200 rounded-lg px-5 py-4 bg-white/80 backdrop-blur-sm shadow-[0_6px_18px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.08)] transition-all"
+                  className="rounded-2xl border border-[#ebe1d3] bg-white px-6 py-5 shadow-[0_1px_2px_rgba(36,23,15,0.04),0_14px_32px_-22px_rgba(36,23,15,0.30)] md:px-7"
                 >
-                  <h3 className="text-[17px] font-semibold text-gray-900 mb-1">
+                  <h3 className="text-[18px] font-semibold leading-snug text-[#24170f] mb-2">
                     {item.question}
                   </h3>
 
-                  <div className="text-[15px] text-gray-600 leading-relaxed space-y-2">
+                  <div className="text-[16px] leading-7 text-[#5c4a3d] space-y-2">
                     {item.answer?.map((block, index) => (
                       <p key={index}>
                         {block.children?.map((child) => child.text).join("")}
@@ -323,14 +333,16 @@ export default async function CorePage({
             </div>
 
             {/* MORE FAQ LINK */}
-            <div className="text-center mt-12">
+            <div className="text-center mt-8">
               <Link
                 href="/faq"
-                className="text-sm font-medium text-gray-900 underline underline-offset-4 hover:text-gray-700"
+                className={homeTextLink}
               >
                 Explore More African Safari FAQs →
               </Link>
             </div>
+          </div>
+          </div>
           </section>
         )}
       </main>

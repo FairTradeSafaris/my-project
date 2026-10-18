@@ -1,14 +1,16 @@
 "use client";
 
 import React from "react";
+import { FilterOption, FilterSection } from "./FilterUI";
 
 interface StarFilterProps {
   selectedStars: number[];
-  availableStars: number[]; // new prop
+  availableStars: number[];
   onToggleStar: (star: number) => void;
   onClear?: () => void;
 }
 
+// Batch 18: restyled as large checkboxes (same options).
 export default function StarFilter({
   selectedStars,
   availableStars,
@@ -16,35 +18,25 @@ export default function StarFilter({
   onClear,
 }: StarFilterProps) {
   return (
-    <div className="mb-6">
-      <div className="flex justify-between items-center mb-2">
-        <label className="text-sm font-medium text-gray-700">
-          Luxury Level
-        </label>
-        {onClear && selectedStars.length > 0 && (
-          <button
-            onClick={onClear}
-            className="text-xs text-[#a35c2d] hover:underline"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-      <div className="space-y-2">
-        {availableStars.map((star) => (
-          <label key={star} className="flex items-center space-x-2 text-sm">
-            <input
-              type="checkbox"
-              className="form-checkbox text-[#a35c2d]"
-              checked={selectedStars.includes(star)}
+    <FilterSection
+      title="Luxury level"
+      defaultOpen
+      count={selectedStars.length}
+      onClear={onClear}
+    >
+      <div className="flex flex-col">
+        {availableStars.map((star) => {
+          const on = selectedStars.includes(star);
+          return (
+            <FilterOption
+              key={star}
+              checked={on}
               onChange={() => onToggleStar(star)}
+              label={`${star} Star${star > 1 ? "s" : ""}`}
             />
-            <span>
-              {star} Star{star > 1 && "s"}
-            </span>
-          </label>
-        ))}
+          );
+        })}
       </div>
-    </div>
+    </FilterSection>
   );
 }

@@ -11,6 +11,7 @@ import { useUser } from "@clerk/nextjs";
 import { useWishlistGrid } from "@/hooks/useWishlistGrid";
 import { useSearchParams } from "next/navigation";
 import StickySafariCTA from "@/components/StickySafariCTA";
+import LineArt from "@/components/LineArt";
 // Batch 13: the ONE itinerary finder for everyone (it used to be split into
 // a "cookies accepted" and a "not accepted" copy). Filter logic and look are
 // the accepted version's. A future redesign can replace just the JSX below.
@@ -18,6 +19,10 @@ import StickySafariCTA from "@/components/StickySafariCTA";
 // journeys in as initialJourneys), so the HTML already contains every trip.
 // The same GROQ query (journey-finder/query.ts) is used on the server; the
 // client only fetches if it was not given any journeys.
+// Batch 18: filters restyled (display only): sticky filter card on desktop,
+// a "Filters" bar + full-screen sheet on phones, small removable "active filter"
+// chips and one "Clear all". Calm style: collapsible sections, large
+// checkboxes. The filtering itself is unchanged.
 
 // Filter options (regions, prices, durations) worked out from the journeys.
 function deriveOptions(data: Journey[]) {
@@ -261,6 +266,135 @@ export default function JourneyFinderClient({
   const availableInterests = getAvailableByCategory("style");
   const availableActivities = getAvailableByCategory("feature");
 
+  // ---- Batch 18: display helpers (no change to what is filtered) ----
+  const fullDuration: [number, number] = [
+    availableDurations[0] ?? 0,
+    availableDurations.at(-1) ?? 0,
+  ];
+  const fullPrice: [number, number] = [
+    availablePrices[0] ?? 0,
+    availablePrices.at(-1) ?? 0,
+  ];
+  const durationNarrowed =
+    !!selectedDuration &&
+    (selectedDuration[0] > fullDuration[0] ||
+      selectedDuration[1] < fullDuration[1]);
+  const priceNarrowed =
+    !!selectedPrice &&
+    (selectedPrice[0] > fullPrice[0] || selectedPrice[1] < fullPrice[1]);
+
+  type ActivePill = { key: string; label: string; onRemove: () => void };
+  const activePills: ActivePill[] = [
+    ...(selectedRegion
+      ? [{ key: "r", label: selectedRegion, onRemove: () => setSelectedRegion("") }]
+      : []),
+    ...selectedCountries.map((c) => ({
+      key: `c-${c}`,
+      label: c,
+      onRemove: () => toggle(c, setSelectedCountries),
+    })),
+    ...selectedStars.map((n) => ({
+      key: `s-${n}`,
+      label: `${n} Star${n > 1 ? "s" : ""}`,
+      onRemove: () => toggle(n, setSelectedStars),
+    })),
+    ...selectedSignature.map((v) => ({
+      key: `g-${v}`,
+      label: v,
+      onRemove: () => toggle(v, setSelectedSignature),
+    })),
+    ...selectedInterests.map((v) => ({
+      key: `i-${v}`,
+      label: v,
+      onRemove: () => toggle(v, setSelectedInterests),
+    })),
+    ...selectedActivities.map((v) => ({
+      key: `a-${v}`,
+      label: v,
+      onRemove: () => toggle(v, setSelectedActivities),
+    })),
+    ...(durationNarrowed && selectedDuration
+      ? [{
+          key: "d",
+          label: `${selectedDuration[0]}–${selectedDuration[1]} days`,
+          onRemove: () => setSelectedDuration(fullDuration),
+        }]
+      : []),
+    ...(priceNarrowed && selectedPrice
+      ? [{
+          key: "p",
+          label: `$${selectedPrice[0].toLocaleString()}–$${selectedPrice[1].toLocaleString()}`,
+          onRemove: () => setSelectedPrice(fullPrice),
+        }]
+      : []),
+    ...(onlyShowWishlisted
+      ? [{ key: "w", label: "Saved journeys", onRemove: () => setOnlyShowWishlisted(false) }]
+      : []),
+  ];
+  const activeCount = activePills.length;
+
+  const clearAll = () => {
+    setSelectedRegion("");
+    setSelectedCountries([]);
+    setSelectedStars([]);
+    setSelectedSignature([]);
+    setSelectedInterests([]);
+    setSelectedActivities([]);
+    setSelectedDuration(fullDuration);
+    setSelectedPrice(fullPrice);
+    setOnlyShowWishlisted(false);
+  };
+
+  // Cards without a page (no slug) are not drawn, so they are not counted.
+  const shownCount = filteredJourneys.filter(
+    (j) => j.slug?.current && j.slug.current !== "null",
+  ).length;
+  const shownLabel = `${shownCount} ${shownCount === 1 ? "safari" : "safaris"}`;
+
+  // Phone sheet: lock page scroll behind it and close on Escape.
+  useEffect(() => {
+    if (!showMobileFilters) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowMobileFilters(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [showMobileFilters]);
+
+  const pillRow = (
+    <>
+      <span className="shrink-0 text-[14px] text-[#8a7766]">Filtered by:</span>
+      {activePills.map((p) => (
+        <button
+          key={p.key}
+          type="button"
+          onClick={p.onRemove}
+          aria-label={`Remove filter: ${p.label}`}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-[#f5efe6] px-2.5 py-1 text-[14px] text-[#3c2a1e] transition hover:bg-[#efe5d6]"
+        >
+          {p.label}
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 text-[#8a7766]" aria-hidden="true">
+            <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+      ))}
+      {activeCount > 0 && (
+        <button
+          type="button"
+          onClick={clearAll}
+          className="shrink-0 px-1 text-[14px] text-[#8a7766] underline underline-offset-4 hover:text-[#a35c2d]"
+        >
+          Clear all
+        </button>
+      )}
+    </>
+  );
+
   return (
     <main className="min-h-screen bg-[#fdf8f3] text-black px-4 py-6">
       <Suspense fallback={null}>
@@ -269,20 +403,53 @@ export default function JourneyFinderClient({
       <div className="max-w-7xl mx-auto">
         {/* h2: the page (app/africansafariitineraries/page.tsx) already has
             the <h1> ("Safari. Reimagined."); same classes, so it looks the same */}
-        <h2 className="text-2xl font-bold mb-6">African Safari Itineraries</h2>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-1 lg:mb-6">
+          <h2 className="text-2xl font-bold">African Safari Itineraries</h2>
+          {!loading && (
+            <p className="hidden text-[15px] text-[#8a7766] lg:block" aria-live="polite">
+              Showing <span className="font-medium text-[#24170f]">{shownLabel}</span>
+              {activeCount > 0 ? " that match your filters" : ""}
+            </p>
+          )}
+        </div>
 
-        <div className="lg:hidden mb-4 text-right">
-          <button
-            onClick={() => setShowMobileFilters(true)}
-            className="bg-[#a35c2d] text-white px-4 py-2 rounded"
-          >
-            Filters
-          </button>
+        {/* Phone: filter bar + active filter pills (scroll sideways) */}
+        <div className="mb-5 lg:hidden">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setShowMobileFilters(true)}
+              aria-haspopup="dialog"
+              className="inline-flex h-12 items-center gap-2 rounded-xl border border-[#d9cbb8] bg-white px-4 text-[16px] font-medium text-[#24170f] transition hover:border-[#a35c2d]"
+            >
+              <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
+                <path d="M3 5h14M6 10h8M8.5 15h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+              Filters
+              {activeCount > 0 && (
+                <span className="text-[#a35c2d]">({activeCount})</span>
+              )}
+            </button>
+            {!loading && (
+              <p className="text-[15px] text-[#8a7766]" aria-live="polite">
+                <span>{shownLabel}</span>
+              </p>
+            )}
+          </div>
+          {activeCount > 0 && (
+            <div className="-mx-4 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {pillRow}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <aside className="hidden lg:block lg:col-span-1">
+            <div className="lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:rounded-2xl [scrollbar-width:thin]">
             <JourneyFiltersSidebar
+              resultCount={loading ? undefined : shownCount}
+              activeCount={activeCount}
+              onClearAll={clearAll}
               regions={regions}
               selectedRegion={selectedRegion}
               regionLoading={regionLoading}
@@ -328,13 +495,37 @@ export default function JourneyFinderClient({
               showWishlistToggle={!!userId}
               onToggleWishlisted={() => setOnlyShowWishlisted((prev) => !prev)}
             />
+            </div>
           </aside>
 
           <section className="lg:col-span-3">
+            {activeCount > 0 && (
+              <div className="mb-5 hidden flex-wrap items-center gap-2 lg:flex">
+                {pillRow}
+              </div>
+            )}
             {loading ? (
               <p className="text-gray-500">Loading journeys...</p>
             ) : filteredJourneys.length === 0 ? (
-              <p className="text-gray-500">No journeys found.</p>
+              <div className="relative overflow-hidden rounded-2xl border border-[#ebe1d3] bg-white px-6 py-12 text-center">
+                <LineArt
+                  name="giraffes"
+                  className="mx-auto mb-5 w-[180px] text-[#a35c2d] opacity-30"
+                />
+                <p className="text-[18px] font-semibold text-[#24170f]">No journeys found.</p>
+                <p className="mt-2 text-[14px] text-[#5c4a3d]">
+                  Try removing a filter, or let us design one around you.
+                </p>
+                {activeCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="mt-5 inline-flex h-11 items-center rounded-xl bg-[#24170f] px-5 text-[14px] font-semibold text-white transition-colors hover:bg-[#5d4037]"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredJourneys.map((j, index) => (
@@ -410,11 +601,24 @@ export default function JourneyFinderClient({
       </div>
 
       {showMobileFilters && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex justify-end lg:hidden">
-          <div className="w-4/5 bg-white p-4 h-full overflow-y-auto">
+        <div
+          className="fixed inset-0 z-[10000] flex justify-end bg-[#24170f]/40 lg:hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowMobileFilters(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filters"
+            className="h-full w-full max-w-[440px] shadow-2xl"
+          >
             <JourneyFiltersSidebar
               isMobile
               onCloseMobile={() => setShowMobileFilters(false)}
+              resultCount={loading ? undefined : shownCount}
+              activeCount={activeCount}
+              onClearAll={clearAll}
               regions={regions}
               selectedRegion={selectedRegion}
               regionLoading={regionLoading}

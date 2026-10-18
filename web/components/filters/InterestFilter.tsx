@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { FilterOption, FilterSection, ShowMoreButton } from "./FilterUI";
 
 interface InterestFilterProps {
-  title?: string; // ✅ New prop for customization
+  title?: string;
   selectedInterests: string[];
   availableInterests: {
     title: string;
@@ -13,8 +14,10 @@ interface InterestFilterProps {
   onClear?: () => void;
 }
 
+// Batch 18: restyled as large checkboxes (same options: top ones first, then 5 more
+// with "show more").
 export default function InterestFilter({
-  title = "Interests", // ✅ Default fallback
+  title = "Interests",
   selectedInterests,
   availableInterests,
   onToggleInterest,
@@ -27,56 +30,43 @@ export default function InterestFilter({
 
   const visibleOthers = showAll ? otherInterests : otherInterests.slice(0, 5);
 
-  const renderCheckbox = (interest: { title: string }) => (
-    <label key={interest.title} className="flex items-center space-x-2 text-sm">
-      <input
-        type="checkbox"
-        className="form-checkbox text-[#a35c2d]"
-        checked={selectedInterests.includes(interest.title)}
-        onChange={() => onToggleInterest(interest.title)}
-      />
-      <span>{interest.title}</span>
-    </label>
+  const renderChip = (interest: { title: string }) => (
+    <FilterOption
+      key={interest.title}
+      label={interest.title}
+      checked={selectedInterests.includes(interest.title)}
+      onChange={() => onToggleInterest(interest.title)}
+    />
   );
 
   if (availableInterests.length === 0) {
     return (
-      <div className="mb-6">
-        <label className="text-sm font-medium text-gray-700">{title}</label>
-        <p className="text-sm italic text-gray-500 mt-1">
+      <FilterSection title={title}>
+        <p className="text-[13px] italic text-[#8a7766]">
           No interests available.
         </p>
-      </div>
+      </FilterSection>
     );
   }
 
   return (
-    <div className="mb-6">
-      <div className="flex justify-between items-center mb-2">
-        <label className="text-sm font-medium text-gray-700">{title}</label>
-        {onClear && selectedInterests.length > 0 && (
-          <button
-            onClick={onClear}
-            className="text-xs text-[#a35c2d] hover:underline"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        {topInterests.map(renderCheckbox)}
-        {visibleOthers.map(renderCheckbox)}
+    <FilterSection
+      title={title}
+      count={selectedInterests.length}
+      onClear={onClear}
+    >
+      <div className="flex flex-col">
+        {topInterests.map(renderChip)}
+        {visibleOthers.map(renderChip)}
       </div>
 
       {otherInterests.length > 5 && (
-        <button
+        <ShowMoreButton
+          open={showAll}
+          hidden={otherInterests.length - 5}
           onClick={() => setShowAll(!showAll)}
-          className="mt-2 text-xs text-[#a35c2d] hover:underline"
-        >
-          {showAll ? "Show less" : "Show more"}
-        </button>
+        />
       )}
-    </div>
+    </FilterSection>
   );
 }

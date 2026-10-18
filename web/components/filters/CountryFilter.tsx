@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FilterOption, FilterSection, ShowMoreButton } from "./FilterUI";
 
 type CountryOption = {
   title: string;
@@ -15,6 +16,7 @@ type Props = {
   loading: boolean;
 };
 
+// Batch 18: restyled as large checkboxes (same options, order and "show more" at 6).
 export default function CountryFilter({
   countries,
   selectedCountries,
@@ -35,57 +37,38 @@ export default function CountryFilter({
     : sortedCountries.slice(0, 6);
 
   return (
-    <div className="mb-6 max-w-xs">
-      <div className="flex items-center justify-between mb-1">
-        <label className="block text-sm font-medium text-gray-700">
-          Countries
-        </label>
-
-        {selectedCountries.length > 0 && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="text-xs text-red-600 hover:underline"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-
+    <FilterSection
+      title="Countries"
+      defaultOpen
+      count={selectedCountries.length}
+      onClear={onClear}
+    >
       {loading ? (
-        <p className="text-xs text-gray-500">Loading countries…</p>
+        <p className="text-[13px] text-[#8a7766]">Loading countries…</p>
       ) : countries.length === 0 ? (
-        <p className="text-xs text-gray-500">No countries found</p>
+        <p className="text-[13px] text-[#8a7766]">No countries found</p>
       ) : (
         <>
-          <div className="space-y-2">
+          <div className="flex flex-col">
             {visibleCountries.map((c) => (
-              <label
+              <FilterOption
                 key={c.title}
-                className="flex items-center space-x-2 text-sm"
-              >
-                <input
-                  type="checkbox"
-                  className="form-checkbox text-[#a35c2d]"
-                  checked={selectedCountries.includes(c.title)}
-                  onChange={() => onToggleCountry(c.title)}
-                />
-                <span>{c.title}</span>
-              </label>
+                label={c.title}
+                checked={selectedCountries.includes(c.title)}
+                onChange={() => onToggleCountry(c.title)}
+              />
             ))}
           </div>
 
           {sortedCountries.length > 6 && (
-            <button
-              type="button"
+            <ShowMoreButton
+              open={showAll}
+              hidden={sortedCountries.length - 6}
               onClick={() => setShowAll((v) => !v)}
-              className="mt-2 text-xs text-blue-600 hover:underline"
-            >
-              {showAll ? "Show less" : "Show more"}
-            </button>
+            />
           )}
         </>
       )}
-    </div>
+    </FilterSection>
   );
 }

@@ -6,8 +6,67 @@ import type { PortableTextReactComponents } from "@portabletext/react";
 import type { ReactNode } from "react";
 import { urlFor } from "@/lib/sanityImage";
 import { sanitySized, sanitySrcSet } from "@/lib/sanityImageLoader";
-import Container from "@/components/layout/Container";
+import LineArt from "@/components/LineArt";
 import type { Block } from "@/types/block";
+import {
+  homeBody,
+  homeButton,
+  homeCard,
+  homeContainer,
+  homeH2,
+  homeH3,
+} from "@/components/home/homeStyles";
+
+// Batch 22: core (pillar) pages use the same calm style as the homepage
+// (batch 20): 1440 container, the same heading / 16px body sizes, cream and
+// white surfaces, clean cards. Display only: every Sanity block, field, word
+// and image is rendered as before, in the same order with the same tags.
+function Container({ children }: { children: ReactNode }) {
+  return <div className={homeContainer}>{children}</div>;
+}
+const CREAM = "bg-[#f7f3ec]";
+const sectionPad: Record<string, string> = {
+  default: "py-10 md:py-14",
+  top: "pt-10 md:pt-14 pb-0",
+  bottom: "pt-0 pb-10 md:pb-14",
+  none: "",
+};
+const padFor = (p?: string) => sectionPad[p ?? "default"] ?? sectionPad.default;
+
+type PTBlock = { _type?: string; style?: string; listItem?: string };
+
+/**
+ * A text block with several h3 sub-sections (e.g. destinations or numbered
+ * steps) is shown as an intro + a grid of white cards, one per h3. Same blocks
+ * in the same order; only the layout differs. A closing paragraph after the
+ * last sub-section (longer than the others) stays outside the cards.
+ */
+function splitIntoCards(body: unknown): {
+  intro: PTBlock[];
+  groups: PTBlock[][];
+  outro: PTBlock[];
+} | null {
+  if (!Array.isArray(body)) return null;
+  const blocks = body as PTBlock[];
+  const h3 = blocks.filter((b) => b?._type === "block" && b.style === "h3").length;
+  if (h3 < 3) return null;
+  const intro: PTBlock[] = [];
+  const groups: PTBlock[][] = [];
+  for (const b of blocks) {
+    if (b?._type === "block" && b.style === "h3") groups.push([b]);
+    else if (groups.length) groups[groups.length - 1].push(b);
+    else intro.push(b);
+  }
+  // no h2/h3 nesting inside a card (keeps the heading outline as it is)
+  if (groups.some((g) => g.slice(1).some((b) => b.style === "h2"))) return null;
+  const outro: PTBlock[] = [];
+  const last = groups[groups.length - 1];
+  const others = groups.slice(0, -1).map((g) => g.length);
+  if (last.length > 2 && last.length > Math.max(...others)) {
+    outro.push(last.pop() as PTBlock);
+  }
+  return { intro, groups, outro };
+}
 
 type ImageLike =
   | {
@@ -33,13 +92,21 @@ const getUrl = (img: ImageLike): string | null => {
 const portableComponents: Partial<PortableTextReactComponents> = {
   block: {
     h2: ({ children }: PortableProps) => (
-      <h2 className="text-3xl md:text-4xl font-semibold mb-4">{children}</h2>
+      <h2 className={`${homeH2} mb-5`}>{children}</h2>
     ),
     h3: ({ children }: PortableProps) => (
-      <h3 className="text-2xl font-semibold mb-3">{children}</h3>
+      <h3 className={`${homeH3} mb-3 mt-8 first:mt-0`}>{children}</h3>
     ),
     normal: ({ children }: PortableProps) => (
-      <p className="text-lg leading-relaxed mb-5 text-gray-700">{children}</p>
+      <p className={`${homeBody} mb-4 last:mb-0`}>{children}</p>
+    ),
+  },
+  list: {
+    bullet: ({ children }: PortableProps) => (
+      <ul className={`${homeBody} mb-4 list-disc space-y-1.5 pl-5 marker:text-[#c9974f]`}>{children}</ul>
+    ),
+    number: ({ children }: PortableProps) => (
+      <ol className={`${homeBody} mb-4 list-decimal space-y-1.5 pl-5 marker:text-[#a35c2d]`}>{children}</ol>
     ),
   },
 
@@ -49,9 +116,8 @@ const portableComponents: Partial<PortableTextReactComponents> = {
         href={value?.href ?? "#"}
         target="_blank"
         rel="noopener noreferrer"
-        // #b94c00 = amber-700 darkened 1% so it passes WCAG AA (4.5:1) on the
-        // #f5f1ea section background (amber-700 measured 4.46:1)
-        className="text-[#b94c00] underline hover:text-amber-900"
+        // #9a4f22 passes WCAG AA (4.5:1+) on white and on the #f7f3ec cream
+        className="font-medium text-[#9a4f22] underline decoration-[#c9974f] decoration-1 underline-offset-4 transition-colors hover:text-[#24170f]"
       >
         {children}
       </a>
@@ -61,7 +127,7 @@ const portableComponents: Partial<PortableTextReactComponents> = {
 
 export default function PillarContent({ blocks }: { blocks: Block[] }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col text-[#24170f]">
       {blocks?.map((block, index) => {
         switch (block._type) {
           /* HERO */
@@ -72,11 +138,11 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               <section
                 key={index}
                 className={`bg-white ${
-                  index === 0 ? "pt-16 pb-8" : "pt-8 pb-16"
+                  index === 0 ? "pt-12 pb-6" : "pt-6 pb-12"
                 }`}
               >
                 <Container>
-                  <div className="w-full max-w-7xl mx-auto">
+                  <div className={`${homeCard} mx-auto w-full max-w-5xl overflow-hidden p-2 sm:p-4`}>
                     <iframe
                       src={block.iframeUrl}
                       width="100%"
@@ -93,25 +159,26 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             const src = getUrl(block.image);
 
             return (
-              <section key={index} className="relative w-full h-[70vh]">
+              <section key={index} className="relative w-full h-[60vh] min-h-[420px]">
                 {src && (
                   <Image
                     src={src}
                     alt={block.image?.alt ?? "Safari"}
                     fill
+                    sizes="100vw"
                     className="object-cover"
                   />
                 )}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-center px-6">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a100a]/80 via-[#1a100a]/45 to-[#1a100a]/20 flex items-center justify-center text-center px-6">
                   <div className="flex flex-col items-center text-center gap-6">
-                    <h2 className="text-white text-4xl md:text-6xl font-semibold max-w-4xl">
+                    <h2 className="text-white text-[32px] md:text-[48px] font-semibold leading-tight max-w-4xl">
                       {block.text}
                     </h2>
 
                     {block.heroCTA?.text && block.heroCTA?.link && (
                       <a
                         href={block.heroCTA.link}
-                        className="inline-block bg-white text-black px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
+                        className="inline-flex h-12 items-center rounded-xl bg-[#fbf6ef] px-6 text-[15px] font-semibold text-[#24170f] transition hover:bg-white"
                       >
                         {block.heroCTA.text}
                       </a>
@@ -123,23 +190,22 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
           }
           case "ctaCardGrid": {
             return (
-              <section key={index} className="bg-white py-6">
+              <section key={index} className="bg-white py-8 md:py-12">
                 <Container>
                   {(block.title || block.intro) && (
-                    <div className="max-w-2xl mb-10">
+                    <div className="max-w-3xl mb-8">
                       {block.title && (
-                        <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+                        <h2 className={`${homeH2} mb-4`}>
                           {block.title}
                         </h2>
                       )}
                       {block.intro && (
-                        <p className="text-gray-600 text-lg">{block.intro}</p>
+                        <p className={homeBody}>{block.intro}</p>
                       )}
                     </div>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {block.cards?.map((card, i) => {
-                      console.log(card.image);
                       const src = getUrl(card.image);
 
                       const href = card.internalLink?.slug?.current
@@ -149,12 +215,12 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                       return (
                         <div
                           key={i}
-                          className={`flex flex-col ${
+                          className={`${homeCard} flex flex-col overflow-hidden ${
                             block.cards?.length === 1 ? "lg:col-span-2" : ""
                           }`}
                         >
                           {src && (
-                            <div className="w-full mb-4">
+                            <div className="w-full">
                               <img
                                 src={sanitySized(src, 1200)}
                                 srcSet={sanitySrcSet(src, [480, 768, 1080, 1440])}
@@ -162,23 +228,24 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                                 alt={card.title}
                                 loading="lazy"
                                 decoding="async"
-                                className="rounded-lg w-full h-[240px] object-cover"
+                                className="w-full h-[240px] object-cover"
                               />
                             </div>
                           )}
 
+                          <div className="flex flex-1 flex-col p-6">
                           {card.eyebrow && (
-                            <span className="text-sm text-gray-500 mb-1">
+                            <span className="mb-1.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#a35c2d]">
                               {card.eyebrow}
                             </span>
                           )}
 
-                          <h3 className="text-xl font-semibold mb-2">
+                          <h3 className={`${homeH3} mb-2`}>
                             {card.title}
                           </h3>
 
                           {card.description && (
-                            <p className="text-gray-600 mb-4">
+                            <p className={`${homeBody} mb-5`}>
                               {card.description}
                             </p>
                           )}
@@ -186,11 +253,12 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                           {card.ctaLabel && (
                             <a
                               href={href}
-                              className="mt-auto inline-block bg-black text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition"
+                              className={`${homeButton} mt-auto self-start`}
                             >
                               {card.ctaLabel}
                             </a>
                           )}
+                          </div>
                         </div>
                       );
                     })}
@@ -207,35 +275,29 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             const isRight = block.align === "right";
 
             const bg =
-              block.backgroundStyle === "neutral" ? "bg-[#f5f1ea]" : "bg-white";
+              block.backgroundStyle === "neutral" ? CREAM : "bg-white";
 
-            const paddingMap = {
-              default: "py-8",
-              top: "pt-8 pb-0",
-              bottom: "pt-0 pb-8",
-              none: "",
-            };
-
-            const padding = paddingMap[block.padding ?? "default"];
+            const padding = padFor(block.padding);
 
             return (
               <section key={index} className={`${padding} ${bg}`}>
                 <Container>
-                  <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
+                  <div className="grid md:grid-cols-2 gap-7 lg:gap-14 items-center">
                     {/* IMAGE */}
                     {src && (
                       <div className={`${isRight ? "order-2" : ""}`}>
-                        <div className="relative w-full h-[420px] md:h-[480px] lg:h-[520px] overflow-hidden rounded-xl">
+                        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl bg-[#f2e7db] shadow-[0_14px_32px_-22px_rgba(36,23,15,0.35)]">
                           <Image
                             src={src}
                             alt={block.image?.alt ?? ""}
                             fill
+                            sizes="(min-width: 1440px) 680px, (min-width: 768px) 50vw, 100vw"
                             className="object-cover"
                           />
                         </div>
 
                         {(block.image?.caption || block.image?.credit) && (
-                          <div className="text-sm text-gray-500 mt-3">
+                          <div className="text-[14px] leading-6 text-[#6f5c4d] mt-3">
                             {block.image?.caption}
                             {block.image?.credit && (
                               <span className="block">
@@ -248,7 +310,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                     )}
 
                     {/* TEXT */}
-                    <div className={`max-w-xl ${isRight ? "order-1" : ""}`}>
+                    <div className={`max-w-[640px] ${isRight ? "order-1" : ""}`}>
                       <PortableText
                         value={block.text}
                         components={portableComponents}
@@ -262,25 +324,51 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
 
           /* TEXT */
           case "textBlock": {
-            const bg =
-              block.backgroundStyle === "neutral" ? "bg-[#f5f1ea]" : "bg-white";
-
-            const paddingMap = {
-              default: "pt-12 pb-12",
-              top: "pt-12 pb-0",
-              bottom: "pt-0 pb-12",
-              none: "",
-            };
-
-            const padding = paddingMap[block.padding ?? "default"];
+            const neutral = block.backgroundStyle === "neutral";
+            const bg = neutral ? CREAM : "bg-white";
+            const padding = padFor(block.padding);
+            const cards = splitIntoCards(block.body);
 
             return (
               <section key={index} className={`${padding} ${bg}`}>
                 <Container>
-                  <PortableText
-                    value={block.body}
-                    components={portableComponents}
-                  />
+                  {cards ? (
+                    <>
+                      {cards.intro.length > 0 && (
+                        <div className="mb-7 max-w-[880px]">
+                          <PortableText
+                            value={cards.intro as typeof block.body}
+                            components={portableComponents}
+                          />
+                        </div>
+                      )}
+                      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                        {cards.groups.map((g, gi) => (
+                          <div key={gi} className={`${homeCard} p-6 md:p-7`}>
+                            <PortableText
+                              value={g as typeof block.body}
+                              components={portableComponents}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      {cards.outro.length > 0 && (
+                        <div className="mt-7 max-w-[880px]">
+                          <PortableText
+                            value={cards.outro as typeof block.body}
+                            components={portableComponents}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="max-w-[880px]">
+                      <PortableText
+                        value={block.body}
+                        components={portableComponents}
+                      />
+                    </div>
+                  )}
                 </Container>
               </section>
             );
@@ -293,11 +381,11 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               <section
                 key={index}
                 className={`bg-white ${
-                  index === 0 ? "pt-16 pb-8" : "pt-8 pb-16"
+                  index === 0 ? "pt-12 pb-6" : "pt-6 pb-12"
                 }`}
               >
                 <Container>
-                  <div className="grid md:grid-cols-3 gap-6">
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
                     {block.images?.map((img, i) => {
                       const src = getUrl(img);
                       if (!src) return null;
@@ -309,7 +397,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                           alt={img.alt ?? ""}
                           width={500}
                           height={400}
-                          className="rounded-lg w-full h-auto"
+                          className="rounded-2xl w-full h-auto"
                         />
                       );
                     })}
@@ -325,27 +413,36 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             return (
               <section
                 key={index}
-                className="py-20 text-center"
+                className="relative overflow-hidden py-12 md:py-16 text-center"
                 style={{
                   backgroundColor: block.backgroundColor?.hex ?? "#000",
                 }}
               >
+                <LineArt
+                  name="savanna"
+                  className="pointer-events-none absolute bottom-0 left-1/2 w-[1200px] max-w-none -translate-x-1/2 text-white/[0.07]"
+                />
+                <div className="relative">
                 <Container>
-                  <h3 className="text-3xl font-semibold text-white mb-4">
+                  <div className="mx-auto max-w-3xl">
+                  <h3 className="text-[26px] md:text-[34px] font-semibold leading-tight tracking-[-0.01em] text-white mb-3">
                     {block.headline}
                   </h3>
 
-                  <p className="text-white/80 mb-6">{block.subtext}</p>
+                  <p className="text-[16px] md:text-[17px] leading-7 text-white/85 mb-7">{block.subtext}</p>
 
                   {block.buttonText && block.link && (
                     <a
                       href={block.link}
-                      className="inline-block bg-white text-black px-6 py-3 rounded-md font-semibold"
+                      className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#fbf6ef] px-7 text-[15px] font-semibold text-[#24170f] transition-colors hover:bg-white"
                     >
                       {block.buttonText}
+                      <span aria-hidden>&rarr;</span>
                     </a>
                   )}
+                  </div>
                 </Container>
+                </div>
               </section>
             );
           }
@@ -353,33 +450,33 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
 
           case "journeySteps": {
             return (
-              <section key={index} className="py-24 bg-[#f5f1ea]">
+              <section key={index} className={`py-12 md:py-16 ${CREAM}`}>
                 <Container>
                   {block.headline && (
-                    <h2 className="text-4xl md:text-5xl font-semibold mb-6">
+                    <h2 className={`${homeH2} mb-4`}>
                       {block.headline}
                     </h2>
                   )}
 
                   {block.intro && (
-                    <p className="text-lg text-gray-700 max-w-2xl mb-16">
+                    <p className={`${homeBody} max-w-3xl mb-8`}>
                       {block.intro}
                     </p>
                   )}
 
-                  <div className="space-y-16">
+                  <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                     {block.steps?.map((step, i) => (
-                      <div key={i} className="flex gap-8">
-                        <div className="text-5xl font-light text-gray-300">
+                      <div key={i} className={`${homeCard} flex gap-5 p-6`}>
+                        <div className="text-[28px] font-semibold leading-none text-[#c9974f]">
                           {String(i + 1).padStart(2, "0")}
                         </div>
 
                         <div>
-                          <h3 className="text-xl font-semibold mb-2">
+                          <h3 className={`${homeH3} mb-2`}>
                             {step.title}
                           </h3>
 
-                          <p className="text-gray-700 leading-relaxed max-w-xl">
+                          <p className={homeBody}>
                             {step.description}
                           </p>
                         </div>
@@ -397,17 +494,17 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
               <section
                 key={index}
                 className={`bg-white ${
-                  index === 0 ? "pt-16 pb-8" : "pt-8 pb-16"
+                  index === 0 ? "pt-12 pb-6" : "pt-6 pb-12"
                 }`}
               >
                 <Container>
-                  <div className="w-full max-w-3xl mx-auto">
+                  <div className="w-full max-w-4xl mx-auto">
                     {block.caption && (
-                      <h3 className="text-2xl font-semibold text-center mb-6">
+                      <h3 className={`${homeH3} text-center mb-5`}>
                         {block.caption}
                       </h3>
                     )}
-                    <div className="relative w-full aspect-video rounded-xl overflow-hidden">
+                    <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#24170f]">
                       <iframe
                         src={block.url}
                         title="Video"
@@ -423,16 +520,17 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
           }
           case "safariBuilderBlock": {
             return (
-              <section key={index} className="py-24 bg-[#f5f1ea] text-center">
+              <section key={index} className={`py-12 md:py-16 ${CREAM} text-center`}>
                 <Container>
+                  <LineArt name="elephant-acacia" className="mx-auto mb-5 w-28 text-[#a35c2d]/70" />
                   {block.headline && (
-                    <h2 className="text-4xl md:text-5xl font-semibold mb-6 tracking-tight">
+                    <h2 className={`${homeH2} mb-4`}>
                       {block.headline}
                     </h2>
                   )}
 
                   {block.subtext && (
-                    <p className="text-lg text-gray-700 max-w-2xl mx-auto mb-10">
+                    <p className={`${homeBody} max-w-2xl mx-auto mb-7`}>
                       {block.subtext}
                     </p>
                   )}
@@ -446,7 +544,7 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                       });
                       window.dispatchEvent(event);
                     }}
-                    className="px-8 py-4 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-all"
+                    className={homeButton}
                   >
                     {block.buttonText || "Start My Safari"}
                   </button>
@@ -480,19 +578,20 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
             };
 
             return (
-              <section key={index} className="py-16 bg-[#fcfbf8]">
+              // white between the cream text sections around it; cream cards
+              <section key={index} className="py-12 md:py-16 bg-white">
                 {/* HEADER */}
                 <Container>
-                  <div className="grid md:grid-cols-2 gap-10 items-start mb-12">
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-10 items-end mb-7">
                     <div>
-                      <h2 className="text-3xl md:text-[36px] font-medium tracking-tight leading-[1.2]">
+                      <h2 className={homeH2}>
                         {section.title}
                       </h2>
                     </div>
 
-                    <div className="max-w-md">
+                    <div className="max-w-xl">
                       {section.intro && (
-                        <p className="text-base text-gray-600 leading-relaxed">
+                        <p className={homeBody}>
                           {section.intro}
                         </p>
                       )}
@@ -501,10 +600,11 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                 </Container>
 
                 {/* FULL WIDTH IMAGE */}
-                <div className="my-8 w-full">
+                <Container>
+                <div className="mb-6 w-full">
                   {/* Batch 4: was a plain 2.4 MB PNG, preloaded in <head>.
                       Now lazy and resized by next/image (local file). */}
-                  <div className="relative w-full h-[220px] md:h-[260px] overflow-hidden">
+                  <div className="relative w-full h-[180px] md:h-[260px] overflow-hidden rounded-2xl">
                     <Image
                       src="/images/best-time.png"
                       alt="Luxury African safari landscape"
@@ -516,39 +616,40 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
                     />
                   </div>
                 </div>
+                </Container>
 
                 {/* REGIONS */}
                 <Container>
-                  <div className="grid md:grid-cols-2 gap-10">
+                  <div className="grid md:grid-cols-2 gap-5">
                     {section.regions?.map((regionBlock, i) => (
-                      <div key={i} className="border-t border-neutral-200 pt-6">
+                      <div key={i} className="rounded-2xl border border-[#ebe1d3] bg-[#f7f3ec] p-6 md:p-7">
                         {/* REGION TITLE */}
-                        <h3 className="text-xl md:text-2xl font-semibold mb-4 tracking-tight">
+                        <h3 className={`${homeH3} mb-4`}>
                           {regionBlock.region?.title}
                         </h3>
 
                         {/* PERIODS */}
-                        <div className="space-y-4">
+                        <div className="divide-y divide-[#e6d9c6]">
                           {regionBlock.periods
                             ?.sort(
                               (a, b) => (a.priority ?? 99) - (b.priority ?? 99),
                             )
                             .map((p, j) => (
-                              <div key={j} className="flex items-start gap-3">
+                              <div key={j} className="flex flex-col gap-1 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:gap-5">
                                 {/* MONTH */}
-                                <div className="min-w-[110px] text-Xs font-semibold text-black">
+                                <div className="shrink-0 text-[15px] font-semibold leading-7 text-[#a35c2d] sm:w-[170px]">
                                   {formatRange(p.startMonth, p.endMonth)}
                                 </div>
 
                                 {/* TEXT */}
-                                <div className="text-s text-gray-600 leading-relaxed">
+                                <div className="text-[16px] leading-7 text-[#24170f]">
                                   <span
-                                    className={`${p.highlight ? "text-black font-medium" : ""}`}
+                                    className={`${p.highlight ? "font-semibold" : "font-medium"}`}
                                   >
                                     {p.label}
                                   </span>
                                   {p.description && (
-                                    <div className="text-gray-500 mt-0.5">
+                                    <div className="text-[15px] leading-6 text-[#5c4a3d] mt-0.5">
                                       {p.description}
                                     </div>
                                   )}
@@ -562,8 +663,8 @@ export default function PillarContent({ blocks }: { blocks: Block[] }) {
 
                   {/* NOTE */}
                   {section.note && (
-                    <div className="mt-12 border-t border-neutral-200 pt-6 max-w-xl">
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                    <div className="mt-6 max-w-3xl">
+                      <p className="text-[15px] leading-7 text-[#5c4a3d]">
                         {section.note}
                       </p>
                     </div>

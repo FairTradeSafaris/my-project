@@ -4,7 +4,7 @@ import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import CookieSettingsLink from "@/components/consent/CookieSettingsLink"; // batch 13
-import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { client, urlFor } from "@/lib/sanity";
 import type { SanityImageAssetDocument } from "@sanity/client";
 import { FOOTER_QUERY } from "@/lib/footerQuery";
@@ -41,14 +41,10 @@ const logoMobileUrl = (r: NonNullable<FooterData>) =>
       ? urlFor(r.logo.asset).url()
       : "";
 
-const easeOutBezier: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
-const fadeInitial = { opacity: 0, y: 8 };
-const fadeAnimate = { opacity: 1, y: 0 };
-const fadeTransition = {
-  duration: 0.35,
-  ease: easeOutBezier,
-} as const;
+// Batch 19: calm restyle (display only). Same Sanity content, links, fact,
+// line art, socials, award, Kayak guide and legal links; no fade-in effects.
+// Extra bottom space on phones so the bottom tab bar, chat button and (on the
+// itinerary list) the consultant bar never cover the last footer lines.
 
 const awardBadge = "/badges/Fair Trade Safaris - Winner Badge tp.png";
 
@@ -138,180 +134,195 @@ export default function SafariFactFooter({
 
   const allLinks: FooterLink[] = [...exploreLinks, ...connectLinks];
 
-  const mid = Math.ceil(allLinks.length / 2);
-  const col1 = allLinks.slice(0, mid);
-  const col2 = allLinks.slice(mid);
+  // Batch 19 (display only)
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const pathname = usePathname() ?? "";
+  // The itinerary list shows the fixed "Not seeing your perfect safari?" bar.
+  const hasConsultantBar = /^\/africansafariitineraries\/?$/.test(pathname);
+  const footerHref = (href: string) => `${href.replace(/\/?$/, "/")}`;
+  const linkClass =
+    "inline-block py-1 text-[15px] leading-7 text-[#3f2e1f] underline-offset-4 transition-colors hover:text-[#a35c2d] hover:underline";
+  const headingClass =
+    "text-[13px] font-semibold uppercase tracking-[0.14em] text-[#7a5a3a]";
 
   return (
-    <footer className="relative isolate overflow-hidden bg-[#f7f3ec] text-sm text-[#3f2e1f]">
-      {/* As Seen On */}
-      <div className="relative z-10 mx-auto max-w-[1500px] px-6 pt-10 sm:px-8 lg:px-12 xl:px-16">
-        <div className="border-b border-black/10 pb-7">
-          <p className="mb-5 text-center text-xs uppercase tracking-[0.3em] opacity-70">
-            As Seen On
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 opacity-80 sm:gap-x-16 lg:gap-x-24 xl:gap-x-28">
-            {featuredLogos.map((logo) => (
-              <Image
-                key={logo.alt}
-                src={logo.src}
-                alt={logo.alt}
-                width={100}
-                height={32}
-                className="h-6 w-auto grayscale opacity-80 sm:h-7 md:h-8"
-              />
-            ))}
+    <footer className="relative isolate bg-[#f7f3ec] text-[15px] text-[#3f2e1f]">
+      {/* Top edge: line art + "Did you know?" */}
+      <div className="border-t border-[#e3d7c4]">
+        <div className="mx-auto flex max-w-[1240px] flex-col-reverse items-center gap-6 px-6 pb-10 pt-10 sm:px-8 md:flex-row md:items-end md:justify-between md:gap-12 lg:px-12">
+          <div className="w-full max-w-[640px] text-center md:text-left">
+            {fact ? (
+              <div className="border-l-0 md:border-l-2 md:border-[#c9974f] md:pl-6">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-[#a35c2d]">
+                  Did you know?
+                </p>
+                <p className="mt-2 text-[18px] leading-relaxed text-[#24170f] sm:text-[20px]">
+                  {fact}
+                </p>
+              </div>
+            ) : (
+              <div className="h-[72px]" aria-hidden="true" />
+            )}
           </div>
+          {loading ? (
+            <div className="h-24 w-64 animate-pulse rounded-xl bg-black/5" />
+          ) : (
+            imageUrl && (
+              <Image
+                src={imageUrl}
+                alt="Rhino illustration"
+                width={420}
+                height={167}
+                className="h-auto w-[230px] shrink-0 opacity-60 sm:w-[280px] lg:w-[320px]"
+              />
+            )
+          )}
         </div>
       </div>
 
       {/* Main footer */}
-      <div className="relative z-10 mx-auto grid max-w-[1500px] gap-10 px-6 pb-8 pt-10 sm:px-8 md:grid-cols-2 lg:grid-cols-[0.9fr_1.45fr_1fr] lg:gap-16 lg:px-12 xl:gap-24 xl:px-16">
-        {/* Brand + Award */}
-        <motion.div
-          initial={fadeInitial}
-          whileInView={fadeAnimate}
-          transition={fadeTransition}
-          viewport={{ once: true }}
-          className="flex flex-col items-start"
-        >
-          {loading ? (
-            <div className="h-[56px] w-[220px] animate-pulse rounded-xl bg-black/5" />
-          ) : (
-            <>
-              {logoUrlMobile && (
-                <Image
-                  src={logoUrlMobile}
-                  alt="Fair Trade Safaris"
-                  width={220}
-                  height={56}
-                  className="block h-auto w-[180px] sm:w-[200px] md:hidden"
-                />
-              )}
+      <div className="border-t border-[#e3d7c4]">
+        <div className="mx-auto grid max-w-[1240px] gap-10 px-6 py-12 sm:px-8 md:grid-cols-2 lg:grid-cols-12 lg:gap-12 lg:px-12">
+          {/* Brand + award */}
+          <div className="flex flex-col items-start lg:col-span-4">
+            {loading ? (
+              <div className="h-[56px] w-[220px] animate-pulse rounded-xl bg-black/5" />
+            ) : (
+              <>
+                {logoUrlMobile && (
+                  <Image
+                    src={logoUrlMobile}
+                    alt="Fair Trade Safaris"
+                    width={220}
+                    height={56}
+                    className="block h-auto w-[180px] md:hidden"
+                  />
+                )}
+                {logoUrlDesktop && (
+                  <Image
+                    src={logoUrlDesktop}
+                    alt="Fair Trade Safaris"
+                    width={360}
+                    height={92}
+                    className="hidden h-auto w-[210px] md:block"
+                  />
+                )}
+              </>
+            )}
 
-              {logoUrlDesktop && (
-                <Image
-                  src={logoUrlDesktop}
-                  alt="Fair Trade Safaris"
-                  width={360}
-                  height={92}
-                  className="hidden h-auto w-[220px] md:block"
-                />
-              )}
-            </>
-          )}
+            <p className="mt-5 max-w-[340px] text-[15px] leading-7 text-[#5a4836]">
+              Travel with purpose. Curated safaris that support conservation and
+              communities across Africa.
+            </p>
 
-          <p className="mt-5 max-w-[340px] leading-6 text-[#5a4836]">
-            Travel with purpose. Curated safaris that support conservation and
-            communities across Africa.
-          </p>
-
-          {/* Award — intentionally not linked until public announcement */}
-          <div className="mt-5 w-full max-w-[270px] border-t border-[#d8cbb8] pt-5">
+            {/* Award: intentionally not linked until public announcement */}
             <Image
               src={awardBadge}
               alt="Fair Trade Safaris — 2026 International Travel Awards winner for Best Sustainable Travel Company in South Africa"
               width={210}
               height={145}
-              className="h-auto w-[155px] sm:w-[165px] lg:w-[175px]"
+              className="mt-6 h-auto w-[150px]"
             />
           </div>
-        </motion.div>
 
-        {/* Quick Links */}
-        <motion.nav
-          aria-label="Footer quick links"
-          initial={fadeInitial}
-          whileInView={fadeAnimate}
-          transition={fadeTransition}
-          viewport={{ once: true }}
-          className="self-start"
-        >
-          {allLinks.length > 0 && (
-            <>
-              <h3 className="mb-5 text-sm font-semibold uppercase tracking-[0.14em]">
-                Quick Links
-              </h3>
-
-              <div className="grid grid-cols-2 gap-x-10 sm:gap-x-14 lg:gap-x-16 xl:gap-x-20">
-                <ul className="space-y-2">
+          {/* Explore (Sanity explore links); a simple accordion on phones */}
+          <nav aria-label="Footer quick links" className="lg:col-span-5">
+            {allLinks.length > 0 && exploreLinks.length > 0 && (
+              <>
+                <h3 className="hidden md:block">
+                  <span className={headingClass}>Explore</span>
+                </h3>
+                <h3 className="border-y border-[#e3d7c4] md:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setExploreOpen((v) => !v)}
+                    aria-expanded={exploreOpen}
+                    aria-controls="footer-explore"
+                    className="flex min-h-[52px] w-full items-center justify-between text-left"
+                  >
+                    <span className={headingClass}>Explore</span>
+                    <svg
+                      viewBox="0 0 20 20"
+                      className={`h-5 w-5 text-[#7a5a3a] transition-transform duration-200 ${exploreOpen ? "rotate-180" : ""}`}
+                      aria-hidden="true"
+                    >
+                      <path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </h3>
+                <ul
+                  id="footer-explore"
+                  className={`${exploreOpen ? "grid" : "hidden"} grid-cols-1 gap-x-10 pt-3 sm:grid-cols-2 md:mt-4 md:grid md:pt-0`}
+                >
                   {loading
-                    ? Array.from({ length: 5 }).map((_, index) => (
-                        <li
-                          key={`s-col1-${index}`}
-                          className="h-3 animate-pulse rounded bg-black/5"
-                        />
+                    ? Array.from({ length: 6 }).map((_, index) => (
+                        <li key={`s-ex-${index}`} className="my-2 h-3 animate-pulse rounded bg-black/5" />
                       ))
-                    : col1.map((link, index) => (
-                        <li key={`col1-${index}`}>
-                          <Link
-                            href={`${link.href.replace(/\/?$/, "/")}`}
-                            className="transition-colors hover:text-black hover:underline"
-                          >
+                    : exploreLinks.map((link, index) => (
+                        <li key={`ex-${index}`}>
+                          <Link href={footerHref(link.href)} className={linkClass}>
                             {link.label}
                           </Link>
                         </li>
                       ))}
                 </ul>
+              </>
+            )}
+          </nav>
 
-                <ul className="space-y-2 border-l border-[#d8cbb8] pl-10 sm:pl-12 lg:pl-14">
-                  {loading
-                    ? Array.from({ length: 5 }).map((_, index) => (
-                        <li
-                          key={`s-col2-${index}`}
-                          className="h-3 animate-pulse rounded bg-black/5"
-                        />
-                      ))
-                    : col2.map((link, index) => (
-                        <li key={`col2-${index}`}>
-                          <Link
-                            href={`${link.href.replace(/\/?$/, "/")}`}
-                            className="transition-colors hover:text-black hover:underline"
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
+          {/* Get in touch + follow us + travel guide */}
+          <div className="flex flex-col gap-9 md:col-span-2 md:grid md:grid-cols-3 md:gap-10 lg:col-span-3 lg:flex lg:flex-col lg:gap-9">
+            {connectLinks.length > 0 && (
+              <div>
+                <h3 className={headingClass}>Get in touch</h3>
+                <ul className="mt-4">
+                  {connectLinks.map((link, index) => (
+                    <li key={`cn-${index}`}>
+                      <Link href={footerHref(link.href)} className={linkClass}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
-            </>
-          )}
-        </motion.nav>
+            )}
 
-        {/* Rhino + Johannesburg Guide */}
-        <motion.div
-          initial={fadeInitial}
-          whileInView={fadeAnimate}
-          transition={fadeTransition}
-          viewport={{ once: true }}
-          className="flex flex-col items-center md:col-span-2 lg:col-span-1"
-        >
-          {loading ? (
-            <div className="h-20 w-64 animate-pulse rounded-xl bg-black/5" />
-          ) : (
-            <>
-              {imageUrl && (
-                <Image
-                  src={imageUrl}
-                  alt="Rhino illustration"
-                  width={420}
-                  height={130}
-                  className="h-auto w-full max-w-[390px] opacity-75"
-                />
-              )}
+            {socialLinks.length > 0 && (
+              <div>
+                <h3 className={headingClass}>Follow us</h3>
+                <div className="mt-4 flex max-w-[260px] flex-wrap gap-2.5">
+                  {socialLinks.map((social, index) => (
+                    <a
+                      key={`${social.platform}-${index}`}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.platform}
+                      className="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full opacity-90 transition-opacity hover:opacity-100"
+                    >
+                      {social.icon?.asset && (
+                        <Image
+                          src={urlFor(social.icon.asset).width(44).height(44).url()}
+                          alt={social.alt || social.platform}
+                          width={44}
+                          height={44}
+                        />
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
-              <div className="mt-4 flex flex-col items-center text-center">
-                <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-[#8a735a]">
-                  Johannesburg Travel Guide
-                </p>
-
+            {!loading && (
+              <div>
+                <h3 className={headingClass}>Johannesburg Travel Guide</h3>
                 <a
                   href="https://www.kayak.co.uk/Johannesburg.26961.guide"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Kayak Johannesburg Travel Guide"
-                  className="transition-opacity hover:opacity-90"
+                  className="mt-4 inline-block transition-opacity hover:opacity-90"
                 >
                   <img
                     src="https://content.r9cdn.net/res/images/horizon/ui/seo/marketing/poibadges/POI_BADGES_GUIDES_DARK.png?v=3141cb0739e493843a37b32eccb35318b9d646ff&cluster=5"
@@ -320,70 +331,55 @@ export default function SafariFactFooter({
                     height={728}
                     loading="lazy"
                     decoding="async"
-                    className="h-auto w-[120px] rounded-md"
+                    className="h-auto w-[104px] rounded-md"
                   />
                 </a>
               </div>
-            </>
-          )}
-        </motion.div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Fact */}
-      {fact && (
-        <motion.div
-          initial={fadeInitial}
-          whileInView={fadeAnimate}
-          transition={fadeTransition}
-          viewport={{ once: true }}
-          className="relative z-10 flex justify-center px-6"
-        >
-          <div className="max-w-2xl rounded-full border border-black/5 bg-[#e8dcc9] px-4 py-1.5 text-center text-[13px] italic text-[#6b4a27]">
-            <span className="opacity-80">Did you know?</span>{" "}
-            <span className="font-medium not-italic">{fact}</span>
+      {/* As seen on */}
+      <div className="border-t border-[#e3d7c4]">
+        <div className="mx-auto flex max-w-[1240px] flex-col items-center gap-5 px-6 py-8 sm:px-8 md:flex-row md:justify-center md:gap-10 lg:px-12">
+          <p className="text-[13px] uppercase tracking-[0.16em] text-[#7a5a3a]">
+            As seen on
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5 sm:gap-x-12">
+            {featuredLogos.map((logo) => (
+              <Image
+                key={logo.alt}
+                src={logo.src}
+                alt={logo.alt}
+                width={100}
+                height={32}
+                className="h-6 w-auto opacity-60 grayscale md:h-7"
+              />
+            ))}
           </div>
-        </motion.div>
-      )}
-
-      {/* Socials */}
-      {socialLinks.length > 0 && (
-        <div className="relative z-10 mb-6 mt-4 flex flex-wrap justify-center gap-3 px-6">
-          {socialLinks.map((social, index) => (
-            <a
-              key={`${social.platform}-${index}`}
-              href={social.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={social.platform}
-              className="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full transition hover:-translate-y-0.5 hover:shadow-sm"
-            >
-              {social.icon?.asset && (
-                <Image
-                  src={urlFor(social.icon.asset).width(44).height(44).url()}
-                  alt={social.alt || social.platform}
-                  width={44}
-                  height={44}
-                />
-              )}
-            </a>
-          ))}
         </div>
-      )}
+      </div>
 
-      {/* Bottom bar */}
-      <div className="relative z-10 border-t border-[#d2c2a3] bg-[#eadfca]/60 px-6 py-3 text-xs backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1500px] flex-col items-center justify-between gap-2 sm:px-2 md:flex-row lg:px-6">
-          <div className="flex items-center gap-4">
+      {/* Bottom bar (extra space underneath on phones for the fixed bars) */}
+      <div
+        className={`border-t border-[#e3d7c4] bg-[#efe6d6] px-6 pt-5 sm:px-8 lg:px-12 ${
+          hasConsultantBar
+            ? "pb-[calc(225px+env(safe-area-inset-bottom))] md:pb-32"
+            : "pb-[calc(145px+env(safe-area-inset-bottom))] md:pb-6"
+        }`}
+      >
+        <div className="mx-auto flex max-w-[1240px] flex-col items-center gap-3 text-[14px] text-[#5a4836] md:flex-row md:justify-between">
+          <div className="flex items-center gap-6">
             <Link
               href="/privacy/"
-              className="underline transition-colors hover:text-black"
+              className="underline underline-offset-4 transition-colors hover:text-[#a35c2d]"
             >
               Privacy Policy
             </Link>
-            <CookieSettingsLink className="underline transition-colors hover:text-black" />
+            <CookieSettingsLink className="underline underline-offset-4 transition-colors hover:text-[#a35c2d]" />
           </div>
-
-          <p className="opacity-80">
+          <p>
             © {new Date().getFullYear()} Fair Trade Safaris. All rights
             reserved.
           </p>

@@ -2,23 +2,24 @@
 
 /* Slow "Ken Burns" drift on the hero photo */
 @keyframes ftsDrift {
-  from { transform: scale(1.08) translate3d(0, 0, 0); }
-  to   { transform: scale(1) translate3d(0, -1%, 0); }
+  from { transform: scale(1.045); }
+  to   { transform: scale(1); }
 }
-.heroImg { animation: ftsDrift 16s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* GPU-composited, scale only (no translate) so it never shimmers */
+.heroImg { animation: ftsDrift 14s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform; backface-visibility: hidden; }
 
 @keyframes ftsRise {
-  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
   to   { opacity: 1; transform: none; }
 }
-.rise { animation: ftsRise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.rise2 { animation: ftsRise 0.9s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.rise3 { animation: ftsRise 0.9s 0.24s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.rise4 { animation: ftsRise 0.9s 0.36s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.rise { animation: ftsRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rise2 { animation: ftsRise 0.8s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rise3 { animation: ftsRise 0.8s 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.rise4 { animation: ftsRise 0.8s 0.36s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 /* Scroll reveal (Reveal.tsx toggles data-shown) */
-.reveal { opacity: 0; transform: translate3d(0, 24px, 0); transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-.reveal[data-shown="true"] { opacity: 1; transform: none; }
+.reveal { opacity: 0; transform: translate3d(0, 14px, 0); transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); will-change: opacity, transform; }
+.reveal[data-shown="true"] { opacity: 1; transform: none; will-change: auto; }
 
 /* Subtle paper grain for the dark bands (pure CSS, no image request) */
 .grain { background-image:

@@ -78,7 +78,7 @@ export default function EarningsCalculator({
               <label htmlFor={tripId} className="text-sm font-medium text-[#e9dccb]">
                 Typical safari package
               </label>
-              <span className="font-serif text-2xl tabular-nums text-[#fbf6ef]">{fmt(trip)}</span>
+              <span className="text-2xl font-bold tabular-nums text-[#fbf6ef]">{fmt(trip)}</span>
             </div>
             <input
               id={tripId}
@@ -116,7 +116,7 @@ export default function EarningsCalculator({
               <label htmlFor={countId} className="text-sm font-medium text-[#e9dccb]">
                 Friends who book in a year
               </label>
-              <span className="font-serif text-2xl tabular-nums text-[#fbf6ef]">{count}</span>
+              <span className="text-2xl font-bold tabular-nums text-[#fbf6ef]">{count}</span>
             </div>
             <input
               id={countId}
@@ -143,7 +143,7 @@ export default function EarningsCalculator({
         <div className="relative overflow-hidden rounded-[28px] border border-[#f5ebdd]/15 bg-[#fbf6ef] p-7 text-[#24170f] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:p-9">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#ead9c3]" />
           <p className="relative text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a5a33]">You could earn</p>
-          <p className="relative mt-3 font-serif text-5xl leading-none tabular-nums sm:text-6xl" aria-hidden>
+          <p className="relative mt-3 text-5xl font-extrabold leading-none tracking-tight tabular-nums sm:text-6xl" aria-hidden>
             {fmt(shownYearly)}
           </p>
           <p className="sr-only" aria-live="polite">

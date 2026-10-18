@@ -3,6 +3,7 @@
 // Sanity > Ambassador Settings, with fallbacks. Hidden if the programme is off.
 import Image from "next/image";
 import Link from "next/link";
+import LineArt from "@/components/LineArt";
 import { getAmbassadorSettings, makeFill, money } from "@/lib/ambassadorSettings";
 
 export default async function AmbassadorCtaStrip() {
@@ -26,8 +27,9 @@ export default async function AmbassadorCtaStrip() {
 
         <div className="grid gap-10 p-8 sm:p-12 md:grid-cols-12 md:items-center lg:p-16">
           <div className="md:col-span-7">
+            <LineArt name="rhino" className="mb-6 w-44 text-[#e2c39c]/85" />
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e2c39c]">Ambassador Programme</p>
-            <h2 id="amb-cta-title" className="mt-4 font-serif text-3xl leading-[1.1] sm:text-5xl">
+            <h2 id="amb-cta-title" className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">
               {fill(s.stripTitle)}
             </h2>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-[#e9dccb] sm:text-lg">{fill(s.stripText)}</p>
@@ -45,14 +47,14 @@ export default async function AmbassadorCtaStrip() {
             </div>
           </div>
 
-          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md md:col-span-5">
+          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/15 bg-[#1a100a]/50 md:col-span-5">
             {[
               { k: `${s.commissionPercent}%`, v: "commission" },
               { k: `US$${money(s.friendDiscount)}`, v: "off for friends" },
               { k: `${s.cookieDays}`, v: "day link" },
             ].map((f) => (
               <div key={f.v} className="bg-[#24170f]/40 px-4 py-5 text-center">
-                <dt className="font-serif text-2xl text-white sm:text-3xl">{f.k}</dt>
+                <dt className="text-2xl font-bold text-white sm:text-3xl">{f.k}</dt>
                 <dd className="mt-1 text-[11px] uppercase tracking-[0.14em] text-[#e9dccb]">{f.v}</dd>
               </div>
             ))}

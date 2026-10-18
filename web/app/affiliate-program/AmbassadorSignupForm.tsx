@@ -77,7 +77,7 @@ export default function AmbassadorSignupForm() {
         <span className="grid h-14 w-14 place-items-center rounded-full bg-[#5d4037] text-2xl text-[#fbf6ef]" aria-hidden>
           ✓
         </span>
-        <h3 className="mt-6 font-serif text-3xl text-[#24170f]">
+        <h3 className="mt-6 text-2xl font-bold text-[#24170f]">
           Thank you{firstName ? `, ${firstName}` : ""}.
         </h3>
         <p className="mt-3 max-w-md leading-relaxed text-[#5d4037]">

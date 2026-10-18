@@ -1,67 +1,25 @@
 "use client";
 
+// Batch 20: calm restyle (display only). Same Sanity headline, intro, S.A.F.E.
+// list, impact text, buttons, background texture and line art.
+// - No fade/slide-in animations: the text is visible straight away (it used
+//   to start invisible until framer-motion loaded).
+// - The "Read more" clamp now only applies on phones; on desktop the full
+//   text shows (it was cut off on desktop with no way to open it).
 import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { PortableText } from "@portabletext/react";
-import { useEffect, useState, type ComponentType, type CSSProperties } from "react";
+import { useState } from "react";
 import type { FoundersPromiseBlock } from "@/types/types";
-
-/* ------------------------------
-   Motion
-   Batch 4: framer-motion is still loaded lazily, but the cards are now in the
-   server HTML. Until framer-motion has loaded, a plain <div> with the same
-   classes and the animation's starting state (invisible, offset) holds the
-   content; framer-motion then takes over and runs the same animation. Before,
-   `ssr: false, loading: () => null` meant the "Our Promise" and "Travel with
-   Purpose" text was missing from the HTML entirely.
--------------------------------- */
-type MotionStart = { opacity?: number; y?: number };
-type MotionDivProps = {
-  className?: string;
-  style?: CSSProperties;
-  initial?: MotionStart;
-  animate?: MotionStart;
-  whileInView?: MotionStart;
-  viewport?: { once?: boolean; amount?: number };
-  transition?: Record<string, unknown>;
-  children?: React.ReactNode;
-};
-
-let loadedMotionDiv: ComponentType<MotionDivProps> | null = null;
-
-function MotionDiv(props: MotionDivProps) {
-  const [Motion, setMotion] = useState<ComponentType<MotionDivProps> | null>(
-    () => loadedMotionDiv,
-  );
-
-  useEffect(() => {
-    if (Motion) return;
-    let cancelled = false;
-    import("framer-motion").then((m) => {
-      loadedMotionDiv = m.motion.div as unknown as ComponentType<MotionDivProps>;
-      if (!cancelled) setMotion(() => loadedMotionDiv);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [Motion]);
-
-  if (Motion) return <Motion {...props} />;
-
-  const { className, style, initial, children } = props;
-  return (
-    <div
-      className={className}
-      style={{
-        ...style,
-        opacity: initial?.opacity,
-        transform: initial?.y ? `translateY(${initial.y}px)` : undefined,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
+import {
+  homeBody,
+  homeButton,
+  homeCard,
+  homeContainer,
+  homeEyebrow,
+  homeH2,
+  homeSection,
+} from "@/components/home/homeStyles";
 
 type Props = { data: FoundersPromiseBlock };
 
@@ -70,38 +28,23 @@ function splitOnce(s: string) {
   return m ? { title: m[1], detail: m[2] } : { title: s, detail: "" };
 }
 
-/* ------------------------------
-   Mobile clamp
--------------------------------- */
-function ClampMobile({
-  children,
-  collapsedHeight = 190,
-}: {
-  children: React.ReactNode;
-  collapsedHeight?: number;
-}) {
+/* Phone-only "Read more" clamp */
+function ClampMobile({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-
   return (
-    <div className="relative">
+    <div>
       <div
-        style={{
-          overflow: open ? "visible" : "hidden",
-          maxHeight: open ? "none" : `${collapsedHeight}px`,
-          WebkitMaskImage: open
-            ? "none"
-            : "linear-gradient(to bottom, black 70%, transparent)",
-          maskImage: open
-            ? "none"
-            : "linear-gradient(to bottom, black 70%, transparent)",
-        }}
+        className={
+          open
+            ? ""
+            : "max-h-[200px] overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)] md:max-h-none md:overflow-visible md:[mask-image:none]"
+        }
       >
         {children}
       </div>
-
       <button
         type="button"
-        className="mt-3 md:hidden text-sm font-medium text-black"
+        className="mt-3 text-[15px] font-semibold text-[#a35c2d] underline underline-offset-4 md:hidden"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
@@ -111,9 +54,8 @@ function ClampMobile({
   );
 }
 
-/* ==============================
-   Component
-================================ */
+const proseClass = `${homeBody} space-y-3 [&_strong]:font-semibold [&_strong]:text-[#24170f]`;
+
 export default function FoundersPromise({ data }: Props) {
   const {
     headline,
@@ -127,16 +69,8 @@ export default function FoundersPromise({ data }: Props) {
   } = data;
 
   return (
-    <section
-      className={`
-      relative z-0
-      pt-28 sm:pt-32 md:pt-[220px]
-      pb-24 sm:pb-28 md:pb-36
-      px-5 sm:px-6 md:px-8
-      bg-cover bg-center bg-no-repeat text-black
-    `}
-    >
-      {/* Background */}
+    <section className={`relative isolate overflow-hidden bg-[#f7f3ec] text-[#24170f] ${homeSection}`}>
+      {/* Background texture (from Sanity), softened */}
       {backgroundImage?.asset?.url && (
         <div className="absolute inset-0 -z-10">
           <Image
@@ -144,150 +78,95 @@ export default function FoundersPromise({ data }: Props) {
             alt={backgroundImage.alt || "Background"}
             fill
             sizes="100vw"
-            className="object-cover object-[center] md:object-[50%_30%] brightness-[0.97] contrast-[0.95] grayscale-[10%]"
+            className="object-cover object-center"
           />
-          <div className="absolute inset-0 bg-black/10 mix-blend-multiply pointer-events-none" />
+          <div className="absolute inset-0 bg-[#f7f3ec]/80" />
         </div>
       )}
 
-      {/* Top fade */}
-      <div
-        className="absolute top-0 left-0 w-full h-20 sm:h-24 z-20 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, #e6d8c7, rgba(200,161,101,0))",
-        }}
-      />
-
-      {/* Bottom fade */}
-      <div
-        className="absolute bottom-0 left-0 w-full h-28 sm:h-32 z-20 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(200,161,101,0), #e6d8c7)",
-        }}
-      />
-
-      {/* SECTION HEADER */}
-      <div className="relative z-20 max-w-4xl mx-auto text-center mb-14 md:mb-24">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
-          Travel with integrity.
-          <br />
-          Impact with intention.
-        </h2>
-
-        {/* LINE ART */}
-        {lineArtImage?.asset?.url && (
-          <MotionDiv
-            className="hidden md:block mx-auto mt-2 -mb-40 w-[360px] aspect-[18/11] pointer-events-none"
-            initial={{ opacity: 0, y: -24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
-          >
-            <div className="relative w-full h-full">
+      <div className={homeContainer}>
+        {/* Header */}
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className={homeH2}>
+            Travel with integrity.
+            <br />
+            Impact with intention.
+          </h2>
+          {lineArtImage?.asset?.url && (
+            <div className="relative mx-auto mt-4 aspect-[360/153] w-[220px] opacity-80 md:w-[260px]">
               <Image
                 src={lineArtImage.asset.url}
                 alt=""
                 aria-hidden
                 fill
-                sizes="360px"
+                sizes="260px"
                 className="object-contain"
               />
             </div>
-          </MotionDiv>
-        )}
-      </div>
-
-      {/* CONTENT */}
-      <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
-        {/* LEFT CARD */}
-        <MotionDiv
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.8 }}
-          className="w-full lg:w-1/2 min-h-[450px] p-8 rounded-md shadow-md backdrop-blur-sm"
-          style={{ backgroundColor: "#e6d8c7" }}
-        >
-          <span className="inline-block mb-4 text-xs uppercase tracking-widest border border-black px-4 py-1 rounded-full">
-            Our Promise
-          </span>
-
-          <h3 className="text-3xl font-bold mb-4">{headline}</h3>
-
-          <ClampMobile>
-            <PortableText value={intro} />
-
-            <ul className="mt-4 list-disc pl-5 space-y-2">
-              {safelist.map((item, i) => {
-                const { title, detail } = splitOnce(item);
-                return (
-                  <li key={i}>
-                    <strong>{title}</strong>
-                    {detail && ` – ${detail}`}
-                  </li>
-                );
-              })}
-            </ul>
-          </ClampMobile>
-
-          {/* ACTION SECTION */}
-          {buttonText && buttonLink && (
-            <div className="mt-10 pt-6 border-t border-black/20">
-              <Link
-                href={buttonLink}
-                className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-black text-white font-semibold tracking-wide hover:bg-[#5c4033] transition-colors duration-300"
-              >
-                {buttonText}
-              </Link>
-            </div>
           )}
-        </MotionDiv>
+        </div>
 
-        {/* RIGHT CARD */}
-        {impactContent && (
-          <MotionDiv
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.9, delay: 0.1 }}
-            className="w-full lg:w-1/2 min-h-[450px] p-8 rounded-md shadow-md backdrop-blur-sm"
-            style={{ backgroundColor: "#e6d8c7" }}
-          >
-            <span className="inline-block mb-4 text-xs uppercase tracking-widest border border-black px-4 py-1 rounded-full">
-              Travel with Purpose
-            </span>
-
-            <h3 className="text-3xl font-bold mb-4">{impactContent.title}</h3>
-
-            <ClampMobile>
-              <PortableText value={impactContent.body} />
-            </ClampMobile>
-
-            {/* ACTION SECTION */}
-            {impactContent.ctaText && impactContent.ctaLink && (
-              <div className="mt-10 pt-6 border-t border-black/20">
-                <Link
-                  href={impactContent.ctaLink}
-                  className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-black text-white font-semibold tracking-wide hover:bg-[#5c4033] transition-colors duration-300"
-                >
-                  {impactContent.ctaText}
+        {/* Cards */}
+        <div className="mt-8 grid grid-cols-1 gap-6 md:mt-10 lg:grid-cols-2 lg:gap-8">
+          <div className={`flex flex-col p-6 sm:p-8 ${homeCard}`}>
+            <p className={homeEyebrow}>Our Promise</p>
+            <h3 className="mt-2 text-[24px] font-semibold leading-snug text-[#24170f] md:text-[26px]">
+              {headline}
+            </h3>
+            <div className="mt-4 flex-1">
+              <ClampMobile>
+                <div className={proseClass}>
+                  <PortableText value={intro} />
+                </div>
+                <ul className="mt-5 space-y-3">
+                  {safelist.map((item, i) => {
+                    const { title, detail } = splitOnce(item);
+                    return (
+                      <li key={i} className={`flex gap-3 ${homeBody}`}>
+                        <span className="mt-[11px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#c9974f]" aria-hidden="true" />
+                        <span>
+                          <strong className="font-semibold text-[#24170f]">{title}</strong>
+                          {detail && ` – ${detail}`}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </ClampMobile>
+            </div>
+            {buttonText && buttonLink && (
+              <div className="mt-6 border-t border-[#efe5d6] pt-6">
+                <Link href={buttonLink} className={homeButton}>
+                  {buttonText}
                 </Link>
               </div>
             )}
-          </MotionDiv>
-        )}
-      </div>
+          </div>
 
-      {/* Reduced motion */}
-      <style jsx>{`
-        @media (prefers-reduced-motion: reduce) {
-          * {
-            animation: none !important;
-            transition: none !important;
-          }
-        }
-      `}</style>
+          {impactContent && (
+            <div className={`flex flex-col p-6 sm:p-8 ${homeCard}`}>
+              <p className={homeEyebrow}>Travel with Purpose</p>
+              <h3 className="mt-2 text-[24px] font-semibold leading-snug text-[#24170f] md:text-[26px]">
+                {impactContent.title}
+              </h3>
+              <div className="mt-4 flex-1">
+                <ClampMobile>
+                  <div className={proseClass}>
+                    <PortableText value={impactContent.body} />
+                  </div>
+                </ClampMobile>
+              </div>
+              {impactContent.ctaText && impactContent.ctaLink && (
+                <div className="mt-6 border-t border-[#efe5d6] pt-6">
+                  <Link href={impactContent.ctaLink} className={homeButton}>
+                    {impactContent.ctaText}
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

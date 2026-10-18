@@ -1,9 +1,18 @@
 "use client";
 
+// Batch 20: calm restyle (display only). Same Sanity title, image, reasons
+// and button; wider container, consistent type and spacing.
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import Image from "@/components/SanityImage";
 import Link from "next/link";
+import {
+  homeBody,
+  homeButton,
+  homeContainer,
+  homeH2,
+  homeSection,
+} from "@/components/home/homeStyles";
 
 type WhyChooseBlock = {
   sectionTitle: PortableTextBlock[];
@@ -21,99 +30,81 @@ export default function WhyChoose({ data }: WhyChooseProps) {
   const { sectionTitle, sideImage, reasons } = data;
 
   return (
-    <section className="relative isolate bg-[#e6d8c7] text-black py-5 sm:py-5 md:py-8 overflow-hidden font-sans">
-      {/* Dark mode overlay */}
+    <section className={`bg-white text-[#24170f] ${homeSection}`}>
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 hidden "
-      />
-
-      {/* Main Content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-10 sm:gap-12 lg:gap-16 items-stretch">
-        {/* Left Image */}
+        className={`${homeContainer} grid grid-cols-1 items-center gap-10 md:grid-cols-2 lg:grid-cols-[5fr_6fr] lg:gap-16`}
+      >
+        {/* Image */}
         {sideImage?.asset?.url && (
-          <div className="w-full aspect-[4/5] overflow-hidden rounded-xl shadow min-h-[300px] sm:min-h-[400px]">
-            <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl shadow min-h-[300px] sm:min-h-[400px]">
-              <Image
-                src={sideImage.asset.url}
-                alt={sideImage.alt || "Why Travel Visual"}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                loading="lazy"
-              />
-            </div>
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#f2e7db] md:aspect-[4/5] lg:aspect-[5/5]">
+            <Image
+              src={sideImage.asset.url}
+              alt={sideImage.alt || "Why Travel Visual"}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 45vw"
+              loading="lazy"
+            />
           </div>
         )}
 
-        {/* Right Content */}
-        <div className="space-y-6 md:space-y-8 pt-4 min-h-[380px]">
+        {/* Text */}
+        <div>
           <PortableText
             value={sectionTitle}
             components={{
               block: {
-                normal: ({ children }) => (
-                  <h2 className="text-[1.875rem] sm:text-4xl font-bold leading-tight font-poppins text-gray-900">
-                    {children}
-                  </h2>
-                ),
-                center: ({ children }) => (
-                  <h2 className="text-[1.875rem] sm:text-4xl font-bold leading-tight text-center font-poppins text-gray-900">
-                    {children}
-                  </h2>
-                ),
+                normal: ({ children }) => <h2 className={homeH2}>{children}</h2>,
+                center: ({ children }) => <h2 className={homeH2}>{children}</h2>,
               },
               marks: {
                 strong: ({ children }) => (
-                  <strong className="font-extrabold">{children}</strong>
+                  <strong className="font-semibold">{children}</strong>
                 ),
-                em: ({ children }) => <em className="italic">{children}</em>,
+                em: ({ children }) => (
+                  <em className="italic text-[#a35c2d]">{children}</em>
+                ),
               },
             }}
           />
 
-          {reasons?.map((item, index) => (
-            <div key={index} className="flex items-start gap-4 sm:gap-5">
-              {item.icon?.asset?.url && (
-                <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center bg-[#f0eee9] shadow-sm">
-                  <Image
-                    src={item.icon.asset.url}
-                    alt={item.icon.alt || item.title || "Icon"}
-                    width={40}
-                    height={40}
-                    className="object-contain"
-                    loading="lazy"
-                  />
+          <ul className="mt-8 divide-y divide-[#efe5d6]">
+            {reasons?.map((item, index) => (
+              <li key={index} className="flex items-start gap-5 py-5 first:pt-0">
+                {item.icon?.asset?.url && (
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#f2e7db]">
+                    <Image
+                      src={item.icon.asset.url}
+                      alt={item.icon.alt || item.title || "Icon"}
+                      width={28}
+                      height={28}
+                      className="object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  {item.title ? (
+                    <h3 className="text-[19px] font-semibold leading-snug text-[#24170f]">
+                      {item.title}
+                    </h3>
+                  ) : (
+                    <div className="mb-1 h-5 w-3/4 animate-pulse rounded bg-gray-200" />
+                  )}
+                  {item.description ? (
+                    <p className={`mt-1.5 break-words ${homeBody}`}>
+                      {item.description}
+                    </p>
+                  ) : (
+                    <div className="mt-2 h-4 w-full animate-pulse rounded bg-gray-100" />
+                  )}
                 </div>
-              )}
+              </li>
+            ))}
+          </ul>
 
-              <div className="min-w-0">
-                {item.title ? (
-                  <h3 className="text-lg sm:text-xl font-semibold mb-1 tracking-tight text-gray-900">
-                    {item.title}
-                  </h3>
-                ) : (
-                  <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse mb-1" />
-                )}
-
-                {item.description ? (
-                  <p className="text-left leading-7 sm:leading-8 text-[0.985rem] sm:text-base text-gray-800 opacity-90 break-words">
-                    {item.description}
-                  </p>
-                ) : (
-                  <div className="h-4 w-full bg-gray-100 rounded animate-pulse mt-2" />
-                )}
-              </div>
-            </div>
-          ))}
-
-          {/* Single CTA */}
-          {/* Single CTA */}
-          <div className="mt-8 pt-5 border-t border-black/10">
-            <Link
-              href="/destination/"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-black text-white text-sm font-medium tracking-wide hover:bg-[#5c4033] transition-all duration-300"
-            >
+          <div className="mt-6">
+            <Link href="/destination/" className={homeButton}>
               Discover Our Destinations
             </Link>
           </div>

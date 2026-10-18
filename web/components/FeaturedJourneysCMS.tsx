@@ -1,7 +1,17 @@
+// Batch 20: calm restyle (display only). Same Sanity title, text, custom card,
+// featured journeys (batch 14 cards) and link; wider container.
 import Link from "next/link";
 import JourneyCard from "@/components/JourneyCard";
+import LineArt from "@/components/LineArt";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
+import {
+  homeBody,
+  homeContainer,
+  homeH2,
+  homeSection,
+  homeTextLink,
+} from "@/components/home/homeStyles";
 
 /* ---------------- TYPES ---------------- */
 
@@ -46,17 +56,17 @@ type Props = {
 
 export default function FeaturedJourneysCMS({ section, journeys }: Props) {
   return (
-    <section className="py-16 md:py-20 bg-[#e6d8c7]">
+    <section className={`bg-white ${homeSection}`}>
       {/* HEADER */}
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        {section.title && (
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {section.title}
-          </h2>
-        )}
+      <div className={`${homeContainer} text-center`}>
+        <LineArt
+          name="giraffes"
+          className="mx-auto mb-4 w-[150px] text-[#a35c2d] opacity-40 md:w-[170px]"
+        />
+        {section.title && <h2 className={homeH2}>{section.title}</h2>}
 
         {section.description && Array.isArray(section.description) && (
-          <div className="text-base md:text-lg text-gray-700 max-w-2xl mx-auto mb-12">
+          <div className={`mx-auto mt-4 max-w-2xl ${homeBody} md:text-[17px] md:leading-8`}>
             <PortableText
               value={section.description}
               components={{
@@ -64,7 +74,7 @@ export default function FeaturedJourneysCMS({ section, journeys }: Props) {
                   link: ({ children, value }) => (
                     <a
                       href={value?.href}
-                      className="underline font-semibold hover:text-black"
+                      className="font-semibold text-[#24170f] underline decoration-[#c9974f] underline-offset-4 hover:text-[#a35c2d]"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -79,10 +89,12 @@ export default function FeaturedJourneysCMS({ section, journeys }: Props) {
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto px-6">
-        {/* ✅ CUSTOM CARD FIRST */}
+      <div
+        className={`${homeContainer} mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8`}
+      >
+        {/* CUSTOM CARD FIRST */}
         {section.showCustomCard && section.customCard && (
-          <div className="relative rounded-2xl overflow-hidden group min-h-[420px]">
+          <div className="relative min-h-[420px] overflow-hidden rounded-2xl bg-[#24170f]">
             {section.customCard.image?.asset?.url && (
               <img
                 // resized via Sanity's image CDN (card is max ~400px wide)
@@ -92,47 +104,43 @@ export default function FeaturedJourneysCMS({ section, journeys }: Props) {
                     : `${section.customCard.image.asset.url}?w=800&q=70&auto=format&fit=max`
                 }
                 alt={section.customCard.title || "Custom safari"}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover"
                 loading="lazy"
                 decoding="async"
               />
             )}
 
-            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#24170f]/85 via-[#24170f]/35 to-transparent" />
 
-            <div className="relative z-10 p-6 flex flex-col justify-end h-full text-white">
+            <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white">
               {section.customCard.eyebrow && (
-                <p className="text-xs uppercase tracking-widest opacity-80 mb-2">
+                <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/85">
                   {section.customCard.eyebrow}
                 </p>
               )}
-
               {section.customCard.title && (
-                <h3 className="text-2xl font-semibold mb-3">
+                <h3 className="mb-2 text-[22px] font-semibold leading-snug">
                   {section.customCard.title}
                 </h3>
               )}
-
               {section.customCard.description && (
-                <p className="text-sm opacity-90 mb-4">
+                <p className="mb-5 text-[15px] leading-6 text-white/90">
                   {section.customCard.description}
                 </p>
               )}
-
-              {section.customCard.buttonText &&
-                section.customCard.buttonLink && (
-                  <Link
-                    href={section.customCard.buttonLink}
-                    className="bg-white text-black py-3 px-4 rounded-full text-sm font-medium hover:bg-gray-200 transition w-fit"
-                  >
-                    {section.customCard.buttonText}
-                  </Link>
-                )}
+              {section.customCard.buttonText && section.customCard.buttonLink && (
+                <Link
+                  href={section.customCard.buttonLink}
+                  className="inline-flex h-11 w-fit items-center rounded-xl bg-white px-5 text-[15px] font-semibold text-[#24170f] transition-colors hover:bg-[#f2e7db]"
+                >
+                  {section.customCard.buttonText}
+                </Link>
+              )}
             </div>
           </div>
         )}
 
-        {/* ✅ JOURNEY CARDS */}
+        {/* JOURNEY CARDS (batch 14 cards, unchanged) */}
         {journeys.map((j) => (
           <JourneyCard
             key={j._id}
@@ -153,13 +161,10 @@ export default function FeaturedJourneysCMS({ section, journeys }: Props) {
 
       {/* CTA */}
       {section.ctaText && section.ctaLink && (
-        <div className="mt-12 flex justify-center">
-          <Link
-            href={section.ctaLink}
-            className="group relative text-lg font-semibold tracking-wide text-black"
-          >
+        <div className="mt-10 flex justify-center">
+          <Link href={section.ctaLink} className={homeTextLink}>
             {section.ctaText}
-            <span className="absolute left-0 -bottom-1 w-full h-[2px] bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+            <span aria-hidden="true">→</span>
           </Link>
         </div>
       )}

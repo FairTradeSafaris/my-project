@@ -4,6 +4,16 @@ import {
   sanitySized,
   sanitySrcSet,
 } from "@/lib/sanityImageLoader";
+import {
+  homeBody,
+  homeButton,
+  homeContainer,
+  homeH2,
+  homeSection,
+} from "@/components/home/homeStyles";
+
+// Batch 20: calm restyle (display only). Same Sanity headline, text, button,
+// background and line-art image; wider container, consistent type.
 
 type CTABannerProps = {
   headline?: string;
@@ -34,7 +44,7 @@ export default function CTABanner({
   const sideDims = sanityDimensions(sideUrl);
 
   return (
-    <section className="py-16 md:py-20 relative overflow-hidden isolate">
+    <section className={`relative isolate overflow-hidden bg-[#efe3cf] ${homeSection}`}>
       {bgUrl && (
         <img
           src={sanitySized(bgUrl, 1920)}
@@ -47,20 +57,24 @@ export default function CTABanner({
           className="absolute inset-0 -z-10 h-full w-full object-cover object-center"
         />
       )}
-      <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+      <div className={`${homeContainer} grid items-center gap-8 md:grid-cols-2 md:gap-12`}>
         {/* TEXT */}
         <div className={textOnLeft ? "" : "md:order-2"}>
-          <h3 className="text-2xl md:text-3xl font-bold mb-4">{headline}</h3>
+          {/* Batch 20: h2 (was h3) - it is a main section of the page */}
+          <h2 className={homeH2}>{headline}</h2>
 
-          {subheadline && <p className="text-gray-700 mb-6">{subheadline}</p>}
+          {subheadline && (
+            <p className={`mt-4 max-w-xl ${homeBody} text-[#3f2e1f] md:text-[17px] md:leading-8`}>
+              {subheadline}
+            </p>
+          )}
 
           {buttonText && buttonLink && (
-            <Link
-              href={buttonLink}
-              className="inline-block bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition"
-            >
-              {buttonText}
-            </Link>
+            <div className="mt-6">
+              <Link href={buttonLink} className={homeButton}>
+                {buttonText}
+              </Link>
+            </div>
           )}
         </div>
 
@@ -72,14 +86,13 @@ export default function CTABanner({
               alt={headline || "CTA image"}
               width={sideDims?.width}
               height={sideDims?.height}
-              className="w-full max-w-md mx-auto"
+              className="mx-auto w-full max-w-[420px] opacity-90"
               loading="lazy"
               decoding="async"
             />
           </div>
         )}
       </div>
-      <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-b from-transparent to-[#f5f2ed]" />
     </section>
   );
 }

@@ -96,22 +96,33 @@ export default async function BlogPreview() {
                   className={`group flex h-full flex-row overflow-hidden sm:flex-col ${homeCard} transition-transform duration-300 hover:-translate-y-0.5`}
                 >
                   {post.coverImage?.asset?.url && (
-                    // Below the fold: lazy-load and ask Sanity's CDN for a
-                    // 600px version of the original.
-                    <img
-                      src={
-                        post.coverImage.asset.url.includes("cdn.sanity.io") &&
-                        !post.coverImage.asset.url.includes("?")
-                          ? `${post.coverImage.asset.url}?w=600&q=70&auto=format&fit=max`
-                          : post.coverImage.asset.url
-                      }
-                      alt={post.coverImage.alt || post.title}
-                      width={coverSize(post.coverImage.asset.url).width}
-                      height={coverSize(post.coverImage.asset.url).height}
-                      className="aspect-square w-[118px] shrink-0 object-cover sm:aspect-[4/3] sm:w-full"
-                      loading="lazy"
-                      decoding="async"
-                    />
+                    // Batch 20b: covers are designed graphics with text, so the
+                    // whole image shows (natural shape from Sanity, never cropped)
+                    // on a soft cream background.
+                    <div
+                      className="w-[118px] shrink-0 self-start bg-[#f2e7db] sm:w-full"
+                      style={{
+                        aspectRatio: (() => {
+                          const d = sanityDimensions(post.coverImage.asset.url);
+                          return d ? `${d.width} / ${d.height}` : "1 / 1";
+                        })(),
+                      }}
+                    >
+                      <img
+                        src={
+                          post.coverImage.asset.url.includes("cdn.sanity.io") &&
+                          !post.coverImage.asset.url.includes("?")
+                            ? `${post.coverImage.asset.url}?w=600&q=70&auto=format&fit=max`
+                            : post.coverImage.asset.url
+                        }
+                        alt={post.coverImage.alt || post.title}
+                        width={coverSize(post.coverImage.asset.url).width}
+                        height={coverSize(post.coverImage.asset.url).height}
+                        className="h-full w-full object-contain"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
                   )}
                   <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
                     <h3 className="text-[17px] font-semibold leading-snug text-[#24170f] group-hover:text-[#a35c2d]">

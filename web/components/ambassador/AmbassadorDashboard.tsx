@@ -7,6 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { AmbassadorMe } from "@/lib/ambassadorTypes";
 import QrCode from "./QrCode";
+import { FTS_VIDEO } from "@/components/video/ftsVideo"; // batch 25
 import {
   homeBody,
   homeButton,
@@ -75,6 +76,7 @@ export default function AmbassadorDashboard({
     `I'd like to recommend Fair Trade Safaris for a custom, ethical African safari. They look after every detail, and each trip supports local guides and communities. Use my link and you'll get ${discount} off your first safari of ${minTrip} or more: ${link}\n\nOr enter my code ${code} on their contact form (or mention it when you call or WhatsApp them): https://www.fairtradesafaris.com/contact/?ref=${encodeURIComponent(code)}`,
   );
   const paused = me.state === "paused";
+  const videoMessage = `Here's a short film about Fair Trade Safaris (${FTS_VIDEO.durationLabel}): ${FTS_VIDEO.shortUrl}\n\nIf you'd like to plan a trip, use my link for ${discount} off your first safari of ${minTrip} or more: ${link}\nor enter my code ${code} on their contact form.`;
 
   return (
     <div className="space-y-8">
@@ -199,6 +201,33 @@ export default function AmbassadorDashboard({
                 Share by email
               </a>
               <CopyButton text={message} label="Copy message" />
+            </div>
+
+            {/* batch 25: share kit, our short film */}
+            <div className="mt-8 border-t border-[#efe5d6] pt-7">
+              <div className="grid items-center gap-6 md:grid-cols-[240px_minmax(0,1fr)]">
+                <a href={FTS_VIDEO.watchUrl} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-[#ebe1d3]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={FTS_VIDEO.thumbnailHq} alt={FTS_VIDEO.alt} width={480} height={360} loading="lazy" className="aspect-video w-full object-cover" />
+                </a>
+                <div>
+                  <p className="text-[17px] font-semibold text-[#24170f]">Share our short film</p>
+                  <p className={`mt-1 ${homeBody}`}>
+                    &ldquo;{FTS_VIDEO.title}&rdquo; ({FTS_VIDEO.durationLabel}). A friendly first look for friends who are new to us.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(videoMessage)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={homeButtonOutline}
+                    >
+                      Share film on WhatsApp
+                    </a>
+                    <CopyButton text={videoMessage} label="Copy film message" />
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         </>

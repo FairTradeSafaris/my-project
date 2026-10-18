@@ -15,6 +15,7 @@ import StickyApply from "./StickyApply";
 import Reveal from "./Reveal";
 import LineArt from "@/components/LineArt";
 import styles from "./affiliate.module.css";
+import FtsVideoSection from "@/components/video/FtsVideoSection"; // batch 25
 
 export const revalidate = 300;
 
@@ -189,6 +190,9 @@ export default async function AffiliateProgramPage() {
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
+      {/* batch 25: short film */}
+      <FtsVideoSection pageUrl="https://www.fairtradesafaris.com/affiliate-program/" eyebrow="See who you'd be recommending" />
+
       <section className="bg-[#f3e9dd]" aria-labelledby="how-title">
         <div className={`${wrap} ${pad}`}>
           <Reveal className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">

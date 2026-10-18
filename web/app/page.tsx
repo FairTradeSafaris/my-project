@@ -15,6 +15,7 @@ import CTABanner from "@/components/CTABanner";
 import NonProfitCarousel from "@/components/NonProfitCarousel";
 import FeaturedAmbassador from "@/components/FeaturedAmbassador";
 import BlogPreview from "@/components/BlogPreview";
+import FtsVideoSection from "@/components/video/FtsVideoSection"; // batch 25
 
 /* ============================
    TYPES (SAFE + NO ANY)
@@ -154,12 +155,15 @@ export default async function Home() {
 
           case "whyChooseSection":
             return (
-              <WhyChoose
-                key={index}
-                data={
-                  section as unknown as Parameters<typeof WhyChoose>[0]["data"]
-                }
-              />
+              <React.Fragment key={index}>
+                <WhyChoose
+                  data={
+                    section as unknown as Parameters<typeof WhyChoose>[0]["data"]
+                  }
+                />
+                {/* batch 25: short film after the intro */}
+                <FtsVideoSection pageUrl="https://www.fairtradesafaris.com/" />
+              </React.Fragment>
             );
 
           case "foundersPromiseSection":

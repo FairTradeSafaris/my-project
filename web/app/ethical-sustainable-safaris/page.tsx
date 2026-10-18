@@ -1,6 +1,7 @@
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import type { Metadata } from "next";
 import EthicalSustainableSafarisPage from "./ClientPage";
+import FtsVideoSection from "@/components/video/FtsVideoSection"; // batch 25
 import HeroController from "@/components/HeroController";
 import { client } from "@/lib/sanity";
 import { groq } from "next-sanity";
@@ -60,6 +61,8 @@ export default async function Page() {
         headlineAs="p"
       />
       <EthicalSustainableSafarisPage />
+      {/* batch 25: short film */}
+      <FtsVideoSection pageUrl="https://www.fairtradesafaris.com/ethical-sustainable-safaris/" eyebrow="See it for yourself" />
     </>
   );
 }

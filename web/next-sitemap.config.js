@@ -107,6 +107,33 @@ module.exports = {
       uniqueMap.set(item.loc, item);
     });
 
+    // Batch 25: video sitemap entry for the Fair Trade Safaris film on the
+    // pages that show it (same facts as components/video/ftsVideo.ts).
+    const FTS_VIDEO_PAGES = ["/", "/affiliate-program/", "/ethical-sustainable-safaris/", "/contact/"];
+    const ftsVideo = {
+      title: "Safe, luxurious, and affordable wildlife safaris in Africa",
+      description:
+        "Meet Fair Trade Safaris: a socially conscious travel company planning memorable trips to Africa, from wildlife safaris and beach holidays to mountain climbs, food experiences and relaxing retreats, with every journey giving back to wildlife and local communities.",
+      thumbnailLoc: new URL("https://i.ytimg.com/vi/ARcR_mGkZ_s/maxresdefault.jpg"),
+      playerLoc: new URL("https://www.youtube.com/embed/ARcR_mGkZ_s"),
+      duration: 331,
+      publicationDate: "2019-06-27T14:19:59-07:00",
+      familyFriendly: true,
+    };
+    // The ethical safaris page (indexable, canonical) was missing from the
+    // sitemap; list it once, unless it is already there.
+    if (!uniqueMap.has("/ethical-sustainable-safaris/")) {
+      uniqueMap.set("/ethical-sustainable-safaris/", {
+        loc: "/ethical-sustainable-safaris/",
+        changefreq: "monthly",
+        priority: 0.8,
+      });
+    }
+    for (const loc of FTS_VIDEO_PAGES) {
+      const item = uniqueMap.get(loc);
+      if (item) uniqueMap.set(loc, { ...item, videos: [ftsVideo] });
+    }
+
     return Array.from(uniqueMap.values());
   },
 

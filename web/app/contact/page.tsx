@@ -9,6 +9,7 @@ import Script from "next/script";
 import Link from "next/link";
 import HeroController from "@/components/HeroController";
 import LineArt from "@/components/LineArt";
+import FtsVideoSection from "@/components/video/FtsVideoSection"; // batch 25
 import { coreBody, coreButtonOutline, coreCard, coreContainer, coreH2 } from "@/components/core/coreStyles";
 
 export const revalidate = 60;
@@ -85,6 +86,9 @@ export default async function ContactPage() {
 
       {/* Contact Info / Form */}
       <ContactPageClient contactInfo={contactInfo} />
+
+      {/* batch 25: short film below the form (form untouched) */}
+      <FtsVideoSection pageUrl="https://www.fairtradesafaris.com/contact/" tone="cream" eyebrow="Get to know us" />
 
       {/* Link to FAQ Page */}
       {/* FAQ Teaser Section */}

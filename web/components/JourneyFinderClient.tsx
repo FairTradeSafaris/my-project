@@ -244,7 +244,7 @@ export default function JourneyFinderClient() {
   const availableActivities = getAvailableByCategory("feature");
 
   return (
-    <main className="min-h-screen bg-white text-black px-4 py-6">
+    <main className="min-h-screen bg-[#fdf8f3] text-black px-4 py-6">
       <div className="max-w-7xl mx-auto">
         {/* h2: the page (app/africansafariitineraries/page.tsx) already has
             the <h1> ("Safari. Reimagined."); same classes, so it looks the same */}

@@ -9,7 +9,7 @@ export default function JourneyCard(props: JourneyCardProps) {
   // Only those cards are skipped.
   if (!props.slug || props.slug === "null") return null;
   return (
-    <div className="rounded-2xl overflow-hidden flex flex-col">
+    <div className="flex h-full">
       <JourneyCardInner {...props} />
     </div>
   );

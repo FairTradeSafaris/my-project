@@ -48,6 +48,12 @@ const AUDIENCE_ICONS = [HeartIcon, CameraIcon, UserGroupIcon, GlobeAltIcon];
 
 const eyebrow = "text-[11px] font-semibold uppercase tracking-[0.24em]";
 
+// Batch 15: one container, one vertical rhythm and one 12-column grid for
+// every section, so all left edges and second columns line up.
+const wrap = "mx-auto w-full max-w-7xl px-6 lg:px-10";
+const pad = "py-24 sm:py-32";
+const grid = "grid gap-y-10 lg:grid-cols-12 lg:gap-x-12";
+
 export default async function AffiliateProgramPage() {
   const s = await getAmbassadorSettings();
   const fill = makeFill(s);
@@ -163,22 +169,28 @@ export default async function AffiliateProgramPage() {
       </section>
 
       {/* ── INTRO ────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-10">
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-          <Reveal className="lg:col-span-6">
+      <section className={`${wrap} ${pad}`}>
+        <div className={grid}>
+          <Reveal className="lg:col-span-4">
             <p className={`${eyebrow} text-[#8a5a33]`}>Why become an ambassador</p>
             <h2 className="mt-5 text-3xl font-bold leading-tight sm:text-4xl">{fill(s.introTitle)}</h2>
           </Reveal>
-          <Reveal className="lg:col-span-6 lg:pt-12" delay={120}>
-            <p className="text-lg leading-[1.8] text-[#4a3527]">{fill(s.introText)}</p>
-            <LineArt name="rhino" className="mt-10 w-60 text-[#b8916a] sm:w-72" />
+          <Reveal className="lg:col-span-8 lg:pt-9" delay={120}>
+            <p className="max-w-[40rem] text-lg leading-[1.8] text-[#4a3527] lg:text-xl lg:leading-[1.75]">{fill(s.introText)}</p>
+          </Reveal>
+          {/* the rhino gets its own row: lots of air above, sitting on the
+              right edge of the grid as a quiet sign-off (left-aligned on phones) */}
+          <Reveal className="lg:col-span-8 lg:col-start-5" delay={200}>
+            <div className="max-w-[40rem]">
+              <LineArt name="rhino" className="mt-6 w-56 text-[#b8916a] sm:w-64 lg:ml-auto lg:mt-10 lg:w-[300px]" />
+            </div>
           </Reveal>
         </div>
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
       <section className="bg-[#f3e9dd]" aria-labelledby="how-title">
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-28 lg:px-10">
+        <div className={`${wrap} ${pad}`}>
           <Reveal className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
               <p className={`${eyebrow} text-[#8a5a33]`}>Simple by design</p>
@@ -207,7 +219,7 @@ export default async function AffiliateProgramPage() {
 
       {/* ── EARNINGS CALCULATOR ──────────────────────────────── */}
       <section id="earnings" className={`relative scroll-mt-24 bg-[#24170f] text-[#fbf6ef] ${styles.grain}`} aria-labelledby="earn-title">
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-28 lg:px-10">
+        <div className={`${wrap} ${pad}`}>
           <Reveal className="max-w-2xl">
             <p className={`${eyebrow} text-[#e2c39c]`}>Earnings calculator</p>
             <h2 id="earn-title" className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">{fill(s.calculatorTitle)}</h2>
@@ -226,7 +238,7 @@ export default async function AffiliateProgramPage() {
       </section>
 
       {/* ── WHO IT'S FOR ─────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-10" aria-labelledby="who-title">
+      <section className={`${wrap} ${pad}`} aria-labelledby="who-title">
         <Reveal className="max-w-2xl">
           <p className={`${eyebrow} text-[#8a5a33]`}>Made for storytellers</p>
           <h2 id="who-title" className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">{fill(s.whoTitle)}</h2>
@@ -251,7 +263,7 @@ export default async function AffiliateProgramPage() {
       <section className="relative isolate overflow-hidden text-[#fbf6ef]" aria-labelledby="impact-title">
         <Image src={s.stripImageUrl} alt="" fill sizes="100vw" className="-z-10 object-cover" />
         <div className="absolute inset-0 -z-10 bg-[#1a100a]/75" />
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-10">
+        <div className={`${wrap} ${pad}`}>
           {s.impactQuote ? (
             <Reveal as="article" className="mx-auto max-w-4xl text-center">
               <h2 id="impact-title" className="sr-only">{fill(s.impactTitle)}</h2>
@@ -289,8 +301,8 @@ export default async function AffiliateProgramPage() {
       </section>
 
       {/* ── THE DETAILS ──────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-10" aria-labelledby="rules-title">
-        <div className="grid gap-12 lg:grid-cols-12">
+      <section className={`${wrap} ${pad}`} aria-labelledby="rules-title">
+        <div className={grid}>
           <Reveal className="lg:col-span-4">
             <p className={`${eyebrow} text-[#8a5a33]`}>The details</p>
             <h2 id="rules-title" className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">The fine print, in plain words</h2>
@@ -298,7 +310,7 @@ export default async function AffiliateProgramPage() {
               No platforms, no logins on other sites. Everything is tracked by our own team, so phone and WhatsApp referrals count too.
             </p>
           </Reveal>
-          <dl className="grid gap-x-10 sm:grid-cols-2 lg:col-span-8">
+          <dl className="grid gap-x-12 sm:grid-cols-2 lg:col-span-8">
             {rules.map((r, i) => (
               <Reveal key={r.t} delay={(i % 2) * 90} className="border-t border-[#e0d0bd] py-7">
                 <dt className="text-xl font-semibold text-[#24170f]">{r.t}</dt>
@@ -307,13 +319,14 @@ export default async function AffiliateProgramPage() {
             ))}
           </dl>
         </div>
-        <LineArt name="savanna" className="mt-20 hidden w-full text-[#d3bb9c] sm:block" />
-        <LineArt name="giraffes" className="mx-auto mt-16 w-64 text-[#d3bb9c] sm:hidden" />
+        {/* closing illustration, with its own breathing room above */}
+        <LineArt name="savanna" className="mt-24 hidden w-full text-[#d3bb9c] sm:block lg:mt-32" />
+        <LineArt name="giraffes" className="mx-auto mt-20 w-64 text-[#d3bb9c] sm:hidden" />
       </section>
 
       {/* ── FAQ ──────────────────────────────────────────────── */}
       <section className="bg-[#f3e9dd]" aria-labelledby="faq-title">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 sm:py-28 lg:grid-cols-12 lg:px-10">
+        <div className={`${wrap} ${pad} ${grid}`}>
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-32">
               <p className={`${eyebrow} text-[#8a5a33]`}>FAQ</p>
@@ -348,7 +361,7 @@ export default async function AffiliateProgramPage() {
       </section>
 
       {/* ── APPLY ────────────────────────────────────────────── */}
-      <section id="apply" className="scroll-mt-24 mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-10" aria-labelledby="apply-title">
+      <section id="apply" className={`scroll-mt-24 ${wrap} ${pad}`} aria-labelledby="apply-title">
         <div className="grid overflow-hidden rounded-[32px] bg-white shadow-[0_40px_100px_-50px_rgba(60,42,30,0.55)] ring-1 ring-[#e6d8c8] lg:grid-cols-12">
           <div className={`relative isolate flex flex-col bg-[#24170f] p-8 text-[#fbf6ef] sm:p-12 lg:col-span-5 ${styles.grain}`}>
             <p className={`${eyebrow} text-[#e2c39c]`}>Join the programme</p>

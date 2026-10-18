@@ -69,7 +69,7 @@ export default function EarningsCalculator({
   });
 
   return (
-    <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div className="grid gap-y-10 lg:grid-cols-12 lg:gap-x-12">
       {/* Controls */}
       <div className="lg:col-span-7">
         <div className="space-y-10">
@@ -132,7 +132,8 @@ export default function EarningsCalculator({
             />
           </div>
 
-          <p className="text-xs leading-relaxed text-[#cdbba6]">
+          {/* one solid muted colour, slightly larger so it renders evenly */}
+          <p className="text-[13px] leading-relaxed text-[#d6c6b2] antialiased">
             Illustration only. Commission is {pct}% of the safari package and doesn&rsquo;t include {excludedText}.
           </p>
         </div>

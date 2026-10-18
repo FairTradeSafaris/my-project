@@ -7,6 +7,7 @@ const getAuthorUrls = require("./scripts/getAuthorUrls.js");
 const getAmbassadorUrls = require("./scripts/get-ambassador-urls.js");
 const getVideoTestimonialUrls = require("./scripts/get-video-testimonial-urls.js");
 const getPillarUrls = require("./scripts/get-pillar-urls.js");
+const getSafariQuestionUrls = require("./scripts/get-safari-question-urls.js"); // batch 17
 
 // Batch 3a: search/filter URL variants of the itinerary index (q= / open= as
 // the first or a later query parameter). Named user-agent groups do NOT
@@ -51,6 +52,9 @@ module.exports = {
     "/robots.txt",
     // Batch 16: API routes are not pages (e.g. /api/ambassador-config/)
     "/api/*",
+    // Batch 17: listed by additionalPaths (only when questions exist)
+    "/safari-questions",
+    "/safari-questions/*",
     // Batch 3a: destination pages are listed by additionalPaths
     // (scripts/get-destination-urls.js, with trailing slash + lastmod). The
     // auto-discovered copies have no trailing slash, so every country was in
@@ -74,6 +78,7 @@ module.exports = {
     const ambassadorPaths = await getAmbassadorUrls();
     const videoTestimonialPaths = await getVideoTestimonialUrls();
     const pillarPaths = await getPillarUrls();
+    const safariQuestionPaths = await getSafariQuestionUrls();
 
     const homePage = [{ loc: "/", changefreq: "weekly", priority: 1.0 }];
     // batch 12: ambassador / affiliate programme join page
@@ -90,6 +95,7 @@ module.exports = {
       ...videoTestimonialPaths,
       ...authorPaths,
       ...ambassadorPaths,
+      ...safariQuestionPaths,
     ];
 
     // 🔥 GLOBAL DEDUPLICATION

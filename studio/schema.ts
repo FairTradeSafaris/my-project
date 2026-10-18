@@ -68,6 +68,7 @@ import homePage from './schemas/homePage'
 import ctaCardGrid from './schemas/blocks/ctaCardGrid'
 import ctaCard from './schemas/objects/ctaCard'
 import ambassadorSettings from './schemas/ambassadorSettings' // batch 12 (new type only)
+import safariQuestion from './schemas/safariQuestion' // batch 17 (new type only)
 
 const schemaTypes = [
   blog,
@@ -137,6 +138,7 @@ const schemaTypes = [
   ctaCardGrid,
   ctaCard,
   ambassadorSettings,
+  safariQuestion,
 ]
 
 export default schemaTypes

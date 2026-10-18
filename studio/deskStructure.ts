@@ -179,6 +179,16 @@ export const myStructure = (S: StructureBuilder) =>
             ]),
         ),
 
+      // ❔ Safari Questions (batch 17): one web page per question,
+      // /safari-questions/<slug>/
+      S.listItem()
+        .title('❔ Safari Questions')
+        .child(
+          S.documentTypeList('safariQuestion')
+            .title('Safari Questions')
+            .defaultOrdering([{field: 'sortOrder', direction: 'asc'}]),
+        ),
+
       // ❓ FAQs
       S.listItem()
         .title('❓ FAQs')

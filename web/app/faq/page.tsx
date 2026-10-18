@@ -11,6 +11,13 @@ import { groq } from "next-sanity";
 import type { FAQCategory, FAQItem } from "../../types/types";
 import type { PortableTextBlock } from "@portabletext/types";
 import type { HeroData } from "@/components/HeroController";
+import Link from "next/link";
+// Batch 17: "Popular questions" links to the Safari Questions pages
+import {
+  QUESTIONS_PATH,
+  popularSafariQuestionsQuery,
+  type SafariQuestionLink,
+} from "@/lib/safariQuestions";
 
 export const revalidate = 60;
 
@@ -78,11 +85,16 @@ function jsonLd(data: unknown): string {
 // PAGE
 // -----------------------------
 export default async function FAQPage() {
-  const [heroData, categories]: [HeroData | null, FAQCategory[]] =
-    await Promise.all([
-      client.fetch(heroQuery),
-      client.fetch(faqCategoriesQuery),
-    ]);
+  const [heroData, categories, popularRaw]: [
+    HeroData | null,
+    FAQCategory[],
+    SafariQuestionLink[] | null,
+  ] = await Promise.all([
+    client.fetch(heroQuery),
+    client.fetch(faqCategoriesQuery),
+    client.fetch(popularSafariQuestionsQuery),
+  ]);
+  const popular = (popularRaw || []).filter((q) => q?.slug && q?.question);
 
   const questions: FAQItem[] = categories
     .flatMap((cat) => cat.items ?? [])
@@ -156,6 +168,39 @@ export default async function FAQPage() {
           <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-900">
             Your Safari Questions, Answered
           </h1>
+
+          {/* Batch 17: only when Safari Questions exist */}
+          {popular.length > 0 && (
+            <nav
+              aria-labelledby="popular-questions"
+              className="mx-auto mb-2 max-w-4xl px-4 text-center"
+            >
+              <h2
+                id="popular-questions"
+                className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a0703f]"
+              >
+                Popular questions
+              </h2>
+              <ul className="mt-4 flex flex-wrap justify-center gap-2">
+                {popular.map((q) => (
+                  <li key={q._id}>
+                    <Link
+                      href={`${QUESTIONS_PATH}/${q.slug}/`}
+                      className="inline-block rounded-full bg-white px-4 py-2 text-sm text-[#4a3527] ring-1 ring-[#e6d8c8] transition hover:bg-[#fbf6ef] hover:text-[#24170f] hover:ring-[#c9a57f]"
+                    >
+                      {q.question}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`${QUESTIONS_PATH}/`}
+                className="mt-4 inline-block text-sm font-semibold text-[#5d4037] underline decoration-[#c9a57f] decoration-2 underline-offset-[6px] hover:text-[#24170f]"
+              >
+                See all safari questions
+              </Link>
+            </nav>
+          )}
 
           <FAQClient categories={categories} />
         </div>

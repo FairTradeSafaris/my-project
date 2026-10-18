@@ -10,12 +10,26 @@ type Zoho = { salesiq?: { floatwindow?: { visible?: (v: string) => void } } };
 
 export default function ChatLauncher({ scripts, autoLoad }: { scripts: ScriptLike[]; autoLoad: boolean }) {
   const [requested, setRequested] = useState(false);
+  // batch 17: counts "open the chat" requests (this button or a ChatButton)
+  const [openCount, setOpenCount] = useState(0);
   const pathname = usePathname() || "";
   const load = autoLoad || requested;
 
+  // batch 17: "Chat with us" buttons elsewhere on the page (components/ChatButton.tsx)
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const detail = (e as CustomEvent<{ handled?: boolean }>).detail;
+      if (detail) detail.handled = true;
+      setRequested(true);
+      setOpenCount((n) => n + 1);
+    };
+    window.addEventListener("fts:open-chat", onOpen);
+    return () => window.removeEventListener("fts:open-chat", onOpen);
+  }, []);
+
   // after a click, open the chat window once SalesIQ is ready
   useEffect(() => {
-    if (!requested) return;
+    if (!openCount) return;
     let tries = 0;
     const t = window.setInterval(() => {
       const z = (window as unknown as { $zoho?: Zoho }).$zoho;
@@ -26,7 +40,7 @@ export default function ChatLauncher({ scripts, autoLoad }: { scripts: ScriptLik
       } else if (++tries > 60) window.clearInterval(t);
     }, 250);
     return () => window.clearInterval(t);
-  }, [requested]);
+  }, [openCount]);
 
   if (/^\/(sign-in|sign-up|sso-callback)/.test(pathname)) return null;
   if (load) return <ScriptInjector scripts={scripts} />;
@@ -34,7 +48,10 @@ export default function ChatLauncher({ scripts, autoLoad }: { scripts: ScriptLik
   return (
     <button
       type="button"
-      onClick={() => setRequested(true)}
+      onClick={() => {
+        setRequested(true);
+        setOpenCount((n) => n + 1);
+      }}
       className="fixed bottom-[84px] right-4 z-[60] inline-flex items-center gap-2 rounded-full bg-[#5d4037] px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#4a3328] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d9b48a] md:bottom-6 md:right-6"
       aria-label="Chat with us"
     >

@@ -23,6 +23,12 @@ import {
   Camera,
 } from "lucide-react";
 import JsonLd from "@/components/JsonLd";
+// Batch 17: "Questions about <country>" section
+import { QuestionLinkList } from "@/components/safari-questions/QuestionParts";
+import {
+  destinationQuestionsProjection,
+  type SafariQuestionLink,
+} from "@/lib/safariQuestions";
 
 export const dynamic = "force-static";
 // was `revalidate = 0`, which contradicts force-static. Re-generate each
@@ -119,6 +125,7 @@ type DestinationDoc = {
     question: string;
     answer: PortableTextBlock[];
   }[];
+  safariQuestions?: SafariQuestionLink[];
   otherDestinations?: {
     _id: string;
     title: string;
@@ -284,6 +291,9 @@ const query = groq`
       alt
     }
   },
+
+  // Batch 17: Safari Questions that point at this destination
+  "safariQuestions": ${destinationQuestionsProjection},
 
   // FAQs
   "faqs": *[
@@ -787,6 +797,11 @@ export default async function DestinationPage({
                 FAQs
               </a>
             )}
+            {(data.safariQuestions?.length ?? 0) > 0 && (
+              <a href="#questions" className="hover:text-black transition">
+                Questions
+              </a>
+            )}
             {data.mapLocation && (
               <a href="#map" className="hover:text-black transition">
                 Map
@@ -1116,6 +1131,29 @@ export default async function DestinationPage({
                       />
                     </div>
                   ))}
+                </div>
+              </section>
+            )}
+            {/* Batch 17: SAFARI QUESTIONS about this destination (only when
+                there are any) */}
+            {(data.safariQuestions?.length ?? 0) > 0 && (
+              <section id="questions" className="py-10 px-6">
+                <div className="rounded-[28px] bg-[#fbf6ef] px-6 py-8 ring-1 ring-[#e6d8c8] sm:px-10 sm:py-10">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a0703f]">
+                    Safari questions
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-[#24170f]">
+                    Questions about {data.title}
+                  </h2>
+                  <div className="mt-6">
+                    <QuestionLinkList items={data.safariQuestions!} />
+                  </div>
+                  <Link
+                    href="/safari-questions/"
+                    className="mt-6 inline-block text-sm font-semibold text-[#5d4037] underline decoration-[#c9a57f] decoration-2 underline-offset-[6px] hover:text-[#24170f]"
+                  >
+                    All safari questions
+                  </Link>
                 </div>
               </section>
             )}

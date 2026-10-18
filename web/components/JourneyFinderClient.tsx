@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { client as sanityClient } from "@/lib/sanity";
 import JourneyCard from "@/components/JourneyCard";
 import type { Journey } from "./journey-finder/types";
+import { JOURNEY_FINDER_QUERY } from "./journey-finder/query";
 import { useDestinationOptions } from "@/hooks/filters/useCountryOptions";
 import JourneyFiltersSidebar from "@/components/JourneyFiltersSidebar";
 import { useUser } from "@clerk/nextjs";
@@ -13,17 +14,75 @@ import StickySafariCTA from "@/components/StickySafariCTA";
 // Batch 13: the ONE itinerary finder for everyone (it used to be split into
 // a "cookies accepted" and a "not accepted" copy). Filter logic and look are
 // the accepted version's. A future redesign can replace just the JSX below.
-export default function JourneyFinderClient() {
-  const [journeys, setJourneys] = useState<Journey[]>([]);
-  const [loading, setLoading] = useState(true);
+// Batch 16: the trip list is now rendered on the server (the page passes the
+// journeys in as initialJourneys), so the HTML already contains every trip.
+// The same GROQ query (journey-finder/query.ts) is used on the server; the
+// client only fetches if it was not given any journeys.
+
+// Filter options (regions, prices, durations) worked out from the journeys.
+function deriveOptions(data: Journey[]) {
+  const regionTitles = data
+    .map((j) => j.region?.title)
+    .filter((r): r is string => Boolean(r));
+  const priceVals = data
+    .map((j) => j.price)
+    .filter((p) => typeof p === "number") as unknown as number[];
+  const durationVals = data
+    .map((j) => parseInt(j.duration?.match(/\d+/)?.[0] ?? "0", 10))
+    .filter((d) => !isNaN(d));
+  const prices = [...new Set(priceVals)].sort((a, b) => a - b);
+  const durations = [...new Set(durationVals)].sort((a, b) => a - b);
+  return {
+    regions: [...new Set(regionTitles)],
+    prices,
+    durations,
+    priceRange:
+      prices.length > 0
+        ? ([prices[0], prices[prices.length - 1]] as [number, number])
+        : null,
+    durationRange:
+      durations.length > 0
+        ? ([durations[0], durations[durations.length - 1]] as [number, number])
+        : null,
+  };
+}
+
+// Reads the URL query (?q=, ?luxury=, ...) in its own small component inside
+// <Suspense>, so the rest of the finder (the trip list) can still be rendered
+// on the server. Renders nothing.
+function SearchParamsReader({
+  onChange,
+}: {
+  onChange: (p: URLSearchParams | null) => void;
+}) {
+  const sp = useSearchParams();
+  useEffect(() => {
+    onChange(sp);
+  }, [sp, onChange]);
+  return null;
+}
+
+export default function JourneyFinderClient({
+  initialJourneys,
+}: {
+  initialJourneys?: Journey[];
+}) {
+  const hasInitial = Array.isArray(initialJourneys);
+  const [initialOptions] = useState(() =>
+    deriveOptions(initialJourneys ?? []),
+  );
+  const [journeys, setJourneys] = useState<Journey[]>(initialJourneys ?? []);
+  const [loading, setLoading] = useState(!hasInitial);
 
   const [selectedRegion, setSelectedRegion] = useState("");
-  const [regions, setRegions] = useState<string[]>([]);
-  const [regionLoading, setRegionLoading] = useState(true);
+  const [regions, setRegions] = useState<string[]>(initialOptions.regions);
+  const [regionLoading, setRegionLoading] = useState(!hasInitial);
 
   const { destinations, loading: destinationsLoading } =
     useDestinationOptions(selectedRegion);
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(
+    null,
+  );
   const qParam = searchParams?.get("q") ?? "";
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   useEffect(() => {
@@ -47,13 +106,17 @@ export default function JourneyFinderClient() {
 
   const [selectedDuration, setSelectedDuration] = useState<
     [number, number] | null
-  >(null);
+  >(initialOptions.durationRange);
   const [selectedPrice, setSelectedPrice] = useState<[number, number] | null>(
-    null,
+    initialOptions.priceRange,
   );
 
-  const [availableDurations, setAvailableDurations] = useState<number[]>([]);
-  const [availablePrices, setAvailablePrices] = useState<number[]>([]);
+  const [availableDurations, setAvailableDurations] = useState<number[]>(
+    initialOptions.durations,
+  );
+  const [availablePrices, setAvailablePrices] = useState<number[]>(
+    initialOptions.prices,
+  );
 
   const [onlyShowWishlisted, setOnlyShowWishlisted] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -99,65 +162,20 @@ export default function JourneyFinderClient() {
   const { wishlistedMap } = useWishlistGrid(journeys, userId);
 
   useEffect(() => {
-    sanityClient
-      .fetch(
-        `*[_type == "journey" && (isActive != false)]{
-          _id,
-          title,
-          slug,
-          summary,
-          duration,
-          price,
-          star,
-          "starIcon": starIcon.asset->url,
-          region->{ title },
-          destinations[]->{ title, region },
-          "interests": travelStyleRefs[]->{ title, isTopInterest, category },
-          "heroUrl": heroImage.asset->url,
-          alt,
-          featuredOnHome
-        }`,
-      )
-      .then((data: Journey[]) => {
-        setJourneys(data);
-        setLoading(false);
-
-        const regionTitles = data
-          .map((j) => j.region?.title)
-          .filter((r): r is string => Boolean(r));
-        setRegions([...new Set(regionTitles)]);
-        setRegionLoading(false);
-
-        const priceVals = data
-          .map((j) => j.price)
-          .filter((p) => typeof p === "number") as number[];
-        const durationVals = data
-          .map((j) => parseInt(j.duration?.match(/\d+/)?.[0] ?? "0", 10))
-          .filter((d) => !isNaN(d));
-
-        const sortedPrices = [...new Set(priceVals)].sort((a, b) => a - b);
-        const sortedDurations = [...new Set(durationVals)].sort(
-          (a, b) => a - b,
-        );
-
-        setAvailablePrices(sortedPrices);
-        setAvailableDurations(sortedDurations);
-
-        if (sortedPrices.length > 0) {
-          setSelectedPrice([
-            sortedPrices[0],
-            sortedPrices[sortedPrices.length - 1],
-          ]);
-        }
-
-        if (sortedDurations.length > 0) {
-          setSelectedDuration([
-            sortedDurations[0],
-            sortedDurations[sortedDurations.length - 1],
-          ]);
-        }
-      });
-  }, []);
+    // Already rendered on the server with the journeys: nothing to fetch.
+    if (hasInitial) return;
+    sanityClient.fetch(JOURNEY_FINDER_QUERY).then((data: Journey[]) => {
+      const o = deriveOptions(data);
+      setJourneys(data);
+      setLoading(false);
+      setRegions(o.regions);
+      setRegionLoading(false);
+      setAvailablePrices(o.prices);
+      setAvailableDurations(o.durations);
+      if (o.priceRange) setSelectedPrice(o.priceRange);
+      if (o.durationRange) setSelectedDuration(o.durationRange);
+    });
+  }, [hasInitial]);
 
   const filteredJourneys = journeys.filter((j) => {
     if (!selectedDuration || !selectedPrice) return false;
@@ -245,6 +263,9 @@ export default function JourneyFinderClient() {
 
   return (
     <main className="min-h-screen bg-[#fdf8f3] text-black px-4 py-6">
+      <Suspense fallback={null}>
+        <SearchParamsReader onChange={setSearchParams} />
+      </Suspense>
       <div className="max-w-7xl mx-auto">
         {/* h2: the page (app/africansafariitineraries/page.tsx) already has
             the <h1> ("Safari. Reimagined."); same classes, so it looks the same */}

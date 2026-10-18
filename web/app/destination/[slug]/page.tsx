@@ -583,8 +583,10 @@ export default async function DestinationPage({
                     {/* Title + flag (flag sits beside the H1 instead of
                         floating next to the intro paragraph) */}
                     <div className="flex flex-wrap items-center gap-x-5 gap-y-3 mb-6">
+                      {/* Batch 16: H1 reads "[Country] Safaris" (country
+                          name from Studio + " Safaris") */}
                       <h1 className="text-6xl lg:text-8xl font-serif text-white leading-none">
-                        {data.title}
+                        {data.title} Safaris
                       </h1>
                       {flagSrc && (
                         <Image
@@ -667,7 +669,10 @@ export default async function DestinationPage({
                             </h4>
 
                             <p className="text-gray-600">
-                              Get trusted advice from East Africa safari
+                              {/* Batch 16: uses the country's Region from
+                                  Studio (was always "East Africa") */}
+                              Get trusted advice from{" "}
+                              {data.region?.trim() || "Africa"} safari
                               specialists.
                             </p>
                           </div>

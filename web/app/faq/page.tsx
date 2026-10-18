@@ -5,7 +5,6 @@ import { faqCategoriesQuery } from "@/lib/queries";
 import FAQClient from "../contact/FAQClient";
 import { getSanityMetadata } from "@/lib/getSanityMetadata";
 import type { Metadata } from "next";
-import Script from "next/script";
 
 import HeroController from "@/components/HeroController";
 import { groq } from "next-sanity";
@@ -69,6 +68,12 @@ function portableTextToPlainText(
     .trim();
 }
 
+// JSON for a <script> tag: escape "<" so text like "</script>" in an answer
+// can't end the tag early.
+function jsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 // -----------------------------
 // PAGE
 // -----------------------------
@@ -81,7 +86,8 @@ export default async function FAQPage() {
 
   const questions: FAQItem[] = categories
     .flatMap((cat) => cat.items ?? [])
-    .filter(Boolean);
+    // Google needs both a question and an answer for each FAQ entry
+    .filter((q) => Boolean(q?.question) && portableTextToPlainText(q.answer) !== "");
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -110,7 +116,7 @@ export default async function FAQPage() {
         "@type": "ListItem",
         position: 2,
         name: "FAQ",
-        item: "https://www.fairtradesafaris.com/faq",
+        item: "https://www.fairtradesafaris.com/faq/",
       },
     ],
   };
@@ -130,20 +136,19 @@ export default async function FAQPage() {
       />
 
       <main className="min-h-screen px-4 py-5 bg-[#f9f6f2]">
-        {/* Structured Data */}
-        <Script
-          id="faq-schema"
+        {/* Structured Data (batch 16: plain <script> tags so the JSON-LD is
+            in the HTML itself; next/script only added it after JS ran) */}
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqJsonLd),
+            __html: jsonLd(faqJsonLd),
           }}
         />
 
-        <Script
-          id="faq-breadcrumbs"
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(breadcrumbJsonLd),
+            __html: jsonLd(breadcrumbJsonLd),
           }}
         />
 

@@ -1,9 +1,14 @@
 import { client as sanity } from "@/lib/sanity";
 import type { Metadata } from "next";
 import JourneyPageWrapper from "../../components/JourneyPageWrapper";
-import Script from "next/script";
 import Link from "next/link";
 import HeroController from "@/components/HeroController";
+import { JOURNEY_FINDER_QUERY } from "@/components/journey-finder/query";
+import type { Journey } from "@/components/journey-finder/types";
+
+// Batch 16: the trip list is rendered on the server; refresh it (and the hero)
+// from Sanity at most once a minute, like the other content pages.
+export const revalidate = 60;
 
 type JourneyItem = {
   title: string;
@@ -18,7 +23,7 @@ type JourneyItem = {
     };
   };
 };
-const heroData = await sanity.fetch(`
+const HERO_QUERY = `
   *[_type == "hero" && customScope == "africansafariitineraries"][0]{
     headline,
     subheadline,
@@ -32,7 +37,7 @@ const heroData = await sanity.fetch(`
       mobileImage { asset-> }
     }
   }
-`);
+`;
 
 // 🔹 Rich SEO Metadata with AI-friendly Schema
 export async function generateMetadata(): Promise<Metadata> {
@@ -158,6 +163,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // 🔹 Main Component
 export default async function JourneyPage() {
+  // Batch 16: hero and journeys fetched here (the hero used to be fetched once
+  // at module load); the journeys go to the finder so the HTML has every trip.
+  const [heroData, journeys] = await Promise.all([
+    sanity.fetch(HERO_QUERY),
+    sanity.fetch<Journey[]>(JOURNEY_FINDER_QUERY),
+  ]);
+
   // Breadcrumb structured data
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -181,10 +193,12 @@ export default async function JourneyPage() {
   return (
     <>
       {/* Inject Breadcrumb structured data for SEO */}
-      <Script
-        id="journey-breadcrumbs"
+      {/* Batch 16: plain <script> so the JSON-LD is in the HTML itself */}
+      <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c"),
+        }}
       />
       <HeroController heroData={heroData} headlineAs="p" />
       <div className="bg-[#f9f7f4] py-10 sm:py-8 px-5 sm:px-10 lg:px-24 text-gray-800 font-poppins">
@@ -241,7 +255,7 @@ export default async function JourneyPage() {
         </div>
       </div>
 
-      <JourneyPageWrapper />
+      <JourneyPageWrapper initialJourneys={journeys ?? []} />
     </>
   );
 }

@@ -19,6 +19,15 @@ const builder = imageUrlBuilder(client);
 const urlFor = (source: { asset: { _ref: string } }) =>
   builder.image(source).width(800).url();
 
+// Batch 16: cut text to <= max characters on a whole word (meta descriptions).
+function clipWords(text: string, max = 155): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  const end = cut.lastIndexOf(" ");
+  return `${(end > 0 ? cut.slice(0, end) : cut).replace(/[\s,;:.\-–—]+$/, "")}…`;
+}
+
 // -----------------------------
 // Generate Metadata
 // -----------------------------
@@ -47,11 +56,13 @@ export async function generateMetadata({
 
   if (!data) notFound();
 
-  const descriptionText =
+  // Batch 16: first paragraph of the bio, cut to <= 155 characters on a
+  // whole word (it used to stop mid-word at 200).
+  const descriptionText = clipWords(
     data.description?.[0]?.children
       .map((c) => ("text" in c ? c.text : ""))
-      .join(" ")
-      .slice(0, 200) || "";
+      .join(" ") || "",
+  );
 
   const imageUrl = data.image?.url;
 

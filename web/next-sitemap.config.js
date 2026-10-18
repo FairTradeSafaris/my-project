@@ -49,6 +49,8 @@ module.exports = {
     "/books",
     "/project-portal",
     "/robots.txt",
+    // Batch 16: API routes are not pages (e.g. /api/ambassador-config/)
+    "/api/*",
     // Batch 3a: destination pages are listed by additionalPaths
     // (scripts/get-destination-urls.js, with trailing slash + lastmod). The
     // auto-discovered copies have no trailing slash, so every country was in

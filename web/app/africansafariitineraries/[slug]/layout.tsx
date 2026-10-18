@@ -75,7 +75,11 @@ export async function generateMetadata({
   // Unknown itinerary -> real 404 (e.g. /africansafariitineraries/null/)
   if (!data) notFound();
 
-  const title = data.metaTitle || `${data.title} | Fair Trade Safaris`;
+  // Batch 16: add the brand only when the whole title stays within 60
+  // characters (Google cuts longer titles off in results).
+  const branded = `${data.title} | Fair Trade Safaris`;
+  const title =
+    data.metaTitle || (branded.length <= 60 ? branded : data.title);
   const description =
     data.metaDescription || data.aiSummary || buildJourneyDescription(data);
   // 1200x630 crop from Sanity's CDN, matching the declared og:image size

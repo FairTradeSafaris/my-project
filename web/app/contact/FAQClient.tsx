@@ -172,9 +172,11 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
                   }}
                   className="bg-white rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-lg transition-all duration-300"
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">
+                  {/* Batch 16: category = h2, each question = h3 (same classes,
+                      so the look is unchanged) */}
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">
                     {cat.title}
-                  </h3>
+                  </h2>
 
                   <ul className="space-y-4">
                     {cat.items.map((q) => {
@@ -182,21 +184,30 @@ export default function FAQClient({ categories }: { categories: FAQCat[] }) {
 
                       return (
                         <li key={q._id}>
-                          <button
-                            onClick={() => toggleQuestion(q._id)}
-                            className="w-full flex justify-between items-start text-left text-sm text-gray-800 hover:text-black transition"
-                          >
-                            <span className="leading-snug">{q.question}</span>
-                            <span
-                              className={`text-lg transition-transform duration-300 ${
-                                isOpen ? "rotate-45" : ""
-                              }`}
+                          <h3 className="text-sm font-normal">
+                            <button
+                              type="button"
+                              onClick={() => toggleQuestion(q._id)}
+                              aria-expanded={isOpen}
+                              aria-controls={`faq-answer-${q._id}`}
+                              className="w-full flex justify-between items-start text-left text-sm text-gray-800 hover:text-black transition"
                             >
-                              +
-                            </span>
-                          </button>
+                              <span className="leading-snug">{q.question}</span>
+                              <span
+                                aria-hidden="true"
+                                className={`text-lg transition-transform duration-300 ${
+                                  isOpen ? "rotate-45" : ""
+                                }`}
+                              >
+                                +
+                              </span>
+                            </button>
+                          </h3>
 
+                          {/* The answer is always in the HTML (only hidden by
+                              height), so search engines can read it */}
                           <div
+                            id={`faq-answer-${q._id}`}
                             className={`overflow-hidden transition-all duration-300 ${
                               isOpen
                                 ? "max-h-96 mt-4 opacity-100"

@@ -3,6 +3,7 @@
 import Image from "@/components/SanityImage";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import CookieSettingsLink from "@/components/consent/CookieSettingsLink"; // batch 13
 import { motion } from "framer-motion";
 import { client, urlFor } from "@/lib/sanity";
 import type { SanityImageAssetDocument } from "@sanity/client";
@@ -372,12 +373,15 @@ export default function SafariFactFooter({
       {/* Bottom bar */}
       <div className="relative z-10 border-t border-[#d2c2a3] bg-[#eadfca]/60 px-6 py-3 text-xs backdrop-blur-sm">
         <div className="mx-auto flex max-w-[1500px] flex-col items-center justify-between gap-2 sm:px-2 md:flex-row lg:px-6">
-          <Link
-            href="/privacy/"
-            className="underline transition-colors hover:text-black"
-          >
-            Privacy Policy
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacy/"
+              className="underline transition-colors hover:text-black"
+            >
+              Privacy Policy
+            </Link>
+            <CookieSettingsLink className="underline transition-colors hover:text-black" />
+          </div>
 
           <p className="opacity-80">
             © {new Date().getFullYear()} Fair Trade Safaris. All rights

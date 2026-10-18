@@ -7,7 +7,6 @@ import { Search, X } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import CustomUserMenu from "@/components/CustomUserMenu";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 type MenuItem = { title: string; href: string };
 type NavSection = { heading?: string; links: MenuItem[] };
@@ -53,7 +52,7 @@ function BadgeVisual({ size }: { size: number }) {
   );
 }
 
-// ✅ NEW: Wrapper to delay Clerk usage until after cookieConsent
+// Account section of the mobile menu (Clerk)
 function ClerkMenuSection({ onClose }: { onClose: () => void }) {
   return (
     <>
@@ -91,22 +90,6 @@ export default function MobileMenuSheet({
   promoCard,
 }: Props) {
   const pathname = usePathname();
-  const [hasConsent, setHasConsent] = useState(false);
-
-  // ✅ Cookie Consent Tracker
-  useEffect(() => {
-    const stored = localStorage.getItem("cookieConsent");
-    if (stored === "accepted") setHasConsent(true);
-
-    const handler = (e: StorageEvent) => {
-      if (e.key === "cookieConsent" && e.newValue === "accepted") {
-        setHasConsent(true);
-      }
-    };
-
-    window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
-  }, []);
 
   return (
     <>
@@ -166,8 +149,8 @@ export default function MobileMenuSheet({
             <span className="text-neutral-600 ">Search journeys</span>
           </Link>
 
-          {/* ✅ Render Clerk stuff only if consent accepted */}
-          {hasConsent && <ClerkMenuSection onClose={onClose} />}
+          {/* Account links (always on since batch 13) */}
+          <ClerkMenuSection onClose={onClose} />
         </div>
 
         {/* Scroll area */}

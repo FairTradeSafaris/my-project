@@ -21,7 +21,6 @@ type JourneyLite = {
 };
 
 export function useWishlist(journeyId?: string) {
-  const [hasConsent, setHasConsent] = useState(false);
   const [isClientReady, setIsClientReady] = useState(false);
 
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
@@ -30,7 +29,8 @@ export function useWishlist(journeyId?: string) {
   const [loading, setLoading] = useState(false);
 
   const { user } = useUser(); // ✅ Always call this unconditionally
-  const userId = isClientReady && hasConsent ? (user?.id ?? null) : null;
+  // Batch 13: depends on being signed in, not on cookie consent
+  const userId = isClientReady ? (user?.id ?? null) : null;
   const storageKey = userId ? `wishlist_user_${userId}` : null;
 
   useEffect(() => {
@@ -38,15 +38,6 @@ export function useWishlist(journeyId?: string) {
       setIsClientReady(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (isClientReady) {
-      const consent = localStorage.getItem("cookieConsent");
-      if (consent === "accepted") {
-        setHasConsent(true);
-      }
-    }
-  }, [isClientReady]);
 
   const fetchWishlist = useCallback(async () => {
     if (!userId || !storageKey) return;
@@ -75,10 +66,10 @@ export function useWishlist(journeyId?: string) {
   }, [userId, journeyId, storageKey]);
 
   useEffect(() => {
-    if (hasConsent && userId) {
+    if (userId) {
       fetchWishlist();
     }
-  }, [hasConsent, userId, fetchWishlist]);
+  }, [userId, fetchWishlist]);
 
   const toggleWishlist = async () => {
     if (!userId || !journeyId || !storageKey) return;
@@ -120,7 +111,7 @@ export function useWishlist(journeyId?: string) {
     }
   };
 
-  if (!isClientReady || !hasConsent || !userId) {
+  if (!isClientReady || !userId) {
     return {
       wishlistIds: [],
       wishlistJourneys: [],

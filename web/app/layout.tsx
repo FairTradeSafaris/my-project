@@ -8,15 +8,17 @@ import type { ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
 import { client as sanity } from "@/lib/sanity";
 
-// ✅ Use on-demand Clerk loader instead
-import ClerkOnDemand from "@/components/ClerkOnDemand";
-
-import ClerkConsentGate from "@/components/ClerkConsentGate";
+// Batch 13: Clerk is always on (login cookies are strictly necessary);
+// only analytics/marketing wait for cookie consent (ConsentProvider).
+import AuthProvider from "@/components/AuthProvider";
+import { ConsentProvider } from "@/components/consent/ConsentProvider";
+import CookieBanner from "@/components/consent/CookieBanner";
+import ChunkErrorReload from "@/components/consent/ChunkErrorReload";
+import ServiceWorkerRegister from "@/components/consent/ServiceWorkerRegister";
 import ClientLayout from "@/components/ClientLayout";
 import GlobalScriptWrapper from "@/components/GlobalScriptWrapper";
 import GlobalBookingPortal from "@/components/GlobalBookingPortal";
 import LeadMagnetGate from "@/components/LeadMagnetGate";
-import CookieConsent from "@/components/CookieConsent";
 import ReferralTracker from "@/components/ReferralTracker"; // batch 12
 
 import { headers } from "next/headers";
@@ -137,6 +139,9 @@ export default async function RootLayout({
   // Batch 4: Sanity images are now loaded from cdn.sanity.io directly (hero
   // included), so open that connection early.
   preconnect("https://cdn.sanity.io");
+  // Batch 13: correct Sanity API host (the old Sanity-managed preconnect
+  // had a typo: jw917r14)
+  preconnect("https://jw971r14.apicdn.sanity.io");
   const headersList = await headers();
   const pathname = headersList.get("x-invoke-path") || "";
   const isSlugPage =
@@ -156,7 +161,8 @@ export default async function RootLayout({
           />
         )}
 
-        <ClerkOnDemand>
+        <AuthProvider>
+          <ConsentProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -168,7 +174,8 @@ export default async function RootLayout({
                 With it, notFound() was caught inside the boundary after the
                 shell was sent, so missing pages returned HTTP 200 (soft 404).
                 Only the client-side widgets keep their Suspense boundary. */}
-            <ClerkConsentGate>
+            <ChunkErrorReload />
+            <ServiceWorkerRegister />
               {isSlugPage ? (
                 children
               ) : (
@@ -180,13 +187,13 @@ export default async function RootLayout({
                 <GlobalBookingPortal />
                 <LeadMagnetGate />
               </Suspense>
-            </ClerkConsentGate>
             <Suspense fallback={null}>
-              <CookieConsent />
+              <CookieBanner />
               <ReferralTracker />
             </Suspense>
           </ThemeProvider>
-        </ClerkOnDemand>
+          </ConsentProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -98,21 +98,6 @@ export default function NavbarDesktop({
   const scrolled = useScrolled(40);
   const screenWidth = useBreakpoint();
   const pathname = usePathname();
-  const [hasConsent, setHasConsent] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("cookieConsent");
-    if (stored === "accepted") setHasConsent(true);
-
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "cookieConsent" && e.newValue === "accepted") {
-        setHasConsent(true);
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
 
   const hideBadge = pathname?.startsWith("/africansafariitineraries") ?? false;
 
@@ -224,7 +209,8 @@ export default function NavbarDesktop({
               >
                 <Search size={20} />
               </Link>
-              {hasConsent && (
+              {/* account (always on since batch 13) */}
+              {(
                 <>
                   <SignedIn>
                     <CustomUserMenu />

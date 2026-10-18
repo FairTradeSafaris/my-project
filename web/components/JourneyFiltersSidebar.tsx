@@ -50,6 +50,8 @@ type Props = {
 
   onlyShowWishlisted: boolean;
   onToggleWishlisted: () => void;
+  /** batch 13: the saved-journeys toggle only works when signed in */
+  showWishlistToggle?: boolean;
 
   isMobile?: boolean;
   onCloseMobile?: () => void;
@@ -97,6 +99,7 @@ export default function JourneyFiltersSidebar({
 
   onlyShowWishlisted,
   onToggleWishlisted,
+  showWishlistToggle = true,
 
   isMobile = false,
   onCloseMobile,
@@ -124,7 +127,8 @@ export default function JourneyFiltersSidebar({
 
       {/* Scrollable Filter Content */}
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-6 space-y-6">
-        {/* ❤️ Saved Journeys Toggle */}
+        {/* ❤️ Saved Journeys Toggle (signed-in visitors only) */}
+        {showWishlistToggle && (
         <div className="flex items-center gap-2 text-sm border-b pb-4">
           <input
             id="saved-only"
@@ -143,6 +147,7 @@ export default function JourneyFiltersSidebar({
             </span>
           </label>
         </div>
+        )}
 
         <RegionFilter
           {...{

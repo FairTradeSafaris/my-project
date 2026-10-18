@@ -64,21 +64,6 @@ export default function NavbarMobile() {
   const [featureCards, setFeatureCards] = useState<FeatureCard[]>([]);
   const [promoCard, setPromoCard] = useState<FeatureCard | null>(null);
   const [ready, setReady] = useState(false);
-  const [hasConsent, setHasConsent] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("cookieConsent");
-    if (stored === "accepted") setHasConsent(true);
-
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "cookieConsent" && e.newValue === "accepted") {
-        setHasConsent(true);
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -178,7 +163,8 @@ export default function NavbarMobile() {
               </Link>
             </div>
 
-            {hasConsent && (
+            {/* account (always on since batch 13) */}
+            {(
               <>
                 <SignedIn>
                   <div className="w-10 h-10 flex items-center justify-center">

@@ -13,6 +13,12 @@ const withBundleAnalyzer = withBundleAnalyzerInit({
   enabled: false,
 });
 
+// Batch 13: one version id per build/deploy, used in service-worker cache
+// names so old cached pages are dropped after each deploy.
+const SW_VERSION = (
+  process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)
+).slice(0, 10);
+
 const baseConfig: NextConfig = {
   reactStrictMode: true,
   trailingSlash: true,
@@ -47,6 +53,7 @@ const baseConfig: NextConfig = {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_SW_VERSION: SW_VERSION, // batch 13 (service worker caches)
   },
 
   modularizeImports: {
@@ -221,31 +228,53 @@ const baseConfig: NextConfig = {
   },
 };
 
-// PWA caching
+// PWA caching (batch 13)
+// - Pages: always from the network when there is one (even if slow). The
+//   saved copy is used only when the device is offline, then /offline.html.
+//   (Before: a 3-second timeout served copies up to 7 days old on slow
+//   connections, so visitors saw an old version of the site.)
+// - /_next/static: file names change with every deploy, so a cached copy can
+//   never be stale; cache-first keeps the site fast on poor signal.
+// - Cache names carry the build version; worker/index.js deletes old ones.
+// NOTE: urlPattern functions are copied into sw.js, so they must not use
+// variables from this file.
 const runtimeCaching = [
   {
     urlPattern: ({ request }: { request: Request }) =>
       request.mode === "navigate",
     handler: "NetworkFirst",
     options: {
-      cacheName: "html-pages",
-      networkTimeoutSeconds: 3,
+      cacheName: `fts-pages-${SW_VERSION}`,
       expiration: {
-        maxEntries: 80,
-        maxAgeSeconds: 7 * 24 * 60 * 60,
+        maxEntries: 60,
+        maxAgeSeconds: 14 * 24 * 60 * 60,
       },
       matchOptions: { ignoreVary: true },
     },
   },
   {
+    urlPattern: ({ url }: { url: URL }) =>
+      url.origin === self.location.origin &&
+      url.pathname.startsWith("/_next/static/"),
+    handler: "CacheFirst",
+    options: {
+      cacheName: "fts-next-static",
+      expiration: {
+        maxEntries: 400,
+        maxAgeSeconds: 60 * 24 * 60 * 60,
+      },
+    },
+  },
+  {
     urlPattern: ({ url, request }: { url: URL; request: Request }) =>
       url.origin === self.location.origin &&
+      !url.pathname.startsWith("/_next/static/") &&
       ["script", "style", "worker"].includes(request.destination),
-    handler: "StaleWhileRevalidate",
+    handler: "NetworkFirst",
     options: {
-      cacheName: "static-assets",
+      cacheName: `fts-assets-${SW_VERSION}`,
       expiration: {
-        maxEntries: 200,
+        maxEntries: 60,
         maxAgeSeconds: 30 * 24 * 60 * 60,
       },
     },
@@ -255,7 +284,7 @@ const runtimeCaching = [
       url.origin === self.location.origin && request.destination === "image",
     handler: "StaleWhileRevalidate",
     options: {
-      cacheName: "images",
+      cacheName: "fts-images",
       expiration: {
         maxEntries: 200,
         maxAgeSeconds: 30 * 24 * 60 * 60,
@@ -264,15 +293,28 @@ const runtimeCaching = [
   },
 ];
 
-const finalConfig = withPWA({
+// (typed loosely: publicExcludes / RegExp buildExcludes are valid next-pwa
+// options that its type definitions are missing)
+const pwaOptions = {
   dest: "public",
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
   runtimeCaching,
   fallbacks: {
-    html: "/offline.html",
+    // next-pwa expects "document" (the old "html" key was ignored, so the
+    // offline page never showed)
+    document: "/offline.html",
   },
-})(baseConfig);
+  // Batch 13: don't pre-download the whole site (was ~60 MB of images and
+  // code per visitor, bad on mobile data). Pages and files are saved as
+  // they are visited; only the offline page is stored up front.
+  publicExcludes: ["!**/*"],
+  buildExcludes: [/.*/],
+  additionalManifestEntries: [{ url: "/offline.html", revision: SW_VERSION }],
+};
+const finalConfig = withPWA(
+  pwaOptions as unknown as Parameters<typeof withPWA>[0],
+)(baseConfig);
 
 export default withBundleAnalyzer(finalConfig);

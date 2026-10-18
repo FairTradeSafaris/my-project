@@ -1,19 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import JourneyCardPublic from "./JourneyCardPublic";
+// Batch 13: one card for everyone (the wishlist heart sends signed-out
+// visitors to sign in, as before). The no-consent copy was removed.
 import JourneyCardWithAuth from "./JourneyCardWithAuth";
 import type { JourneyCardProps } from "@/types/journey";
 
 export default function JourneyCardInner(props: JourneyCardProps) {
-  const [hasConsent, setHasConsent] = useState(false);
-
-  useEffect(() => {
-    const consent = localStorage.getItem("cookieConsent");
-    setHasConsent(consent === "accepted");
-  }, []);
-
-  if (!hasConsent) return <JourneyCardPublic {...props} />;
-
   return <JourneyCardWithAuth {...props} />;
 }

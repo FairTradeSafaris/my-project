@@ -15,28 +15,9 @@ export const CLOSE_SEARCH_SHEET = "fts:close-search-sheet";
 export const OPEN_BOOK_SHEET = "fts:open-book-sheet";
 
 // -------------------------------
-// ✅ Parent: Handles Cookie Consent
+// Batch 13: shown for everyone (it used to wait for cookie consent)
 // -------------------------------
 export default function BottomTabBar() {
-  const [hasConsent, setHasConsent] = useState(false);
-
-  // Check localStorage for consent
-  useEffect(() => {
-    const stored = localStorage.getItem("cookieConsent");
-    if (stored === "accepted") setHasConsent(true);
-
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "cookieConsent" && e.newValue === "accepted") {
-        setHasConsent(true);
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
-
-  if (!hasConsent) return null; // Don’t render until consent is given
-
   return <BottomTabBarWithUser />;
 }
 

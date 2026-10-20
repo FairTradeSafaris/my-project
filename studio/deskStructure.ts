@@ -134,6 +134,11 @@ export const myStructure = (S: StructureBuilder) =>
         .title('🤝 Ambassador Accounts')
         .child(S.documentTypeList('ambassadorAccount').title('Ambassador Accounts')),
 
+      // 🤝 Ambassador Link Visits (batch 26): monthly ?ref= visit counts, written by the website
+      S.listItem()
+        .title('🤝 Ambassador Link Visits')
+        .child(S.documentTypeList('ambassadorClickCount').title('Ambassador Link Visits')),
+
       // 📬 Contact Us
       S.listItem()
         .title('📬 Contact Us')

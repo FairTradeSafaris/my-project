@@ -9,6 +9,7 @@ import Link from "next/link";
 import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import CountryTabs from "@/components/CountryTabs";
+import { useBookingUrl } from "@/lib/bookingLink"; // batch 26
 
 // ----------------------------------------------------------------------------
 // Constants
@@ -132,6 +133,7 @@ export default function DestinationClient({
   // panels / sheets
   const [aboutOpen, setAboutOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const bookingSrc = useBookingUrl("https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"); // batch 26
   const [galleryOpen, setGalleryOpen] = useState(false);
 
   // selection (index-based to make autoplay robust)
@@ -779,7 +781,7 @@ export default function DestinationClient({
             </div>
 
             <iframe
-              src="https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"
+              src={bookingSrc}
               className="w-full h-[calc(100%-56px)]"
               style={{ border: "none" }}
               allowFullScreen

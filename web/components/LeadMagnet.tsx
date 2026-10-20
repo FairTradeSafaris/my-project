@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Gift, X } from "lucide-react";
 import Image from "@/components/SanityImage";
 import { authFetch } from "@/lib/authFetch";
+import { useBookingUrl } from "@/lib/bookingLink"; // batch 26
 
 type Claim = { bookTitle: string; bookUrl: string };
 
@@ -18,6 +19,7 @@ export default function LeadMagnet() {
 
   const [showModal, setShowModal] = useState(false);
   const [iframeReady, setIframeReady] = useState(false);
+  const bookingSrc = useBookingUrl("https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"); // batch 26
 
   const router = useRouter();
   const pulseTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -167,7 +169,7 @@ export default function LeadMagnet() {
               </div>
             )}
             <iframe
-              src="https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"
+              src={bookingSrc}
               className="w-full h-[calc(100%-80px)]"
               style={{ border: "none" }}
               allowFullScreen

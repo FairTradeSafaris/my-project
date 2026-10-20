@@ -1,4 +1,4 @@
-// lib/server/zohoLeads.ts (batch 12)
+// lib/server/zohoLeads.ts (batch 12; batch 26: getToken exported for read-only searches)
 // Create a Zoho CRM Lead with the existing refresh-token env vars.
 // Never throws. If Zoho rejects an optional field (e.g. a picklist value or a
 // custom field that doesn't exist yet), it retries once with only the safe
@@ -7,7 +7,7 @@
 let cachedToken: string | null = null;
 let tokenExpiresAt = 0;
 
-async function getToken(force = false): Promise<string | null> {
+export async function getToken(force = false): Promise<string | null> {
   if (!force && cachedToken && Date.now() < tokenExpiresAt) return cachedToken;
   const { ZOHO_REFRESH_TOKEN, ZOHO_CLIENT_ID, ZOHO_CLIENT_SECRET } = process.env;
   if (!ZOHO_REFRESH_TOKEN || !ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {

@@ -4,10 +4,12 @@ import Image from "@/components/SanityImage";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { OPEN_BOOK_SHEET } from "./BottomTabBar";
+import { useBookingUrl } from "@/lib/bookingLink"; // batch 26
 
 export default function GlobalBookingPortal() {
   const [open, setOpen] = useState(false);
   const [iframeReady, setIframeReady] = useState(false);
+  const bookingSrc = useBookingUrl("https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"); // batch 26
 
   // open on custom event
   useEffect(() => {
@@ -89,7 +91,7 @@ export default function GlobalBookingPortal() {
 
         {/* Zoho Bookings */}
         <iframe
-          src="https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris"
+          src={bookingSrc}
           className="w-full h-[calc(100%-80px)]"
           style={{ border: "none" }}
           allowFullScreen

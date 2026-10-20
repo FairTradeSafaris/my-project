@@ -1,8 +1,8 @@
 "use client";
-// components/ambassador/QrCode.tsx (batch 24)
+// components/ambassador/QrCode.tsx (batch 24; batch 26: Share QR code on phones)
 // Draws a QR code for the ambassador's link in the browser (no outside
 // service), with a "Download QR code" button that saves a crisp PNG.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import qrcodegen from "@/lib/qrcodegen";
 import { homeButtonOutline } from "@/components/home/homeStyles";
 
@@ -19,7 +19,7 @@ function modules(text: string): boolean[][] {
   return rows;
 }
 
-export default function QrCode({ value, fileName }: { value: string; fileName: string }) {
+export default function QrCode({ value, fileName, shareText }: { value: string; fileName: string; shareText?: string }) {
   const grid = useMemo(() => modules(value), [value]);
   const [note, setNote] = useState("");
   const border = 4;
@@ -34,21 +34,54 @@ export default function QrCode({ value, fileName }: { value: string; fileName: s
     return d;
   }, [grid]);
 
+  // batch 26: "Share QR code" only where the phone can share image files.
+  const [canShareFile, setCanShareFile] = useState(false);
+  useEffect(() => {
+    try {
+      const probe = new File([new Blob(["x"], { type: "image/png" })], "qr.png", { type: "image/png" });
+      setCanShareFile(typeof navigator.share === "function" && !!navigator.canShare?.({ files: [probe] }));
+    } catch {
+      setCanShareFile(false);
+    }
+  }, []);
+
+  const drawCanvas = (): HTMLCanvasElement | null => {
+    const scale = 16;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size * scale;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = INK;
+    grid.forEach((row, y) =>
+      row.forEach((on, x) => {
+        if (on) ctx.fillRect((x + border) * scale, (y + border) * scale, scale, scale);
+      }),
+    );
+    return canvas;
+  };
+
+  const share = async () => {
+    try {
+      const canvas = drawCanvas();
+      if (!canvas) return;
+      const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
+      if (!blob) throw new Error("no image");
+      const file = new File([blob], fileName, { type: "image/png" });
+      if (!navigator.canShare?.({ files: [file] })) throw new Error("cannot share");
+      await navigator.share({ files: [file], title: "Fair Trade Safaris", text: shareText || value });
+      setNote("");
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return; // they closed the share menu
+      setNote("Sharing didn't work on this device. Please use Download QR code instead.");
+    }
+  };
+
   const download = () => {
     try {
-      const scale = 16;
-      const canvas = document.createElement("canvas");
-      canvas.width = canvas.height = size * scale;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = INK;
-      grid.forEach((row, y) =>
-        row.forEach((on, x) => {
-          if (on) ctx.fillRect((x + border) * scale, (y + border) * scale, scale, scale);
-        }),
-      );
+      const canvas = drawCanvas();
+      if (!canvas) return;
       const a = document.createElement("a");
       a.href = canvas.toDataURL("image/png");
       a.download = fileName;
@@ -76,9 +109,16 @@ export default function QrCode({ value, fileName }: { value: string; fileName: s
           <path d={path} fill={INK} />
         </svg>
       </div>
-      <button type="button" onClick={download} className={homeButtonOutline}>
-        Download QR code
-      </button>
+      <div className="flex flex-wrap justify-center gap-3">
+        {canShareFile && (
+          <button type="button" onClick={share} className={homeButtonOutline}>
+            Share QR code
+          </button>
+        )}
+        <button type="button" onClick={download} className={homeButtonOutline}>
+          Download QR code
+        </button>
+      </div>
       <p aria-live="polite" className="min-h-[1.5rem] text-[15px] text-[#5c4a3d]">
         {note}
       </p>

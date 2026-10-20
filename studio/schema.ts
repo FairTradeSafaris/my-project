@@ -70,6 +70,7 @@ import ctaCard from './schemas/objects/ctaCard'
 import ambassadorSettings from './schemas/ambassadorSettings' // batch 12 (new type only)
 import safariQuestion from './schemas/safariQuestion' // batch 17 (new type only)
 import ambassadorAccount from './schemas/ambassadorAccount' // batch 24 (new type only)
+import ambassadorClickCount from './schemas/ambassadorClickCount' // batch 26 (new type only)
 
 const schemaTypes = [
   blog,
@@ -141,6 +142,7 @@ const schemaTypes = [
   ambassadorSettings,
   safariQuestion,
   ambassadorAccount,
+  ambassadorClickCount,
 ]
 
 export default schemaTypes

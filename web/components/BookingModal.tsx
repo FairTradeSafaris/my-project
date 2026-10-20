@@ -1,4 +1,5 @@
 "use client";
+import { useBookingUrl } from "@/lib/bookingLink"; // batch 26
 
 export default function BookingModal({
   open,
@@ -13,6 +14,7 @@ export default function BookingModal({
   cardBorder?: string;
   src?: string;
 }) {
+  const bookingSrc = useBookingUrl(src); // batch 26: prefill referral code
   if (!open) return null;
 
   return (
@@ -38,7 +40,7 @@ export default function BookingModal({
         </div>
 
         <iframe
-          src={src}
+          src={bookingSrc}
           className="w-full h-[calc(100%-56px)]"
           style={{ border: "none" }}
           allowFullScreen

@@ -7,6 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { AmbassadorMe } from "@/lib/ambassadorTypes";
 import QrCode from "./QrCode";
+import ReferralsCard from "./ReferralsCard"; // batch 26
 import { FTS_VIDEO } from "@/components/video/ftsVideo"; // batch 25
 import {
   homeBody,
@@ -163,11 +164,18 @@ export default function AmbassadorDashboard({
                 Your QR code
               </h3>
               <p className={`mt-2 ${homeBody}`}>
-                Print it on a card or add it to a talk or slide. Scanning it opens your personal link.
+                Print it on a card or add it to a talk or slide. Scanning it opens your personal link. On most phones you can also share it straight into WhatsApp.
               </p>
-              <div className="mt-6">{link && <QrCode value={link} fileName={`fair-trade-safaris-${code}.png`} />}</div>
+              <div className="mt-6">{link && <QrCode
+                    value={link}
+                    fileName={`fair-trade-safaris-${code}.png`}
+                    shareText={`Scan to plan a safari with Fair Trade Safaris (my code ${code}): ${link}`}
+                  />}</div>
             </section>
           </div>
+
+          {/* batch 26: clicks and referrals */}
+          <ReferralsCard offline={offline} />
 
           {/* Share */}
           <section className={`${homeCard} p-6 md:p-8`} aria-labelledby="amb-share">
@@ -253,7 +261,7 @@ export default function AmbassadorDashboard({
           </li>
         </ul>
         <p className={`mt-6 ${homeBody}`}>
-          Your referrals and earnings will appear on this page in a future update. Questions in the meantime?{" "}
+          Your earnings will appear on this page in a future update. Questions in the meantime?{" "}
           <Link href="/contact/" className={homeTextLink}>
             Contact us
           </Link>

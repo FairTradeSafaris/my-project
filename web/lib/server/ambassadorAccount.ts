@@ -1,10 +1,11 @@
-// lib/server/ambassadorAccount.ts (batch 24)
+// lib/server/ambassadorAccount.ts (batch 24; batch 26: swappable approval source)
 // Server-only helpers for the ambassador dashboard. An "Ambassador Account"
 // (Sanity, new type) links a referral code to a Clerk user ID. Nothing else
 // about the person is stored in Sanity.
 import { serverClient } from "@/lib/sanity.server";
 import { cleanRefCode } from "@/lib/referral";
 import { getAmbassadorSettings, makeFill } from "@/lib/ambassadorSettings";
+import { isLinkApproved } from "@/lib/server/ambassadorApproval"; // batch 26
 import type { AmbassadorMe, AmbassadorProgramme, AmbassadorState } from "@/lib/ambassadorTypes";
 
 export const SITE_URL = "https://www.fairtradesafaris.com";
@@ -61,7 +62,9 @@ export async function programme(): Promise<AmbassadorProgramme> {
 
 export async function meFor(userId: string): Promise<AmbassadorMe> {
   const [acc, prog] = await Promise.all([accountForUser(userId), programme()]);
-  const state = stateOf(acc);
+  // batch 26: approval can also come from Zoho (ZOHO_AMBASSADOR_APPROVAL=1).
+  const approved = acc ? await isLinkApproved(acc, userId) : false;
+  const state = stateOf(acc ? { ...acc, linkApproved: approved } : null);
   const code = cleanRefCode(acc?.code);
   const out: AmbassadorMe = { state, programme: prog };
   if (acc && code) out.code = code;

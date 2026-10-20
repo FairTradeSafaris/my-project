@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ContactForm from "@/components/ContactForm";
+import { useBookingUrl } from "@/lib/bookingLink"; // batch 26
 import {
   RiCalendarLine,
   RiPhoneLine,
@@ -74,6 +75,7 @@ export default function ContactPageClient({
   const bookingLink =
     contactInfo?.bookingLink ||
     "https://bookings.fairtradesafaris.com/portal-embed#/fairtradesafaris";
+  const bookingSrc = useBookingUrl(bookingLink); // batch 26
 
   return (
     <main
@@ -239,7 +241,7 @@ export default function ContactPageClient({
             </div>
 
             <iframe
-              src={bookingLink}
+              src={bookingSrc}
               title="Book a Discovery Call"
               className="w-full h-[calc(100%-56px)]"
               style={{ border: "none" }}

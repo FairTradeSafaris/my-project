@@ -262,6 +262,7 @@ const ambassadorSettings = {
     {name: 'faq', title: 'FAQs & terms'},
     {name: 'strip', title: 'Ambassadors page strip'},
     {name: 'seo', title: 'SEO'},
+    {name: 'earnings', title: 'Earnings rules'}, // batch 28
   ],
   fields: [
     // ── Programme rules ──
@@ -610,6 +611,97 @@ const ambassadorSettings = {
       group: 'strip',
       options: {hotspot: true},
       description: "Leave empty to use the default safari photo.",
+    },
+    // ── Earnings rules (batch 28, new optional fields; empty = website default) ──
+    {
+      name: 'earnBasis',
+      title: 'How commission is worked out',
+      type: 'string',
+      group: 'earnings',
+      options: {
+        list: [
+          {title: '% of trip price', value: 'percentTrip'},
+          {title: '% of profit (needs a Profit number field on Zoho Deals)', value: 'percentProfit'},
+          {title: 'Fixed amount per booking (US$)', value: 'fixed'},
+        ],
+        layout: 'radio',
+      },
+      description: 'Empty = % of trip price. Used on the ambassador dashboard to work out each Zoho Deal (trip price = Deal Amount).',
+    },
+    {
+      name: 'earnValue',
+      title: 'Commission value',
+      type: 'number',
+      group: 'earnings',
+      validation: (R: any) => R.min(0),
+      description:
+        'The % (for "% of trip price" or "% of profit") or the US$ amount (for "Fixed amount"). Empty = the Commission % under Programme rules.',
+    },
+    {
+      name: 'earnWhen',
+      title: 'When commission is earned',
+      type: 'string',
+      group: 'earnings',
+      options: {
+        list: [
+          {title: 'When the friend pays their deposit', value: 'deposit'},
+          {title: 'When the friend has paid in full', value: 'fullPayment'},
+          {title: 'After the friend has travelled', value: 'afterTravel'},
+        ],
+        layout: 'radio',
+      },
+      description: 'Empty = when paid in full. Shown to ambassadors as a plain sentence. In Zoho, a Deal counts as earned when its Stage is Closed Won.',
+    },
+    {
+      name: 'payoutMethodsText',
+      title: 'How ambassadors are paid',
+      type: 'string',
+      group: 'earnings',
+      description: 'For example: "By PayPal, Wise or bank transfer, once a month." Empty = that sentence. (The minimum payout is under Programme rules.)',
+    },
+    {
+      name: 'repeatBookingsEarn',
+      title: 'Repeat bookings by the same friend earn commission again',
+      type: 'boolean',
+      group: 'earnings',
+      description: 'Off (default): only a friend's first booking (first Zoho Deal for the same contact) earns commission.',
+    },
+    {
+      name: 'rewardEnabled',
+      title: 'Show a reward goal',
+      type: 'boolean',
+      group: 'earnings',
+      description: 'Off (default): no reward goal on the dashboard.',
+    },
+    {
+      name: 'rewardType',
+      title: 'Reward goal is counted in',
+      type: 'string',
+      group: 'earnings',
+      options: {
+        list: [
+          {title: 'Number of paid bookings', value: 'bookings'},
+          {title: 'US$ value of paid bookings', value: 'value'},
+        ],
+        layout: 'radio',
+      },
+      hidden: ({parent}: any) => !parent?.rewardEnabled,
+    },
+    {
+      name: 'rewardTarget',
+      title: 'Reward goal (number of bookings or US$)',
+      type: 'number',
+      group: 'earnings',
+      validation: (R: any) => R.min(1),
+      hidden: ({parent}: any) => !parent?.rewardEnabled,
+    },
+    {
+      name: 'rewardLabel',
+      title: 'Reward wording',
+      type: 'string',
+      group: 'earnings',
+      description: 'For example: "A free safari for two".',
+      hidden: ({parent}: any) => !parent?.rewardEnabled,
     },
     // ── SEO ──
     {

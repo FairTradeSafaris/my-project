@@ -75,6 +75,13 @@ export default defineType({
       description: 'Filled in by the website.',
     }),
     defineField({
+      name: 'lastPayoutRequestAt',
+      title: 'Last payout request',
+      type: 'datetime',
+      readOnly: true,
+      description: 'Filled in by the website when the ambassador presses "Request payout" (batch 28). One request a day.',
+    }),
+    defineField({
       name: 'profile',
       title: 'Public ambassador profile (optional)',
       type: 'reference',

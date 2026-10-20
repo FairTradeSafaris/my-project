@@ -8,6 +8,7 @@ import Link from "next/link";
 import type { AmbassadorMe } from "@/lib/ambassadorTypes";
 import QrCode from "./QrCode";
 import ReferralsCard from "./ReferralsCard"; // batch 26
+import EarningsCard from "./EarningsCard"; // batch 28
 import { FTS_VIDEO } from "@/components/video/ftsVideo"; // batch 25
 import {
   homeBody,
@@ -177,6 +178,9 @@ export default function AmbassadorDashboard({
           {/* batch 26: clicks and referrals */}
           <ReferralsCard offline={offline} />
 
+          {/* batch 28: earnings */}
+          <EarningsCard offline={offline} />
+
           {/* Share */}
           <section className={`${homeCard} p-6 md:p-8`} aria-labelledby="amb-share">
             <h3 id="amb-share" className={homeH3}>
@@ -261,7 +265,7 @@ export default function AmbassadorDashboard({
           </li>
         </ul>
         <p className={`mt-6 ${homeBody}`}>
-          Your earnings will appear on this page in a future update. Questions in the meantime?{" "}
+          Questions about your referrals or earnings?{" "}
           <Link href="/contact/" className={homeTextLink}>
             Contact us
           </Link>

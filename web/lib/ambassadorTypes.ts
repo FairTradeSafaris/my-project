@@ -28,3 +28,18 @@ export type AmbassadorReferrals = {
   /** null when the Zoho referral list is not switched on. */
   referrals: AmbassadorReferral[] | null;
 };
+
+// batch 28: the "Your earnings" card (figures come from Zoho CRM Deals).
+export type EarningStatus = "pending" | "earned" | "paid";
+export type AmbassadorEarningRow = { firstName: string; date: string; status: EarningStatus; amount: number };
+export type AmbassadorEarnings = {
+  /** false = ZOHO_EARNINGS is not switched on yet ("coming soon"). */
+  enabled: boolean;
+  totals: { pending: number; earned: number; paid: number };
+  minPayout: number;
+  rules: string[];
+  reward: { label: string; type: "bookings" | "value"; target: number; progress: number } | null;
+  bookings: AmbassadorEarningRow[];
+  /** Payout already requested in the last 24 hours. */
+  payoutRequested: boolean;
+};

@@ -1,9 +1,10 @@
-// lib/server/ambassadorApproval.ts (batch 26)
+// lib/server/ambassadorApproval.ts (batch 26; batch 27: checkbox field instead of Lead Status)
 // Where "is this ambassador's login approved?" comes from.
 //  - Default: the Sanity "Link approved" tick on the Ambassador Account.
 //  - When Vercel has ZOHO_AMBASSADOR_APPROVAL=1: ALSO approved when a Zoho
-//    CRM Lead with the person's verified login email has the Lead Status
-//    in ZOHO_AMBASSADOR_APPROVED_STATUS (default "Approved Ambassador").
+//    CRM Lead with the person's verified login email has the checkbox field
+//    "Approved Ambassador" ticked (API name in ZOHO_AMBASSADOR_APPROVED_FIELD,
+//    default Approved_Ambassador). Lead Status is not used.
 //    The account must still be claimed by this login in Sanity, and Zoho is
 //    only asked when the Sanity tick is missing. Any Zoho error = not approved.
 import type { AccountDoc } from "@/lib/server/ambassadorAccount";
@@ -14,19 +15,17 @@ export function zohoApprovalOn(): boolean {
   return process.env.ZOHO_AMBASSADOR_APPROVAL === "1";
 }
 
-function approvedStatuses(): string[] {
-  return (process.env.ZOHO_AMBASSADOR_APPROVED_STATUS || "Approved Ambassador")
-    .split("|")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
+function approvedField(): string {
+  const f = (process.env.ZOHO_AMBASSADOR_APPROVED_FIELD || "Approved_Ambassador").trim();
+  return /^[A-Za-z0-9_]{1,100}$/.test(f) ? f : "Approved_Ambassador";
 }
 
 async function zohoApproved(userId: string): Promise<boolean> {
   const emails = await getVerifiedEmails(userId).catch(() => [] as string[]);
-  const ok = approvedStatuses();
+  const field = approvedField();
   for (const email of emails.slice(0, 3)) {
-    const rows = await searchLeads({ email }, ["Lead_Status", "Email"]);
-    if (rows.some((r) => ok.includes(String(r.Lead_Status ?? "").trim().toLowerCase()))) return true;
+    const rows = await searchLeads({ email }, [field, "Email"]);
+    if (rows.some((r) => r[field] === true)) return true;
   }
   return false;
 }

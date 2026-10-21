@@ -41,7 +41,7 @@ export async function earningRules(): Promise<EarningRules> {
       `*[_id == "ambassadorSettings"][0]{commissionPercent, minPayout, earnBasis, earnValue, earnWhen, payoutMethodsText, repeatBookingsEarn, rewardEnabled, rewardType, rewardTarget, rewardLabel}`,
     )) as Record<string, unknown> | null) ?? {};
   const basis = pick(r.earnBasis, ["percentTrip", "percentProfit", "fixed"] as const, "percentTrip");
-  const pct = num(r.commissionPercent, 5);
+  const pct = num(r.commissionPercent, 3);
   return {
     basis,
     value: num(r.earnValue, basis === "fixed" ? 0 : pct),

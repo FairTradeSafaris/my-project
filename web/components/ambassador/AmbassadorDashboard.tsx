@@ -20,7 +20,6 @@ import {
   homeTextLink,
 } from "@/components/home/homeStyles";
 
-const money = (n: number) => (Number.isFinite(n) ? Math.round(n).toLocaleString("en-US") : "0");
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -72,13 +71,11 @@ export default function AmbassadorDashboard({
   const p = me.programme;
   const code = me.code || "";
   const link = me.link || "";
-  const discount = `US$${money(p.friendDiscount)}`;
-  const minTrip = `US$${money(p.minTripValue)}`;
   const [message, setMessage] = useState(
-    `I'd like to recommend Fair Trade Safaris for a custom, ethical African safari. They look after every detail, and each trip supports local guides and communities. Use my link and you'll get ${discount} off your first safari of ${minTrip} or more: ${link}\n\nOr enter my code ${code} on their contact form (or mention it when you call or WhatsApp them): https://www.fairtradesafaris.com/contact/?ref=${encodeURIComponent(code)}`,
+    `I'd like to recommend Fair Trade Safaris for a custom, ethical African safari. They look after every detail, and each trip supports local guides and communities. Use my link so they know I sent you: ${link}\n\nOr enter my code ${code} on their contact form (or mention it when you call or WhatsApp them): https://www.fairtradesafaris.com/contact/?ref=${encodeURIComponent(code)}`,
   );
   const paused = me.state === "paused";
-  const videoMessage = `Here's a short film about Fair Trade Safaris (${FTS_VIDEO.durationLabel}): ${FTS_VIDEO.shortUrl}\n\nIf you'd like to plan a trip, use my link for ${discount} off your first safari of ${minTrip} or more: ${link}\nor enter my code ${code} on their contact form.`;
+  const videoMessage = `Here's a short film about Fair Trade Safaris (${FTS_VIDEO.durationLabel}): ${FTS_VIDEO.shortUrl}\n\nIf you'd like to plan a trip, use my link so they know I sent you: ${link}\nor enter my code ${code} on their contact form.`;
 
   return (
     <div className="space-y-8">
@@ -252,12 +249,12 @@ export default function AmbassadorDashboard({
         </h3>
         <ul className="mt-5 grid gap-5 md:grid-cols-3">
           <li className={`${homeCard} p-5`}>
-            <p className="text-[17px] font-semibold text-[#24170f]">Your friends save {discount}</p>
-            <p className={`mt-2 ${homeBody}`}>On their first safari of {minTrip} or more, when they book through your link or code.</p>
+            <p className="text-[17px] font-semibold text-[#24170f]">Special offers for friends</p>
+            <p className={`mt-2 ${homeBody}`}>Friends may get special offers on selected trips, decided case by case. We&rsquo;ll let you know when there&rsquo;s one to share.</p>
           </li>
           <li className={`${homeCard} p-5`}>
-            <p className="text-[17px] font-semibold text-[#24170f]">You earn {p.commissionPercent}%</p>
-            <p className={`mt-2 ${homeBody}`}>Of the safari package they book, not including {p.excludedText}.</p>
+            <p className="text-[17px] font-semibold text-[#24170f]">You earn 3%</p>
+            <p className={`mt-2 ${homeBody}`}>Of the total package value they book, not including international flights, park fees and visas.</p>
           </li>
           <li className={`${homeCard} p-5`}>
             <p className="text-[17px] font-semibold text-[#24170f]">When you are paid</p>

@@ -38,10 +38,7 @@ const PRESETS = [6000, 10000, 15000, 25000];
 
 export default function EarningsCalculator({
   commissionPercent,
-  friendDiscount,
-  minTripValue,
   groupMinGuests,
-  excludedText,
 }: {
   commissionPercent: number;
   friendDiscount: number;
@@ -49,7 +46,7 @@ export default function EarningsCalculator({
   groupMinGuests: number;
   excludedText: string;
 }) {
-  const pct = Number.isFinite(commissionPercent) ? commissionPercent : 5;
+  const pct = Number.isFinite(commissionPercent) ? commissionPercent : 3;
   const [trip, setTrip] = useState(10000);
   const [count, setCount] = useState(3);
   const tripId = useId();
@@ -58,8 +55,7 @@ export default function EarningsCalculator({
   const perBooking = (trip * pct) / 100;
   const yearly = perBooking * count;
   const shownYearly = useTween(yearly);
-  const friendGets = trip >= minTripValue ? friendDiscount : 0;
-
+  
   const TRIP_MIN = 3000;
   const TRIP_MAX = 40000;
   const tripFill = ((trip - TRIP_MIN) / (TRIP_MAX - TRIP_MIN)) * 100;
@@ -134,7 +130,7 @@ export default function EarningsCalculator({
 
           {/* one solid muted colour, slightly larger so it renders evenly */}
           <p className="text-[13px] leading-relaxed text-[#d6c6b2] antialiased">
-            Illustration only. Commission is {pct}% of the safari package and doesn&rsquo;t include {excludedText}.
+            Illustration only. Commission is 3% of the total package value and doesn&rsquo;t include international flights, park fees and visas.
           </p>
         </div>
       </div>
@@ -154,13 +150,13 @@ export default function EarningsCalculator({
 
           <dl className="relative mt-8 divide-y divide-[#e6d8c8] border-y border-[#e6d8c8] text-sm">
             <div className="flex items-center justify-between py-3">
-              <dt className="text-[#5d4037]">Per booking ({pct}%)</dt>
+              <dt className="text-[#5d4037]">Per booking (3%)</dt>
               <dd className="font-semibold tabular-nums">{fmt(perBooking)}</dd>
             </div>
             <div className="flex items-center justify-between py-3">
-              <dt className="text-[#5d4037]">Each friend saves</dt>
+              <dt className="text-[#5d4037]">Your friends</dt>
               <dd className="font-semibold tabular-nums">
-                {friendGets > 0 ? fmt(friendGets) : <span className="font-normal text-[#7a5b47]">On trips from {fmt(minTripValue)}</span>}
+                <span className="font-normal text-[#7a5b47]">Special offers, case by case</span>
               </dd>
             </div>
           </dl>

@@ -68,47 +68,47 @@ const block = (key: string, text: string): PortableTextBlock =>
   }) as unknown as PortableTextBlock;
 
 export const DEFAULT_TERMS: PortableTextBlock[] = [
-  block("t1", "Commission is {commission}% of the safari package price paid by the client you refer. It does not include {excluded}, taxes or third-party fees."),
-  block("t2", "A referral counts when a new client enquires within {days} days of clicking your link, or gives your referral code when they enquire."),
+  block("t1", "Commission is 3% of the total package value price paid by the client you refer. It does not include international flights, park fees and visas, taxes or third-party fees."),
+  block("t2", "A referral counts when a new client enquires within 90 days of clicking your link, or gives your referral code when they enquire."),
   block("t3", "Commission is earned when the client pays their deposit and becomes payable 30 days after they return home. No commission is due on any amount that is cancelled or refunded."),
-  block("t4", "We pay monthly once at least US${minPayout} is owed to you."),
-  block("t5", "Your friend's US${discount} discount applies once per new client, on a first booking of US${minTrip} or more, and cannot be combined with other offers."),
-  block("t6", "Group hosts: when you host {groupMin} or more paying guests, your own place is covered instead of commission on that trip."),
+  block("t4", "We pay monthly once at least US$50 is owed to you."),
+  block("t5", "Special offers for friends are decided case by case on selected trips, and cannot be combined with other offers."),
+  block("t6", "Group hosts: when you host 8 or more paying guests, your own place is covered instead of commission on that trip."),
   block("t7", "Please don't bid on the Fair Trade Safaris name in paid search, make claims we haven't agreed, or send spam. We may update or end the programme or an ambassadorship at any time; commission you have already earned will still be paid."),
 ];
 
 export const DEFAULTS: AmbassadorSettings = {
   enabled: true,
-  commissionPercent: 5,
+  commissionPercent: 3,
   excludedText: "international flights, park fees and visas",
-  friendDiscount: 250,
+  friendDiscount: 0,
   minTripValue: 5000,
-  friendDiscountMinText: "Applies to their first safari of US${minTrip} or more",
+  friendDiscountMinText: "Friends may get special offers on selected trips, decided case by case.",
   groupMinGuests: 8,
   groupRuleText:
-    "Host a group of {groupMin} or more paying guests and your own place on the safari is covered, instead of commission on that trip.",
+    "Host a group of 8 or more paying guests and your own place on the safari is covered, instead of commission on that trip.",
   cookieDays: 90,
   minPayout: 50,
   payoutTerms:
-    "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US${minPayout} is owed.",
+    "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US$50 is owed.",
   heroEyebrow: "The Fair Trade Safaris Ambassador Programme",
   heroTitle: "Become a Fair Trade Safaris Ambassador",
   heroSubtitle:
-    "Share the Africa you love. Earn {commission}% on every safari you refer, and your friends get US${discount} off their first trip.",
+    "Share the Africa you love. Earn 3% of the total package value on every safari you refer.",
   heroImageUrl: FALLBACK_HERO_IMAGE,
   heroImageAlt: "Two cheetahs resting on a termite mound in the Serengeti",
   introTitle: "Your stories brought you here. Now they can bring others.",
   introText:
-    "Our safari affiliate program is built for people, not platforms. Past guests, travel creators and community leaders recommend the safaris they believe in, and we look after every detail of the custom journey. You earn {commission}% of the safari package, your friend gets US${discount} off, and every trip supports local guides and communities.",
+    "Our safari affiliate program is built for people, not platforms. Past guests, travel creators and community leaders recommend the safaris they believe in, and we look after every detail of the custom journey. You earn 3% of the total package value, and every trip supports local guides and communities.",
   stepsTitle: "How it works",
   steps: [
     { title: "Apply in two minutes", text: "Tell us a little about you and the people you'd share with. We read every application personally and reply within a few working days." },
-    { title: "Share your link", text: "You get a personal code and link. Anyone who enquires within {days} days of clicking is linked to you, and your friends get US${discount} off." },
-    { title: "Earn {commission}%", text: "When your referral books, you earn {commission}% of their safari package. We pay you after they're home with their stories." },
+    { title: "Share your link", text: "You get a personal code and link. Anyone who enquires within 90 days of clicking is linked to you." },
+    { title: "Earn 3%", text: "When your referral books, you earn 3% of their safari package. We pay you after they're home with their stories." },
   ],
   calculatorTitle: "See what you could earn",
   calculatorText:
-    "Slide to a typical custom safari and how many friends might book in a year. Commission is on the safari package, not {excluded}.",
+    "Slide to a typical custom safari and how many friends might book in a year. Commission is on the safari package, not international flights, park fees and visas.",
   whoTitle: "Who it's for",
   whoFor: [
     { title: "Past guests", text: "You've been on safari with us and your friends keep asking about it." },
@@ -130,22 +130,22 @@ export const DEFAULTS: AmbassadorSettings = {
   faqTitle: "Questions, answered",
   faqs: [
     { question: "Who can become an ambassador?", answer: "Anyone who loves Africa and travel that does good: past guests, travel creators, group leaders and wildlife lovers. You don't need a big following." },
-    { question: "How much can I earn?", answer: "{commission}% of the safari package your referral books, not including {excluded}. On a US${exampleTrip} safari that's US${exampleEarn}." },
-    { question: "What does my friend get?", answer: "US${discount} off their first safari of US${minTrip} or more when they book through your link or code." },
-    { question: "How long does my link last?", answer: "{days} days from the moment someone clicks it. Your friend can also give your code when they enquire, by form, phone or WhatsApp." },
-    { question: "When do I get paid?", answer: "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US${minPayout} is owed." },
-    { question: "What if I bring a whole group?", answer: "Host {groupMin} or more paying guests and your own place on the safari is covered, instead of commission on that trip." },
+    { question: "How much can I earn?", answer: "3% of the total package value your referral books, not including international flights, park fees and visas. On a US$10,000 safari that's US$300." },
+    { question: "What does my friend get?", answer: "We sometimes have special offers on selected trips, for example in Kenya, South Africa or on Kilimanjaro, decided case by case. We'll let you know when there's one you can share." },
+    { question: "How long does my link last?", answer: "90 days from the moment someone clicks it. Your friend can also give your code when they enquire, by form, phone or WhatsApp." },
+    { question: "When do I get paid?", answer: "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US$50 is owed." },
+    { question: "What if I bring a whole group?", answer: "Host 8 or more paying guests and your own place on the safari is covered, instead of commission on that trip." },
     { question: "Does it cost anything to join?", answer: "No. It's free to join and there's nothing to buy." },
   ],
   terms: DEFAULT_TERMS,
   stripTitle: "Love Africa as much as we do?",
   stripText:
-    "Join our Ambassador Programme. Earn {commission}% on every safari you refer, and your friends get US${discount} off their first trip.",
+    "Join our Ambassador Programme. Earn 3% of the total package value on every safari you refer.",
   stripButtonLabel: "Become an Ambassador",
   stripImageUrl: FALLBACK_STRIP_IMAGE,
-  seoTitle: "Safari Affiliate & Ambassador Program – Earn {commission}% | Fair Trade Safaris",
+  seoTitle: "Safari Affiliate & Ambassador Program – Earn 3% | Fair Trade Safaris",
   seoDescription:
-    "Join our safari affiliate and ambassador programme. Earn {commission}% on every safari you refer, and your friends get ${discount} off.",
+    "Join our safari affiliate and ambassador programme. Earn 3% of the total package value on every safari you refer.",
 };
 
 // ── helpers ────────────────────────────────────────────────────────────

@@ -67,15 +67,14 @@ export default async function AffiliateProgramPage() {
   }) as PortableTextBlock[];
 
   const facts = [
-    { k: `${s.commissionPercent}%`, v: "commission on every safari" },
-    { k: `US$${money(s.friendDiscount)}`, v: "off for your friends" },
+    { k: "3%", v: "of the total package value" },
     { k: `${s.cookieDays} days`, v: "your link is remembered" },
     { k: `${s.groupMinGuests}+ guests`, v: "and your own place is covered" },
   ];
 
   const rules = [
-    { t: "Commission", d: `${s.commissionPercent}% of the safari package your referral books. Not included: ${s.excludedText}.` },
-    { t: "Your friend's welcome", d: `US$${money(s.friendDiscount)} off. ${fill(s.friendDiscountMinText).replace(/\.+$/, "")}.` },
+    { t: "Commission", d: "3% of the total package value your referral books. Not included: international flights, park fees and visas." },
+    { t: "Your friend's welcome", d: "Friends may get special offers on selected trips, decided case by case." },
     { t: "Groups", d: fill(s.groupRuleText) },
     { t: "Getting paid", d: fill(s.payoutTerms) },
     { t: "Your link", d: `Remembered for ${s.cookieDays} days. Friends can also give your code by form, phone or WhatsApp.` },
@@ -155,11 +154,11 @@ export default async function AffiliateProgramPage() {
             </a>
           </div>
 
-          <dl className={`${styles.rise4} mt-14 grid grid-cols-2 overflow-hidden rounded-3xl border border-white/15 bg-[#1a100a]/55 md:grid-cols-4`}>
+          <dl className={`${styles.rise4} mt-14 grid grid-cols-3 overflow-hidden rounded-3xl border border-white/15 bg-[#1a100a]/55`}>
             {facts.map((f, i) => (
               <div
                 key={f.v}
-                className={`px-5 py-5 sm:px-7 ${i % 2 === 1 ? "border-l border-white/15" : ""} ${i >= 2 ? "border-t border-white/15 md:border-t-0" : ""} ${i === 2 ? "md:border-l" : ""}`}
+                className={`px-4 py-5 sm:px-7 ${i > 0 ? "border-l border-white/15" : ""}`}
               >
                 <dt className="text-2xl font-bold text-white sm:text-3xl">{f.k}</dt>
                 <dd className="mt-1 text-xs leading-snug text-[#e9dccb] sm:text-sm">{f.v}</dd>
@@ -373,8 +372,8 @@ export default async function AffiliateProgramPage() {
             <p className="mt-5 leading-relaxed text-[#e9dccb]">{fill(s.formIntro)}</p>
             <ul className="mt-10 space-y-5 text-[15px]">
               {[
-                `${s.commissionPercent}% on every safari you refer`,
-                `US$${money(s.friendDiscount)} off for your friends`,
+                "3% of the total package value on every safari you refer",
+                "Special offers for friends on selected trips",
                 `Your own place covered when you host ${s.groupMinGuests}+ guests`,
                 `Paid monthly, after your friends are home`,
               ].map((t) => (
@@ -417,7 +416,7 @@ export default async function AffiliateProgramPage() {
         </details>
       </section>
 
-      <StickyApply label={`Earn ${s.commissionPercent}% as an ambassador`} />
+      <StickyApply label="Earn 3% as an ambassador" />
     </main>
   );
 }

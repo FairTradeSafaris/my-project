@@ -11,21 +11,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const D = {
   "enabled": true,
-  "commissionPercent": 5,
+  "commissionPercent": 3,
   "excludedText": "international flights, park fees and visas",
-  "friendDiscount": 250,
+  "friendDiscount": 0,
   "minTripValue": 5000,
-  "friendDiscountMinText": "Applies to their first safari of US${minTrip} or more",
+  "friendDiscountMinText": "Friends may get special offers on selected trips, decided case by case.",
   "groupMinGuests": 8,
-  "groupRuleText": "Host a group of {groupMin} or more paying guests and your own place on the safari is covered, instead of commission on that trip.",
+  "groupRuleText": "Host a group of 8 or more paying guests and your own place on the safari is covered, instead of commission on that trip.",
   "cookieDays": 90,
   "minPayout": 50,
-  "payoutTerms": "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US${minPayout} is owed.",
+  "payoutTerms": "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US$50 is owed.",
   "heroEyebrow": "The Fair Trade Safaris Ambassador Programme",
   "heroTitle": "Become a Fair Trade Safaris Ambassador",
-  "heroSubtitle": "Share the Africa you love. Earn {commission}% on every safari you refer, and your friends get US${discount} off their first trip.",
+  "heroSubtitle": "Share the Africa you love. Earn 3% of the total package value on every safari you refer.",
   "introTitle": "Your stories brought you here. Now they can bring others.",
-  "introText": "Our safari affiliate program is built for people, not platforms. Past guests, travel creators and community leaders recommend the safaris they believe in, and we look after every detail of the custom journey. You earn {commission}% of the safari package, your friend gets US${discount} off, and every trip supports local guides and communities.",
+  "introText": "Our safari affiliate program is built for people, not platforms. Past guests, travel creators and community leaders recommend the safaris they believe in, and we look after every detail of the custom journey. You earn 3% of the total package value, and every trip supports local guides and communities.",
   "stepsTitle": "How it works",
   "steps": [
     {
@@ -38,17 +38,17 @@ const D = {
       "_key": "steps2",
       "_type": "ambassadorStep",
       "title": "Share your link",
-      "text": "You get a personal code and link. Anyone who enquires within {days} days of clicking is linked to you, and your friends get US${discount} off."
+      "text": "You get a personal code and link. Anyone who enquires within 90 days of clicking is linked to you."
     },
     {
       "_key": "steps3",
       "_type": "ambassadorStep",
-      "title": "Earn {commission}%",
-      "text": "When your referral books, you earn {commission}% of their safari package. We pay you after they're home with their stories."
+      "title": "Earn 3%",
+      "text": "When your referral books, you earn 3% of their safari package. We pay you after they're home with their stories."
     }
   ],
   "calculatorTitle": "See what you could earn",
-  "calculatorText": "Slide to a typical custom safari and how many friends might book in a year. Commission is on the safari package, not {excluded}.",
+  "calculatorText": "Slide to a typical custom safari and how many friends might book in a year. Commission is on the safari package, not international flights, park fees and visas.",
   "whoTitle": "Who it's for",
   "whoFor": [
     {
@@ -112,31 +112,31 @@ const D = {
       "_key": "faqs12",
       "_type": "ambassadorFaq",
       "question": "How much can I earn?",
-      "answer": "{commission}% of the safari package your referral books, not including {excluded}. On a US${exampleTrip} safari that's US${exampleEarn}."
+      "answer": "3% of the total package value your referral books, not including international flights, park fees and visas. On a US$10,000 safari that's US$300."
     },
     {
       "_key": "faqs13",
       "_type": "ambassadorFaq",
       "question": "What does my friend get?",
-      "answer": "US${discount} off their first safari of US${minTrip} or more when they book through your link or code."
+      "answer": "We sometimes have special offers on selected trips, for example in Kenya, South Africa or on Kilimanjaro, decided case by case. We'll let you know when there's one you can share."
     },
     {
       "_key": "faqs14",
       "_type": "ambassadorFaq",
       "question": "How long does my link last?",
-      "answer": "{days} days from the moment someone clicks it. Your friend can also give your code when they enquire, by form, phone or WhatsApp."
+      "answer": "90 days from the moment someone clicks it. Your friend can also give your code when they enquire, by form, phone or WhatsApp."
     },
     {
       "_key": "faqs15",
       "_type": "ambassadorFaq",
       "question": "When do I get paid?",
-      "answer": "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US${minPayout} is owed."
+      "answer": "Commission is earned when your referral pays their deposit, and paid 30 days after they return home. We pay monthly once at least US$50 is owed."
     },
     {
       "_key": "faqs16",
       "_type": "ambassadorFaq",
       "question": "What if I bring a whole group?",
-      "answer": "Host {groupMin} or more paying guests and your own place on the safari is covered, instead of commission on that trip."
+      "answer": "Host 8 or more paying guests and your own place on the safari is covered, instead of commission on that trip."
     },
     {
       "_key": "faqs17",
@@ -155,7 +155,7 @@ const D = {
         {
           "_type": "span",
           "_key": "t1s",
-          "text": "Commission is {commission}% of the safari package price paid by the client you refer. It does not include {excluded}, taxes or third-party fees.",
+          "text": "Commission is 3% of the total package value price paid by the client you refer. It does not include international flights, park fees and visas, taxes or third-party fees.",
           "marks": []
         }
       ]
@@ -169,7 +169,7 @@ const D = {
         {
           "_type": "span",
           "_key": "t2s",
-          "text": "A referral counts when a new client enquires within {days} days of clicking your link, or gives your referral code when they enquire.",
+          "text": "A referral counts when a new client enquires within 90 days of clicking your link, or gives your referral code when they enquire.",
           "marks": []
         }
       ]
@@ -197,7 +197,7 @@ const D = {
         {
           "_type": "span",
           "_key": "t4s",
-          "text": "We pay monthly once at least US${minPayout} is owed to you.",
+          "text": "We pay monthly once at least US$50 is owed to you.",
           "marks": []
         }
       ]
@@ -211,7 +211,7 @@ const D = {
         {
           "_type": "span",
           "_key": "t5s",
-          "text": "Your friend's US${discount} discount applies once per new client, on a first booking of US${minTrip} or more, and cannot be combined with other offers.",
+          "text": "Special offers for friends are decided case by case on selected trips, and cannot be combined with other offers.",
           "marks": []
         }
       ]
@@ -225,7 +225,7 @@ const D = {
         {
           "_type": "span",
           "_key": "t6s",
-          "text": "Group hosts: when you host {groupMin} or more paying guests, your own place is covered instead of commission on that trip.",
+          "text": "Group hosts: when you host 8 or more paying guests, your own place is covered instead of commission on that trip.",
           "marks": []
         }
       ]
@@ -246,10 +246,10 @@ const D = {
     }
   ],
   "stripTitle": "Love Africa as much as we do?",
-  "stripText": "Join our Ambassador Programme. Earn {commission}% on every safari you refer, and your friends get US${discount} off their first trip.",
+  "stripText": "Join our Ambassador Programme. Earn 3% of the total package value on every safari you refer.",
   "stripButtonLabel": "Become an Ambassador",
-  "seoTitle": "Safari Affiliate & Ambassador Program – Earn {commission}% | Fair Trade Safaris",
-  "seoDescription": "Join our safari affiliate and ambassador programme. Earn {commission}% on every safari you refer, and your friends get ${discount} off."
+  "seoTitle": "Safari Affiliate & Ambassador Program – Earn 3% | Fair Trade Safaris",
+  "seoDescription": "Join our safari affiliate and ambassador programme. Earn 3% of the total package value on every safari you refer."
 }
 
 const ambassadorSettings = {
@@ -280,7 +280,7 @@ const ambassadorSettings = {
       type: 'number',
       group: 'programme',
       validation: (R: any) => R.required().min(0).max(50),
-      description: "Percentage of the safari package the ambassador earns. Example: 5",
+      description: "Percentage of the total package value the ambassador earns. Example: 3",
       initialValue: D.commissionPercent,
     },
     {
@@ -297,7 +297,7 @@ const ambassadorSettings = {
       type: 'number',
       group: 'programme',
       validation: (R: any) => R.required().min(0),
-      description: "Amount off a referred friend's first booking. Example: 250",
+      description: "Fixed amount off a referred friend's first booking. 0 = no fixed discount (offers decided case by case), and the website then shows the wording below instead of a US$ amount.",
       initialValue: D.friendDiscount,
     },
     {
@@ -306,7 +306,7 @@ const ambassadorSettings = {
       type: 'number',
       group: 'programme',
       validation: (R: any) => R.required().min(0),
-      description: "The friend discount only applies to bookings of at least this much. Example: 5000",
+      description: "Only used when the friend's discount above is more than 0. The discount then applies to bookings of at least this much. Example: 5000",
       initialValue: D.minTripValue,
     },
     {
@@ -664,7 +664,7 @@ const ambassadorSettings = {
       title: 'Repeat bookings by the same friend earn commission again',
       type: 'boolean',
       group: 'earnings',
-      description: 'Off (default): only a friend's first booking (first Zoho Deal for the same contact) earns commission.',
+      description: "Off (default): only a friend's first booking (first Zoho Deal for the same contact) earns commission.",
     },
     {
       name: 'rewardEnabled',

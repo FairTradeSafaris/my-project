@@ -4,7 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import LineArt from "@/components/LineArt";
-import { getAmbassadorSettings, makeFill, money } from "@/lib/ambassadorSettings";
+import { getAmbassadorSettings, makeFill } from "@/lib/ambassadorSettings";
 
 export default async function AmbassadorCtaStrip() {
   const s = await getAmbassadorSettings();
@@ -47,10 +47,9 @@ export default async function AmbassadorCtaStrip() {
             </div>
           </div>
 
-          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/15 bg-[#1a100a]/50 md:col-span-5">
+          <dl className={`grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/15 bg-[#1a100a]/50 md:col-span-5`}>
             {[
-              { k: `${s.commissionPercent}%`, v: "commission" },
-              { k: `US$${money(s.friendDiscount)}`, v: "off for friends" },
+              { k: "3%", v: "commission" },
               { k: `${s.cookieDays}`, v: "day link" },
             ].map((f) => (
               <div key={f.v} className="bg-[#24170f]/40 px-4 py-5 text-center">

@@ -182,6 +182,23 @@ type DestinationDoc = {
 /* =======================
    QUERY
 ======================= */
+// Batch 30: region named in "Local Safari Expertise" (plain fixed text).
+const SPECIALIST_REGION: Record<string, string> = {
+  botswana: "Southern Africa",
+  mozambique: "Southern Africa",
+  namibia: "Southern Africa",
+  "south-africa": "Southern Africa",
+  zambia: "Southern Africa",
+  zimbabwe: "Southern Africa",
+  kenya: "East Africa",
+  "mount-kilimanjaro": "East Africa",
+  rwanda: "East Africa",
+  tanzania: "East Africa",
+  uganda: "East Africa",
+  madagascar: "Indian Ocean",
+  seychelles: "Indian Ocean",
+};
+
 const iconMap = {
   users: Users,
   bird: Bird,
@@ -679,11 +696,12 @@ export default async function DestinationPage({
                             </h4>
 
                             <p className="text-gray-600">
-                              {/* Batch 16: uses the country's Region from
-                                  Studio (was always "East Africa") */}
+                              {/* Batch 30: fixed region per country */}
                               Get trusted advice from{" "}
-                              {data.region?.trim() || "Africa"} safari
-                              specialists.
+                              {SPECIALIST_REGION[slug] ||
+                                data.region?.trim() ||
+                                "Africa"}{" "}
+                              safari specialists.
                             </p>
                           </div>
 

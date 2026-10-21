@@ -56,8 +56,8 @@ function clip(text: string, max = 155): string {
 
 // Batch 16: intro paragraph per country (keyed by destination slug), written
 // from facts already on each country page. Countries not listed here keep the
-// general text. Kept in code because adding a field would change the
-// destination schema.
+// general text. Batch 30: the optional Studio field "Safaris page intro"
+// (safarisIntro) overrides this text when filled.
 const SAFARIS_INTROS: Record<string, string> = {
   botswana:
     "Botswana offers one of Africa’s most exclusive and untouched safari experiences. Glide through the Okavango Delta by mokoro canoe, track elephants in Chobe and enjoy abundant wildlife in vast, crowd-free reserves. Our 6-day Chobe and Okavango Delta journeys come in two styles, a classic safari escape or a luxury safari, both with local guides and eco-luxe lodges. Every journey supports local communities and conservation, blending luxury with purpose.",
@@ -99,6 +99,7 @@ const destinationQuery = groq`
   _id,
   title,
   "slug": slug.current,
+  safarisIntro,
   heroImage{
     image{asset->{url}, alt},
     galleryImage->{
@@ -181,7 +182,7 @@ export default async function SafarisPage({ params }: PageProps) {
           Discover {destination.title}
         </h2>
         <p className="text-gray-600 leading-relaxed">
-          {SAFARIS_INTROS[slug] ?? (
+          {destination.safarisIntro?.trim() || SAFARIS_INTROS[slug] || (
             <>
               From iconic wildlife encounters to immersive cultural experiences,
               browse our curated {destination.title} safari itineraries and

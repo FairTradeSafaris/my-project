@@ -88,6 +88,17 @@ export default defineType({
       group: 'content',
     }),
 
+    // Batch 30 (add-only): optional intro for /destination/<country>/safaris/
+    defineField({
+      name: 'safarisIntro',
+      title: 'Safaris page intro',
+      type: 'text',
+      rows: 4,
+      description:
+        'Optional. Opening paragraph on this country\'s Safaris page. Leave empty to keep the current text.',
+      group: 'content',
+    }),
+
     /*
     =========================================
     EXISTING CONTENT

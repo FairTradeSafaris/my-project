@@ -453,5 +453,15 @@
     "source": "/adventure/15-heavyweight-birds-to-look-out-for-on-an-african-safari",
     "destination": "/blog",
     "permanent": true
+  },
+  {
+    "source": "/destination/african-safari-destination-namibia",
+    "destination": "/destination/namibia",
+    "permanent": true
+  },
+  {
+    "source": "/destination/mt-kilimanjaro-tanzania",
+    "destination": "/destination/tanzania",
+    "permanent": true
   }
 ]

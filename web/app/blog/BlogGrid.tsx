@@ -41,9 +41,12 @@ export default function BlogGrid({
 
   const featuredPost = filteredPosts[0];
 
-  const otherPosts = enableSearch
-    ? filteredPosts.slice(1, visibleCount + 1)
-    : filteredPosts.slice(1);
+  // Batch 34: every post card is in the page HTML so search engines and AI
+  // crawlers can follow a link to every article. Cards past `visibleCount`
+  // are only hidden (display: none) until "Load More Articles" is pressed,
+  // so the page looks and behaves exactly as before.
+  const otherPosts = filteredPosts.slice(1);
+  const isHidden = (index: number) => enableSearch && index >= visibleCount;
 
   const handleLoadMore = () => {
     setVisibleCount((prev) => prev + POSTS_PER_PAGE);
@@ -136,11 +139,13 @@ export default function BlogGrid({
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {otherPosts.map((post) => (
+        {otherPosts.map((post, index) => (
           <Link
             key={post._id}
             href={`/blog/${post.slug}`}
-            className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden flex flex-col"
+            className={`bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden flex-col ${
+              isHidden(index) ? "hidden" : "flex"
+            }`}
           >
             {post.coverImage && (
               <div className="relative w-full aspect-square">
@@ -173,7 +178,7 @@ export default function BlogGrid({
       </div>
 
       {/* Load More */}
-      {enableSearch && visibleCount < filteredPosts.length && (
+      {enableSearch && visibleCount < otherPosts.length && (
         <div className="flex justify-center mt-10">
           <button
             onClick={handleLoadMore}

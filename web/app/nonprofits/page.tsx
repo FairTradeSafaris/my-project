@@ -7,7 +7,7 @@ import Link from "next/link";
 import HeroController from "@/components/HeroController";
 import Script from "next/script";
 import LineArt from "@/components/LineArt";
-import { coreBody, coreButton, coreCard, coreContainer, coreH2 } from "@/components/core/coreStyles";
+import { coreBody, coreButton, coreCard, coreContainer, coreH2, coreLink } from "@/components/core/coreStyles";
 
 export const revalidate = 60;
 
@@ -137,6 +137,34 @@ export default async function NonProfitsPage() {
             <span className="not-italic text-[15px] text-[#5c4a3d]">
               – FTS Non-Profit Partner
             </span>
+          </div>
+        </section>
+
+        {/* Batch 34: volunteers + ethical travel links */}
+        <section className="bg-white pb-10 md:pb-14">
+          <div className={coreContainer}>
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className={`${coreH2} mb-4`}>Volunteering in Africa?</h2>
+              <p className={`${coreBody} md:text-[17px] md:leading-8`}>
+                If you are already in Africa to serve with{" "}
+                <Link href="/reach-youth-global/" className={coreLink}>
+                  Reach Youth Global
+                </Link>
+                , we plan safaris around your volunteer trip. To see how we
+                choose lodges, guides and partners, read about our{" "}
+                <Link href="/ethical-sustainable-safaris/" className={coreLink}>
+                  ethical safaris
+                </Link>{" "}
+                or{" "}
+                <Link
+                  href="/safari-questions/what-is-an-ethical-safari/"
+                  className={coreLink}
+                >
+                  what makes a safari ethical
+                </Link>
+                .
+              </p>
+            </div>
           </div>
         </section>
 

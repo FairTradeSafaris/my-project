@@ -87,6 +87,24 @@ export default function EthicalSustainableSafarisPage() {
               <li>Preserves cultural heritage</li>
               <li>Operates transparently and responsibly</li>
             </ul>
+
+            {/* Batch 34: links to the matching answer pages */}
+            <p className={body}>
+              Short answers:{" "}
+              <Link
+                href="/safari-questions/what-is-an-ethical-safari/"
+                className={coreLink}
+              >
+                what is an ethical safari?
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/safari-questions/how-do-i-choose-a-safari-operator/"
+                className={coreLink}
+              >
+                how do I choose a safari operator?
+              </Link>
+            </p>
           </div>
 
           {/* Safari Regions */}
@@ -197,6 +215,19 @@ export default function EthicalSustainableSafarisPage() {
               Sustainable travel must benefit local communities. We prioritize
               partnerships that provide fair wages, support women-led enterprises,
               and reinvest in schools and healthcare.
+            </p>
+
+            {/* Batch 34 */}
+            <p className={body}>
+              Meet the{" "}
+              <Link href="/nonprofits/" className={coreLink}>
+                non-profits we support
+              </Link>
+              , or, if you are volunteering with{" "}
+              <Link href="/reach-youth-global/" className={coreLink}>
+                Reach Youth Global
+              </Link>
+              , add a safari to your time in Africa.
             </p>
           </div>
 

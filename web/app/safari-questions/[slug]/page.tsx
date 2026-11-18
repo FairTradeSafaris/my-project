@@ -23,6 +23,7 @@ import {
   QUESTIONS_PATH,
   SITE_URL,
   formatReviewed,
+  moreQuestionsFor,
   portableToPlain,
   questionDescription,
   questionTitle,
@@ -78,12 +79,9 @@ export default async function SafariQuestionPage({ params }: PageProps) {
   const dest = q.destination?.slug && q.destination?.title ? q.destination : null;
   const journeys = (q.relatedJourneys || []).filter((j) => j?.slug && j?.title);
 
-  // "More questions": same destination first, then the rest (max 4)
-  const related = (q.related || []).filter((r) => r.slug && r.question);
-  const more = [
-    ...related.filter((r) => dest && r.destination?.slug === dest.slug),
-    ...related.filter((r) => !(dest && r.destination?.slug === dest.slug)),
-  ].slice(0, 4);
+  // "More questions": same destination first, then the next questions in
+  // the list, wrapping round (batch 34), max 4. `related` includes this page.
+  const more = moreQuestionsFor({ slug: q.slug, destination: dest }, q.related, 4);
 
   const url = questionUrl(q.slug);
   const answerText = [short, portableToPlain(q.body)].filter(Boolean).join("\n\n");

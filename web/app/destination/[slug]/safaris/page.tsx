@@ -6,6 +6,15 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import JourneyCard from "@/components/JourneyCard";
 import { DEFAULT_OG_IMAGE, ogImageUrl } from "@/lib/seoDefaults";
+// Batch 34: short "Common questions" list under the itineraries
+import { QuestionLinkList } from "@/components/safari-questions/QuestionParts";
+import {
+  QUESTIONS_PATH,
+  destinationQuestionSlugs,
+  destinationQuestionsQuery,
+  orderDestinationQuestions,
+  type SafariQuestionLink,
+} from "@/lib/safariQuestions";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -135,10 +144,17 @@ export default async function SafarisPage({ params }: PageProps) {
 
   if (!destination) notFound();
 
-  // 2. Get journeys for this destination
-  const journeys = await client.fetch(journeysQuery, {
-    destinationId: destination._id,
-  });
+  // 2. Get journeys and answer pages for this destination
+  const [journeys, questionDocs] = await Promise.all([
+    client.fetch(journeysQuery, { destinationId: destination._id }),
+    client
+      .fetch<SafariQuestionLink[]>(destinationQuestionsQuery, {
+        slug,
+        questionSlugs: destinationQuestionSlugs(slug),
+      })
+      .catch(() => [] as SafariQuestionLink[]),
+  ]);
+  const questions = orderDestinationQuestions(questionDocs, slug, 4);
 
   const heroUrl =
     destination?.heroImage?.image?.asset?.url ||
@@ -217,6 +233,29 @@ export default async function SafarisPage({ params }: PageProps) {
           </div>
         )}
       </section>
+
+      {/* Batch 34: COMMON QUESTIONS (only when there are any) */}
+      {questions.length > 0 && (
+        <section className="max-w-4xl mx-auto px-6 pb-16">
+          <div className="rounded-[28px] bg-[#fbf6ef] px-6 py-8 ring-1 ring-[#e6d8c8] sm:px-10 sm:py-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a0703f]">
+              Safari questions
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-[#24170f]">
+              Planning a {destination.title} safari?
+            </h2>
+            <div className="mt-6">
+              <QuestionLinkList items={questions} showAnswer={false} />
+            </div>
+            <Link
+              href={`${QUESTIONS_PATH}/`}
+              className="mt-6 inline-block text-sm font-semibold text-[#5d4037] underline decoration-[#c9a57f] decoration-2 underline-offset-[6px] hover:text-[#24170f]"
+            >
+              All safari questions
+            </Link>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

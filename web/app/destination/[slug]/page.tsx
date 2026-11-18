@@ -26,7 +26,9 @@ import JsonLd from "@/components/JsonLd";
 // Batch 17: "Questions about <country>" section
 import { QuestionLinkList } from "@/components/safari-questions/QuestionParts";
 import {
+  destinationQuestionSlugs,
   destinationQuestionsProjection,
+  orderDestinationQuestions,
   type SafariQuestionLink,
 } from "@/lib/safariQuestions";
 
@@ -310,6 +312,7 @@ const query = groq`
   },
 
   // Batch 17: Safari Questions that point at this destination
+  // (batch 34: plus the ones listed for it in lib/safariQuestions.ts)
   "safariQuestions": ${destinationQuestionsProjection},
 
   // FAQs
@@ -458,9 +461,15 @@ export default async function DestinationPage({
 }) {
   const { slug } = await params; // Next 15: params is a Promise
 
-  const data = (await client.fetch(query, { slug })) as DestinationDoc | null;
+  const data = (await client.fetch(query, {
+    slug,
+    questionSlugs: destinationQuestionSlugs(slug),
+  })) as DestinationDoc | null;
 
   if (!data) notFound();
+
+  // Batch 34: own questions first, then the listed ones (max 8)
+  data.safariQuestions = orderDestinationQuestions(data.safariQuestions, slug, 8);
 
   const hero = resolveImage(data.heroImage);
   const flagSrc = data.flagUrl || resolveImage(data.flagImage).url;
@@ -1161,7 +1170,7 @@ export default async function DestinationPage({
                     Safari questions
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-[#24170f]">
-                    Questions about {data.title}
+                    Common questions about {data.title}
                   </h2>
                   <div className="mt-6">
                     <QuestionLinkList items={data.safariQuestions!} />

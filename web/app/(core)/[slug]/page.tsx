@@ -2,7 +2,6 @@ import { client } from "@/lib/sanity";
 import { groq } from "next-sanity";
 import { notFound } from "next/navigation";
 import PillarContent from "@/components/PillarContent";
-import SafariLoader from "@/components/SafariLoader";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
 import { preload } from "react-dom";
@@ -223,7 +222,6 @@ export default async function CorePage({
   const faqs: FAQItem[] = data.faq || [];
 
   return (
-    <SafariLoader>
       <main className="bg-white text-[#24170f] min-h-screen relative">
         {/* AI Article Schema (server-rendered; next/script beforeInteractive
             only injected it client-side). FAQPage is already emitted as a real
@@ -346,6 +344,5 @@ export default async function CorePage({
           </section>
         )}
       </main>
-    </SafariLoader>
   );
 }
